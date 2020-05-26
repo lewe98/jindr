@@ -37,6 +37,7 @@ build:
   stage: build
   script:
     - cd client
+    - npm i -g @ionic/cli
     - npm run build
   tags:
     - nodejs
