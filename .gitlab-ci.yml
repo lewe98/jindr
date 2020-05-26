@@ -54,6 +54,7 @@ api_testing:
   stage: test
   script:
     - cd server
+    - npm i
     - npm run ci-test
   tags:
     - nodejs
@@ -67,6 +68,9 @@ staging:
     - cd client
     - npm run staging
     - echo "Deploy to staging server"
+    - cd ..
+    - npm install -g json
+    - json -I -f package.json -e 'this.heroku-postbuild="cd client && npm install --only=dev && ionic build --staging"'
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_STAGING --api-key=$HEROKU_API_KEY
   environment:
@@ -86,6 +90,9 @@ production:
     - cd client
     - npm run production
     - echo "Deploy to production server"
+    - cd ..
+    - npm install -g json
+    - json -I -f package.json -e 'this.heroku-postbuild="cd client && npm install --only=dev && ionic build --production"'
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_PRODUCTION --api-key=$HEROKU_API_KEY
   environment:
