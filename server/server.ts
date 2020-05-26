@@ -143,5 +143,6 @@ app.post('/login', (req: Request, res: Response) => {
  * Exports for testing
  * add every method like this: {app: app, method1: method1, method2: method2}
  * routes don't need to be added
+ *
  */
 module.exports = { app: app };
