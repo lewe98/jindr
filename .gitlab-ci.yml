@@ -2,6 +2,7 @@ cache:
   paths:
     - client/node_modules/
     - client/www/
+    - server/node_modules/
 
 
 
@@ -19,7 +20,7 @@ init_modules:
     - cd client
     - npm ci
     - cd ../server
-    - npm i
+    - npm ci
   tags:
     - nodejs
 
