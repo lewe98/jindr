@@ -1,0 +1,57 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "testStart": "tsc server.ts && node server.js",
+    "lint": "eslint . --ext .ts",
+    "tsc": "tsc && cd test && tsc && cd .. && cd models && tsc",
+    "prettier-format": "prettier --config .prettierrc server.ts --write",
+    "build": "tsc server.ts",
+    "test": "SET NODE_ENV=test && jest --runInBand --coverage ./test",
+    "start": "node server.js"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^4.0.1",
+    "body-parser": "^1.19.0",
+    "compression": "^1.7.4",
+    "connect-history-api-fallback": "^1.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "heroku-ssl-redirect": "0.0.4",
+    "mongodb": "^3.5.7",
+    "mongoose": "^5.9.15",
+    "mongoose-unique-validator": "^2.0.3",
+    "ts-node-dev": "^1.0.0-pre.44",
+    "typescript": "~3.8.3",
+    "validator": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^25.2.3",
+    "@types/mongodb": "^3.5.18",
+    "@types/node": "^14.0.4",
+    "@types/request": "^2.48.5",
+    "@typescript-eslint/eslint-plugin": "^3.0.0",
+    "@typescript-eslint/parser": "^3.0.0",
+    "eslint": "^7.1.0",
+    "eslint-plugin-no-loops": "^0.3.0",
+    "eslint-plugin-prefer-arrow": "^1.2.1",
+    "jest": "^26.0.1",
+    "jest-without-globals": "0.0.3",
+    "mongodb-memory-server": "^6.6.1",
+    "prettier": "^2.0.5",
+    "supertest": "^4.0.2",
+    "ts-jest": "^26.0.0"
+  }
+}
