@@ -43,7 +43,6 @@ build:
 
 karma_testing:
   stage: test
-  image: weltn24/up-docker-node-chrome-headless
   script:
     - cd client
     - npm i
@@ -72,7 +71,7 @@ staging:
     - echo "Deploy to staging server"
     - cd ..
     - npm install -g json
-    - json -I -f package.json -e 'this.heroku-postbuild="cd client && npm install --only=dev && ionic build --staging"'
+    - json -I -f package.json -e 'this.heroku-postbuild="cd client && npm install --only=dev && ionic build --prod --c=staging"'
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_STAGING --api-key=$HEROKU_API_KEY
   environment:
@@ -94,7 +93,7 @@ production:
     - echo "Deploy to production server"
     - cd ..
     - npm install -g json
-    - json -I -f package.json -e 'this.heroku-postbuild="cd client && npm install --only=dev && ionic build --production"'
+    - json -I -f package.json -e 'this.heroku-postbuild="cd client && npm install --only=dev && ionic build --prod --c=production"'
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_PRODUCTION --api-key=$HEROKU_API_KEY
   environment:
