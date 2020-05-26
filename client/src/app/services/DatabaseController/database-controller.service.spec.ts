@@ -1,15 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 
 import { DatabaseControllerService } from './database-controller.service';
-import {HttpClient, HttpClientModule} from "@angular/common/http";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {HttpClient, HttpClientModule} from '@angular/common/http';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {User} from '../../../../interfaces/user';
 
 describe('Database.ControllerService', () => {
-
-  class User {
-    name: string;
-    age: number;
-  }
   let service: DatabaseControllerService;
 
   beforeEach(() =>
@@ -20,7 +16,7 @@ describe('Database.ControllerService', () => {
         HttpClientTestingModule
       ],
     }).compileComponents();
-
+    // tslint:disable-next-line
     service = TestBed.get(DatabaseControllerService);
   });
 
@@ -31,29 +27,29 @@ describe('Database.ControllerService', () => {
   it('should only return message if no data is returned', () =>
   {
     const obj = service.convert({message: 'test'}, null);
-    expect(obj['data']).toBeUndefined();
+    expect(obj.data).toBeUndefined();
     expect(obj.message).toBe('test');
   });
 
   it('should return single data of expected type', () =>
   {
-    let temp = {message: 'test', data: {name: 'user1', age: 12}};
+    const temp = {message: 'test', data: {firstName: 'first', lastName: 'last', email: 'first@last.de'}};
     const obj = service.convert(temp, User);
-    expect(obj['data'] instanceof User).toBe(true);
+    expect(obj.data instanceof User).toBe(true);
   });
 
   it('should return data of type object if no type provided', () =>
   {
-    let temp = {message: 'test', data: {name: 'user1', age: 12}};
+    const temp = {message: 'test', data: {firstName: 'first', lastName: 'last', email: 'first@last.de'}};
     const obj = service.convert(temp, null);
-    expect(typeof(obj['data'])).toEqual('object')
+    expect(typeof(obj.data)).toEqual('object');
   });
 
   it('should return array of expected type', () =>
   {
-    let temp = {message: 'test', data: [{name: 'user1', age: 12}, {name: 'user2', age: 13}]};
+    const temp = {message: 'test', data: [{firstName: 'first', lastName: 'last', email: 'first@last.de'}, {firstName: 'first', lastName: 'last', email: 'first@last.de'}]};
     const obj = service.convert(temp, User);
-    expect(obj['data'][0] instanceof User).toBe(true);
+    expect(obj.data[0] instanceof User).toBe(true);
     expect(obj.message).toBe('test');
   });
 });

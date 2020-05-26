@@ -1,11 +1,11 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-
+import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class DatabaseControllerService {
-   baseURL = '';
+  apiURL = environment.apiUrl;
   constructor(public http: HttpClient) { }
 
   /**
@@ -26,9 +26,9 @@ export class DatabaseControllerService {
         reject('Data is not valid JSON');
         return;
       }
-      this.http.post(`${this.baseURL}/${URL}`, data)
-          .subscribe(data => {
-            resolve(this.convert(data, type));
+      this.http.post(`${this.apiURL}/${URL}`, data)
+          .subscribe(res => {
+            resolve(this.convert(res, type));
           }, error => {
             reject(error.error);
           });
@@ -49,9 +49,9 @@ export class DatabaseControllerService {
    */
   getRequest<T>(URL: string, data: string, type?: T): Promise<any> {
     return new Promise<any>((resolve, reject) => {
-      this.http.get(`${this.baseURL}/${URL}/${data}`)
-          .subscribe(data => {
-            resolve(this.convert(data, type));
+      this.http.get(`${this.apiURL}/${URL}/${data}`)
+          .subscribe(res => {
+            resolve(this.convert(res, type));
           }, error => {
             reject(error.error);
           });
@@ -65,12 +65,12 @@ export class DatabaseControllerService {
    * @return the converted class, e.g. User(name: 'Test', email: 'test@as.de') or an array of it
    */
   convert<T>(data, type: T) {
-    if (data['data'] && type) {
-      if (!data['data'].length) {
-        data['data'] = this.makeObject(type, data['data']);
+    if (data.data && type) {
+      if (!data.data.length) {
+        data.data = this.makeObject(type, data.data);
         return data;
       } else {
-        data['data'] = this.makeObjectArr(type, data['data']);
+        data.data = this.makeObjectArr(type, data.data);
         return data;
       }
     } else {
@@ -104,7 +104,7 @@ export class DatabaseControllerService {
    * @return the converted Instance
    */
   makeObject(type, object) {
-    let factory = new Factory();
+    const factory = new Factory();
     return Object.assign(factory.create(type), object);
   }
 
@@ -115,7 +115,7 @@ export class DatabaseControllerService {
    * @return the converted Instance as array
    */
   makeObjectArr(type, object) {
-    let factory = new Factory();
+    const factory = new Factory();
     return object.map(o => Object.assign(factory.create(type), o));
   }
 }
@@ -128,8 +128,4 @@ class Factory {
   create<T>(type: (new () => T)): T {
     return new type();
   }
-}
-class User {
-  name: string;
-  age: number;
 }
