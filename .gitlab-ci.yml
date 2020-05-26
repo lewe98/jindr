@@ -18,6 +18,8 @@ init_modules:
   script:
     - cd client
     - npm ci
+    - cd ../server
+    - npm ci
   tags:
     - nodejs
 
