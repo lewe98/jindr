@@ -48,7 +48,7 @@ karma_testing:
     - cd client
     - npm i
     - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    - sudo apt install ./google-chrome-stable_current_amd64.deb
+    - apt install ./google-chrome-stable_current_amd64.deb
     - export CHROME_BIN=/usr/bin/google-chrome
     - npm run karma
   tags:
