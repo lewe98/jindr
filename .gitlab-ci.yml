@@ -19,7 +19,7 @@ init_modules:
     - cd client
     - npm ci
     - cd ../server
-    - npm ci
+    - npm i
   tags:
     - nodejs
 
