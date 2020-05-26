@@ -47,7 +47,9 @@ karma_testing:
   script:
     - cd client
     - npm i
-    - npm install puppeteer --only=dev
+    - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - sudo apt install ./google-chrome-stable_current_amd64.deb
+    - export CHROME_BIN=/usr/bin/google-chrome
     - npm run karma
   tags:
     - nodejs
