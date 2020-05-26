@@ -4,8 +4,6 @@ cache:
     - client/www/
     - server/node_modules/
 
-default:
-  image: atlassianlabs/docker-node-jdk-chrome-firefox
 
 stages:
   - init
@@ -47,7 +45,7 @@ karma_testing:
   stage: test
   script:
     - cd client
-    - npm run karma
+    - CHROME_BIN=/usr/bin/google-chrome && npm run karma
   tags:
     - nodejs
 
