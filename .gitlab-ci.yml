@@ -46,6 +46,7 @@ karma_testing:
   script:
     - cd client
     - npm i
+    - npm install puppeteer --only=dev
     - npm run karma
   tags:
     - nodejs
