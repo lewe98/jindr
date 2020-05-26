@@ -43,9 +43,10 @@ build:
 
 karma_testing:
   stage: test
+  image: weltn24/up-docker-node-chrome-headless
   script:
     - cd client
-    - CHROME_BIN=/usr/bin/google-chrome && npm run karma
+    - npm run karma
   tags:
     - nodejs
 
@@ -53,7 +54,7 @@ api_testing:
   stage: test
   script:
     - cd server
-    - NODE_ENV=test && jest --runInBand ./test
+    - npm run ci-test
   tags:
     - nodejs
 
