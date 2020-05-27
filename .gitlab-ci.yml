@@ -22,8 +22,6 @@ staging:
   stage: staging
   image: ruby:latest
   script:
-    - cd client
-    - npm run staging
     - echo "Deploy to staging server"
     - cd ~/bin
     - curl -L https://github.com/trentm/json/raw/master/lib/json.js > json
