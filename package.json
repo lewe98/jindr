@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@git.thm.de:vlht20/testip2.git"
+    "url": "git+ssh://git@git.thm.de:vlht20/jindr.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

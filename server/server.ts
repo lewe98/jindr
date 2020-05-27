@@ -3,10 +3,8 @@ import { Request, Response } from 'express';
 
 const express = require('express');
 const mongoose = require('mongoose');
-const history = require('connect-history-api-fallback');
 const bodyParser = require('body-parser');
 const compression = require('compression');
-const sslRedirect = require('heroku-ssl-redirect');
 const cors = require('cors');
 
 const User = require('./models/user');
@@ -18,9 +16,7 @@ const ORIGIN_URL = process.env.ORIGIN_URL;
 let db;
 
 const app = express();
-app.use(sslRedirect());
 app.use(compression());
-app.use(history());
 app.use(express.static(__dirname + '/../client/www'));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
