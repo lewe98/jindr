@@ -31,8 +31,7 @@ karma_testing:
   stage: test
   script:
     - cd client
-    - npm i karma-chrome-launcher --save-dev
-    - export CHROME_BIN=/usr/local/bin/my-chrome-build
+    - npm i -D puppeteer karma-chrome-launcher
     - npm run karma
   tags:
     - nodejs
