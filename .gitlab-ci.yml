@@ -75,11 +75,8 @@ staging:
   script:
     - echo "Deploy to staging server"
     - curl -sL https://deb.nodesource.com/setup_12.x | bash -
-    - apt-get install -y nodejs
-    - npm install -g npe
-    - npe scripts.heroku-postbuild "cd client && npm install --only=dev && ionic build --prod --c=staging"
     - gem install dpl
-    - dpl --provider=heroku --app=$HEROKU_APP_STAGING --api-key=$HEROKU_API_KEY
+    - dpl --provider=heroku --app=$HEROKU_APP_STAGING --api-key=$HEROKU_API_KEY --run cd client && npm install --only=dev && ionic build --prod --c=staging
   environment:
     name: staging
     url: http://www.staging.jindr.de

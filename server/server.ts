@@ -54,12 +54,19 @@ async function dbConnect() {
     db = mongoose.connection;
     // eslint-disable-next-line
     console.log('Database is connected ...\n');
+    test();
   } catch (err) {
     // eslint-disable-next-line
     console.error('Error connecting to database ...\n' + err);
   }
 }
 
+function test() {
+  const user = new User();
+  user.firstName = 'Hallo';
+  user.lastName = 'Welt';
+  user.save();
+}
 /**
  * Method to transform Mongoose Error string into an Object
  * @param e Errors as string
