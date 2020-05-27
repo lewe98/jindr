@@ -23,7 +23,6 @@ staging:
   image: ruby:latest
   script:
     - echo "Deploy to staging server"
-    - cd ~/bin
     - curl -L https://github.com/trentm/json/raw/master/lib/json.js > json
     - chmod 755 json
     - json -I -f package.json -e 'this.heroku-postbuild="cd client && npm install --only=dev && ionic build --prod --c=staging"'
