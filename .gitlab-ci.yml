@@ -26,6 +26,25 @@ init_modules:
     paths:
       - node_modules/
 
+lint_testing:
+  stage: lint
+  script:
+    - cd client
+    - npm run lint
+    - cd ../server
+    - npm run lint
+  tags:
+    - nodejs
+
+
+build:
+  stage: build
+  script:
+    - cd client
+    - npm i -g @ionic/cli
+    - npm run build
+  tags:
+    - nodejs
 
 karma_testing:
   stage: test
@@ -39,7 +58,15 @@ karma_testing:
   tags:
     - nodejs
 
-
+api_testing:
+  stage: test
+  script:
+    - cd server
+    - npm i
+    - npm run tsc
+    - npm run ci-test
+  tags:
+    - nodejs
 
 
 staging:
