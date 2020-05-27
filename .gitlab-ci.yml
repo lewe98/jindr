@@ -31,7 +31,8 @@ karma_testing:
   stage: test
   script:
     - cd client
-    - apt-get install -y install libX11
+    - apt-get update -y
+    - apt-get install -y libx11-dev
     - npm i -D puppeteer karma-chrome-launcher
     - npm run karma
   tags:
