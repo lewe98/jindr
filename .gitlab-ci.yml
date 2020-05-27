@@ -13,7 +13,27 @@ stages:
   - staging
   - production
 
+init_modules:
+  stage: init
+  script:
+    - cd client
+    - npm ci
+    - cd ../server
+    - npm ci
+  tags:
+    - nodejs
+  artifacts:
+    paths:
+      - node_modules/
 
+
+karma_testing:
+  stage: test
+  script:
+    - cd client
+    - npm run karma
+  tags:
+    - nodejs
 
 
 
@@ -26,9 +46,7 @@ staging:
     - curl -sL https://deb.nodesource.com/setup_12.x | bash -
     - apt-get install -y nodejs
     - npm install -g npe
-    - pwd
     - npe scripts.heroku-postbuild "cd client && npm install --only=dev && ionic build --prod --c=staging"
-    - npe scripts.heroku-postbuild
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_STAGING --api-key=$HEROKU_API_KEY
   environment:
@@ -45,12 +63,11 @@ production:
   stage: production
   image: ruby:latest
   script:
-    - cd client
-    - npm run production
     - echo "Deploy to production server"
-    - cd ..
-    - npm install -g json
-    - json -I -f package.json -e 'this.heroku-postbuild="cd client && npm install --only=dev && ionic build --prod --c=production"'
+    - curl -sL https://deb.nodesource.com/setup_12.x | bash -
+    - apt-get install -y nodejs
+    - npm install -g npe
+    - npe scripts.heroku-postbuild "cd client && npm install --only=dev && ionic build --prod --c=production"
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_PRODUCTION --api-key=$HEROKU_API_KEY
   environment:
