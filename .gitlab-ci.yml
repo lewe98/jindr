@@ -76,7 +76,7 @@ staging:
     - echo "Deploy to staging server"
     - curl -sL https://deb.nodesource.com/setup_12.x | bash -
     - gem install dpl
-    - dpl --provider=heroku --app=$HEROKU_APP_STAGING --api-key=$HEROKU_API_KEY --run heroku config:set NODE_ENV=staging
+    - dpl --provider=heroku --app=$HEROKU_APP_STAGING --api-key=$HEROKU_API_KEY
   environment:
     name: staging
     url: http://www.staging.jindr.de
@@ -94,7 +94,7 @@ production:
     - echo "Deploy to production server"
     - curl -sL https://deb.nodesource.com/setup_12.x | bash -
     - gem install dpl
-    - dpl --provider=heroku --app=$HEROKU_APP_PRODUCTION --api-key=$HEROKU_API_KEY --run heroku config:set NODE_ENV=production
+    - dpl --provider=heroku --app=$HEROKU_APP_PRODUCTION --api-key=$HEROKU_API_KEY
   environment:
     name: production
     url: http://www.jindr.de
