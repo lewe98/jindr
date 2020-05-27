@@ -13,46 +13,8 @@ stages:
   - staging
   - production
 
-init_modules:
-  stage: init
-  script:
-    - cd client
-    - npm ci
-    - cd ../server
-    - npm ci
-  tags:
-    - nodejs
-
-lint_testing:
-  stage: lint
-  script:
-    - cd client
-    - npm run lint
-    - cd ../server
-    - npm run lint
-  tags:
-    - nodejs
-
-build:
-  stage: build
-  script:
-    - cd client
-    - npm i -g @ionic/cli
-    - npm run build
-  tags:
-    - nodejs
 
 
-
-api_testing:
-  stage: test
-  script:
-    - cd server
-    - npm i
-    - npm run tsc
-    - npm run ci-test
-  tags:
-    - nodejs
 
 
 
@@ -63,8 +25,9 @@ staging:
     - cd client
     - npm run staging
     - echo "Deploy to staging server"
-    - cd ..
-    - npm install -g json
+    - cd ~/bin
+    - curl -L https://github.com/trentm/json/raw/master/lib/json.js > json
+    - chmod 755 json
     - json -I -f package.json -e 'this.heroku-postbuild="cd client && npm install --only=dev && ionic build --prod --c=staging"'
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_STAGING --api-key=$HEROKU_API_KEY
