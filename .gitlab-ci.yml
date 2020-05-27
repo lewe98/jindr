@@ -27,7 +27,7 @@ staging:
     - apt-get install -y nodejs
     - npm install -g npe
     - pwd
-    - npe scripts.heroku-postbuild "cd client && npm install --only=dev && ionic build --prod --c=staging"'
+    - npe scripts.heroku-postbuild "cd client && npm install --only=dev && ionic build --prod --c=staging"
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_STAGING --api-key=$HEROKU_API_KEY
   environment:
