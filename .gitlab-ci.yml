@@ -1,8 +1,8 @@
 cache:
   paths:
     - client/node_modules/
-    - client/dist/
-
+    - client/www/
+    - server/node_modules/
 
 
 stages:
@@ -17,6 +17,8 @@ init_modules:
   stage: init
   script:
     - cd client
+    - npm ci
+    - cd ../server
     - npm ci
   tags:
     - nodejs
@@ -35,23 +37,20 @@ build:
   stage: build
   script:
     - cd client
+    - npm i -g @ionic/cli
     - npm run build
   tags:
     - nodejs
 
-karma_testing:
-  stage: test
-  script:
-    - cd client
-    - npm run karma
-  tags:
-    - nodejs
+
 
 api_testing:
   stage: test
   script:
     - cd server
-    - npm run test
+    - npm i
+    - npm run tsc
+    - npm run ci-test
   tags:
     - nodejs
 
@@ -61,7 +60,12 @@ staging:
   stage: staging
   image: ruby:latest
   script:
+    - cd client
+    - npm run staging
     - echo "Deploy to staging server"
+    - cd ..
+    - npm install -g json
+    - json -I -f package.json -e 'this.heroku-postbuild="cd client && npm install --only=dev && ionic build --prod --c=staging"'
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_STAGING --api-key=$HEROKU_API_KEY
   environment:
@@ -78,11 +82,16 @@ production:
   stage: production
   image: ruby:latest
   script:
+    - cd client
+    - npm run production
     - echo "Deploy to production server"
+    - cd ..
+    - npm install -g json
+    - json -I -f package.json -e 'this.heroku-postbuild="cd client && npm install --only=dev && ionic build --prod --c=production"'
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_PRODUCTION --api-key=$HEROKU_API_KEY
   environment:
-    name: staging
+    name: production
     url: http://www.jindr.de
   only:
     - master

@@ -13,6 +13,7 @@ const User = require('./models/user');
 
 const MONGODB_URI: string = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.MONGODB_NAME;
+const ORIGIN_URL = process.env.ORIGIN_URL;
 // eslint-disable-next-line
 let db;
 
@@ -25,8 +26,8 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(
   cors({
-    credentials: true
-    // origin: 'http://localhost:8100' // comment when deploy
+    credentials: true,
+    origin: ORIGIN_URL
   })
 );
 
@@ -143,5 +144,6 @@ app.post('/login', (req: Request, res: Response) => {
  * Exports for testing
  * add every method like this: {app: app, method1: method1, method2: method2}
  * routes don't need to be added
+ *
  */
 module.exports = { app: app };

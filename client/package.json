@@ -6,8 +6,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ionic build --prod",
+    "production": "ionic build --prod --c=production",
+    "staging": "ionic build --prod --c=staging",
     "test": "ng test",
+    "karma": "ng test --progress false --watch false",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },

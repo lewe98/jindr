@@ -14,7 +14,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "npm install --prefix ./client",
     "heroku-prebuild": "npm i -g typescript@3.8.0 && npm i -g @ionic/cli && cd server && npm i && npm i --only=dev && npm run build",
-    "heroku-postbuild": "cd client && npm install --only=dev && ionic build --prod --release",
     "start": "node server/server.js && heroku ps:scale web=1"
   },
   "keywords": [],
