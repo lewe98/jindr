@@ -7,6 +7,7 @@ var request = require('supertest');
 var jest_without_globals_1 = require("jest-without-globals");
 var dbHandler = require('./database-handler');
 var User = require('../models/user');
+var testUser;
 /**
  * Connect to a new in-memory database before running any tests.
  */
@@ -109,12 +110,14 @@ jest_without_globals_1.describe('Login User', function () {
                         .post('/login')
                         .send({
                         email: 'abc@abcd.de',
-                        password: 'Test123'
+                        password: 'Test123',
+                        deviceID: "abc123abc"
                     })];
                 case 1:
                     res = _a.sent();
                     jest_without_globals_1.expect(res.statusCode).toEqual(200);
                     jest_without_globals_1.expect(typeof res.body.data).toBe('object');
+                    testUser = res.body.data;
                     jest_without_globals_1.expect(res.body.data.password).toBe(undefined);
                     return [2 /*return*/];
             }
@@ -133,6 +136,41 @@ jest_without_globals_1.describe('Login User', function () {
                 case 1:
                     res = _a.sent();
                     jest_without_globals_1.expect(res.statusCode).toEqual(400);
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+    jest_without_globals_1.it('should fail if user does not exist', function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+        var res;
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, request(app)
+                        .post('/login')
+                        .send({
+                        email: '123abc@abcd.de',
+                        password: 'Test123'
+                    })];
+                case 1:
+                    res = _a.sent();
+                    jest_without_globals_1.expect(res.statusCode).toEqual(400);
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+});
+jest_without_globals_1.describe('Log out user', function () {
+    jest_without_globals_1.it('should log out the user', function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+        var res;
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, request(app)
+                        .post('/logout')
+                        .send({
+                        userID: testUser._id
+                    })];
+                case 1:
+                    res = _a.sent();
+                    jest_without_globals_1.expect(res.statusCode).toEqual(200);
                     return [2 /*return*/];
             }
         });

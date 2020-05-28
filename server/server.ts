@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const compression = require('compression');
 const cors = require('cors');
+const sslRedirect = require('heroku-ssl-redirect');
+const history = require('connect-history-api-fallback');
 
 const User = require('./models/user');
 
@@ -20,6 +22,8 @@ app.use(compression());
 app.use(express.static(__dirname + '/../client/www'));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+app.use(sslRedirect());
+app.use(history());
 app.use(
   cors({
     credentials: true,
@@ -54,19 +58,12 @@ async function dbConnect() {
     db = mongoose.connection;
     // eslint-disable-next-line
     console.log('Database is connected ...\n');
-    test();
   } catch (err) {
     // eslint-disable-next-line
     console.error('Error connecting to database ...\n' + err);
   }
 }
 
-function test() {
-  const user = new User();
-  user.firstName = 'Hallo';
-  user.lastName = 'Welt';
-  user.save();
-}
 /**
  * Method to transform Mongoose Error string into an Object
  * @param e Errors as string
@@ -111,14 +108,17 @@ app.post('/register', (req: Request, res: Response) => {
 
 /**
  * POST Route for log in
- * Pass email and password
+ * Pass email, password and device ID
  * compares stored password and entered password as hash
+ * if they match, the device ID will be stored in the Database for future authentication
  * @return 200 User Object
  * @return 400 wrong password or user not found
  */
 app.post('/login', (req: Request, res: Response) => {
   const email: string = req.body.email;
   const password: string = req.body.password;
+  const deviceID: string = req.body.deviceID;
+  const opts = { new: true };
   User.findOne({ email: email })
     .select('+password')
     .exec(async (err, user) => {
@@ -127,7 +127,12 @@ app.post('/login', (req: Request, res: Response) => {
           message: 'Error: ' + err
         });
       } else {
-        if (await user.validatePassword(password)) {
+        if (user && (await user.validatePassword(password))) {
+          user = await User.findOneAndUpdate(
+            { email: user.email },
+            { deviceID: deviceID },
+            opts
+          );
           user = user.toObject();
           delete user.password;
           res.status(200).send({
@@ -141,6 +146,56 @@ app.post('/login', (req: Request, res: Response) => {
         }
       }
     });
+});
+
+/**
+ * GET Route, to validate if User is still logged in.
+ * @param deviceID a unique ID of the users device
+ * On each Login, a unique Device ID from the used Device will be send to the Server and stored in the Database
+ * If this route is called with the currently used device, it will check the database if an user with this device ID
+ * already exists. If so, the user is still logged in.
+ */
+app.get('/login/:deviceID', async (req: Request, res: Response) => {
+  User.findOne({ deviceID: req.params.deviceID })
+    .select('-password')
+    .exec((err, user) => {
+      if (err) {
+        res.status(500).send({
+          message: 'Error: ' + err
+        });
+      } else {
+        if (user) {
+          res.status(200).send({
+            message: 'User still logged in',
+            data: user
+          });
+        } else {
+          res.status(401).send({
+            message: 'Session expired, please log in again'
+          });
+        }
+      }
+    });
+});
+
+/**
+ * POST route to log out a user
+ * @param userID pass the userID from the user
+ * checks if userID is a valid mongoose ID
+ * deletes deviceID from the database
+ */
+app.post('/logout', async (req: Request, res: Response) => {
+  if (mongoose.Types.ObjectId.isValid(req.body.userID)) {
+    User.findByIdAndUpdate(
+      req.body.userID,
+      { $set: { deviceID: null } },
+      { new: true }
+    ).then(() => {
+      res.status(200).send({
+        message: 'Successfully logged out'
+      });
+    });
+  }
 });
 
 /**

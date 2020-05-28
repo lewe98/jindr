@@ -1,0 +1,29 @@
+<ion-content force-overscroll="false" class="landing-page bg-gradient">
+  <div class="vertical-layout">
+    <div class="ion-padding">
+      <ion-slides pager="true" [options]="slidesOptions" #slideWithNav
+                  (ionSlideDidChange)="SlideDidChange(sliderOne, slideWithNav)">
+        <ion-slide *ngFor="let s of sliderOne.slidesItems">
+          <app-aspect-ratio [ratio]="{w:3, h:4}">
+            <app-image-shell [src]="s.path" [alt]="'walkthrough'"></app-image-shell>
+          </app-aspect-ratio>
+          <span class="slide-text">{{s.text}}</span>
+
+        </ion-slide>
+      </ion-slides>
+
+    </div>
+
+    <div class="section-buttons ion-padding">
+
+      <ion-button expand="block" fill="outline" color="white" shape="round" class="button-landing ion-margin-bottom" [routerLink]="['/auth/register']">
+        CREATE NEW ACCOUNT
+      </ion-button>
+
+      <ion-button expand="block" fill="outline" color="white" shape="round" class="button-facebook button-landing" [routerLink]="['/auth/login']">
+        LOG IN
+      </ion-button>
+
+    </div>
+  </div>
+</ion-content>

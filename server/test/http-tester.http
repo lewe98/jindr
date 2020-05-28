@@ -1,0 +1,36 @@
+POST http://localhost:8080/register
+Content-Type: application/json
+
+{
+  "user": {
+    "firstName": "Valentin",
+    "lastName": "Laucht",
+    "email": "valentin.laucht@mni.thm.de",
+    "password": "test123"
+  }
+}
+
+###
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "email": "valentin.laucht@mni.thm.de",
+  "password": "test123",
+  "deviceID": "abc1234rst12"
+}
+
+###
+GET http://localhost:8080/login/abc1234rst12
+Accept: application/json
+
+###
+
+POST http://localhost:8080/logout
+Content-Type: application/json
+
+{
+  "userID": "5ecf8d4fb6f1da394c25d7e0"
+}
+
+###

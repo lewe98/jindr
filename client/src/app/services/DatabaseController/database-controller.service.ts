@@ -1,20 +1,20 @@
-import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class DatabaseControllerService {
   apiURL = environment.apiUrl;
-  constructor(public http: HttpClient) { }
+  constructor(public http: HttpClient) {}
 
   /**
    * Method sends a post request to the server and returns a promise with the response
-   * @param URL the URL of the route (not including the base path) e.g. '/register'
+   * @param URL the URL of the route (not including the base path) e.g. 'register'
    * @param data the data to be sent to the server as valid JSON string (JSON.stringify({user: new User()});)
    * @param type generic type of the class Class you expect the returned data to be. Will make all
    * objects in the response an instance of this class. e.g. User
-   * Example: postRequest('/login', JSON.stringify({email: 'abc@def.de', password: '1234'}), User);
+   * Example: postRequest('login', JSON.stringify({email: 'abc@def.de', password: '1234'}), User);
    * will return the expected user as instance of class User
    * @return Will reject promise if passed data is not a valid JSON string
    * @return Will reject with error message if server request went wrong
@@ -26,35 +26,67 @@ export class DatabaseControllerService {
         reject('Data is not valid JSON');
         return;
       }
-      this.http.post(`${this.apiURL}/${URL}`, data)
-          .subscribe(res => {
-            resolve(this.convert(res, type));
-          }, error => {
-            reject(error.error);
-          });
+      this.http.post(`${this.apiURL}/${URL}`, data).subscribe(
+        (res) => {
+          resolve(this.convert(res, type));
+        },
+        (error) => {
+          reject(error.error);
+        }
+      );
     });
   }
 
-
   /**
    * Method sends a get request to the server and returns a promise with the response
-   * @param URL the URL of the route (not including the base path) e.g. '/user'
+   * @param URL the URL of the route (not including the base path) e.g. 'user'
    * @param data the data to be sent to the server as string
    * @param type generic type of the class Class you expect the returned data to be. Will make all
    * objects in the response an instance of this class. e.g. User
-   * Example: getRequest('/user', 6574, User);
+   * Example: getRequest('user', 6574, User);
    * will return the expected user (with id 6574) as instance of class User
    * @return Will reject with error message if server request went wrong
    * @return Will resolve with message and data if request was successful
    */
   getRequest<T>(URL: string, data: string, type?: T): Promise<any> {
     return new Promise<any>((resolve, reject) => {
-      this.http.get(`${this.apiURL}/${URL}/${data}`)
-          .subscribe(res => {
-            resolve(this.convert(res, type));
-          }, error => {
-            reject(error.error);
-          });
+      this.http.get(`${this.apiURL}/${URL}/${data}`).subscribe(
+        (res) => {
+          resolve(this.convert(res, type));
+        },
+        (error) => {
+          reject(error.error);
+        }
+      );
+    });
+  }
+
+  /**
+   * Method sends a put request to the server and returns a promise with the response
+   * @param URL the URL of the route (not including the base path) e.g. 'edit-user'
+   * @param data the data to be sent to the server as valid JSON string (JSON.stringify({user: new User()});)
+   * @param type generic type of the class Class you expect the returned data to be. Will make all
+   * objects in the response an instance of this class. e.g. User
+   * Example: putRequest('edit-user', JSON.stringify({email: 'abc@def.de', password: '1234'}), User);
+   * will return the expected user as instance of class User
+   * @return Will reject promise if passed data is not a valid JSON string
+   * @return Will reject with error message if server request went wrong
+   * @return Will resolve with message and data if request was successful
+   */
+  putRequest<T>(URL: string, data: string, type?: T): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      if (!this.isJsonData(data)) {
+        reject('Data is not valid JSON');
+        return;
+      }
+      this.http.put(`${this.apiURL}/${URL}`, data).subscribe(
+        (res) => {
+          resolve(this.convert(res, type));
+        },
+        (error) => {
+          reject(error.error);
+        }
+      );
     });
   }
 
@@ -116,7 +148,7 @@ export class DatabaseControllerService {
    */
   makeObjectArr(type, object) {
     const factory = new Factory();
-    return object.map(o => Object.assign(factory.create(type), o));
+    return object.map((o) => Object.assign(factory.create(type), o));
   }
 }
 
@@ -125,7 +157,7 @@ export class DatabaseControllerService {
  * on compilation
  */
 class Factory {
-  create<T>(type: (new () => T)): T {
+  create<T>(type: new () => T): T {
     return new type();
   }
 }
