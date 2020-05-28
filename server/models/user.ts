@@ -21,6 +21,9 @@ const userSchema = mongoose.Schema({
         required: [true, 'Password is required.'],
         trim: true,
         minlength: [6, 'Password can\'t be shorter than 6 characters.']
+    },
+    deviceID: {
+        type: String
     }
 });
 

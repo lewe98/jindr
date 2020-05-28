@@ -4,6 +4,7 @@ const request = require('supertest');
 import {describe, it, expect, beforeAll, afterAll} from 'jest-without-globals'
 const dbHandler = require('./database-handler');
 const User = require('../models/user');
+let testUser;
 /**
  * Connect to a new in-memory database before running any tests.
  */
@@ -65,10 +66,12 @@ describe('Login User', () => {
             .post('/login')
             .send({
                 email: 'abc@abcd.de',
-                password: 'Test123'
-            })
+                password: 'Test123',
+                deviceID: "abc123abc"
+            });
         expect(res.statusCode).toEqual(200);
         expect(typeof res.body.data).toBe('object');
+        testUser = res.body.data;
         expect(res.body.data.password).toBe(undefined);
     });
     it('should fail with wrong password', async () => {
@@ -79,6 +82,53 @@ describe('Login User', () => {
                 password: 'Test123456'
             })
         expect(res.statusCode).toEqual(400);
+    });
+    it ('should fail if user does not exist', async () => {
+        const res = await request(app)
+            .post('/login')
+            .send({
+                email: '123abc@abcd.de',
+                password: 'Test123'
+            })
+        expect(res.statusCode).toEqual(400);
+    });
+});
+
+describe('Log out user', () => {
+    it('should log out the user', async () => {
+        const res = await request(app)
+            .post('/logout')
+            .send({
+                userID: testUser._id
+            });
+        expect(res.statusCode).toEqual(200);
+    });
+});
+
+describe('Check if user is still logged in', () => {
+    it('should log in', async () => {
+        await request(app)
+            .post('/login')
+            .send({
+                email: 'abc@abcd.de',
+                password: 'Test123',
+                deviceID: "abc123abc"
+            });
+    });
+    it('should succeed if deviceID exists', async () => {
+        const res = await request(app)
+            .get('/login/' + 'abc123abc')
+            .send();
+        expect(res.statusCode).toEqual(200);
+        expect(typeof res.body.data).toBe('object');
+        testUser = res.body.data;
+        expect(res.body.data.password).toBe(undefined);
+    });
+    it('should fail if deviceID does not exist', async () => {
+        const res = await request(app)
+            .get('/login/' + 'abc123abc123')
+            .send();
+        expect(res.statusCode).toEqual(401);
     });
 });
 
