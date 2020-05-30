@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { DatabaseControllerService } from '../DatabaseController/database-controller.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { User } from '../../../../interfaces/user';
-import {HttpClientTestingModule} from "@angular/common/http/testing";
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -29,17 +29,25 @@ describe('AuthService', () => {
   describe('login', () => {
     it('should log the user in', (done) => {
       service.login('test@test.de', 'test123').then(async () => {
-        expect(databaseSpy.postRequest).toHaveBeenCalledWith('login', jasmine.any(String), User);
+        expect(databaseSpy.postRequest).toHaveBeenCalledWith(
+          'login',
+          jasmine.any(String),
+          User
+        );
         done();
       });
     });
 
     it('should check if user is logged in', (done) => {
       service.checkLogin().then((result) => {
-        expect(databaseSpy.getRequest).toHaveBeenCalledWith('login', jasmine.any(String), User);
+        expect(databaseSpy.getRequest).toHaveBeenCalledWith(
+          'login',
+          jasmine.any(String),
+          User
+        );
         expect(result).toBe(true);
         done();
       });
-    })
+    });
   });
 });
