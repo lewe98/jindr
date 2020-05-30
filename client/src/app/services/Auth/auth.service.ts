@@ -37,11 +37,11 @@ export class AuthService {
   async login(email: string, password: string): Promise<any> {
     const deviceID: string = await this.getDeviceID();
     return new Promise<any>((resolve, reject) => {
-      const data = JSON.stringify({
+      const data = {
         email,
         password,
         deviceID
-      });
+      };
       this.databaseController
         .postRequest('login', JSON.stringify(data), User)
         .then((res) => {

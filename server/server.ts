@@ -53,7 +53,8 @@ async function dbConnect() {
     await mongoose.connect(MONGODB_URI, {
       useUnifiedTopology: true,
       useNewUrlParser: true,
-      dbName: MONGODB_NAME
+      dbName: MONGODB_NAME,
+      useFindAndModify: false
     });
     db = mongoose.connection;
     // eslint-disable-next-line

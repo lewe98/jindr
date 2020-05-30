@@ -6,7 +6,7 @@ Content-Type: application/json
     "firstName": "Valentin",
     "lastName": "Laucht",
     "email": "valentin.laucht@mni.thm.de",
-    "password": "test123"
+    "password": "laucht3284"
   }
 }
 
@@ -16,7 +16,7 @@ Content-Type: application/json
 
 {
   "email": "valentin.laucht@mni.thm.de",
-  "password": "test123",
+  "password": "laucht3284",
   "deviceID": "abc1234rst12"
 }
 

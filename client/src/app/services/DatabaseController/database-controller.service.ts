@@ -1,11 +1,16 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class DatabaseControllerService {
   apiURL = environment.apiUrl;
+  httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json'
+    })
+  };
   constructor(public http: HttpClient) {}
 
   /**
@@ -26,7 +31,8 @@ export class DatabaseControllerService {
         reject('Data is not valid JSON');
         return;
       }
-      this.http.post(`${this.apiURL}/${URL}`, data).subscribe(
+      console.log(typeof data);
+      this.http.post(`${this.apiURL}/${URL}`, data, this.httpOptions).subscribe(
         (res) => {
           resolve(this.convert(res, type));
         },
@@ -79,7 +85,7 @@ export class DatabaseControllerService {
         reject('Data is not valid JSON');
         return;
       }
-      this.http.put(`${this.apiURL}/${URL}`, data).subscribe(
+      this.http.put(`${this.apiURL}/${URL}`, data, this.httpOptions).subscribe(
         (res) => {
           resolve(this.convert(res, type));
         },
