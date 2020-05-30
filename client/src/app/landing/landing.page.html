@@ -4,7 +4,9 @@
       <ion-slides pager="true" [options]="slidesOptions" #slideWithNav
                   (ionSlideDidChange)="SlideDidChange(sliderOne, slideWithNav)">
         <ion-slide *ngFor="let s of sliderOne.slidesItems">
+          <!-- aspect ratio um seitenverhältnis festzulegen -->
           <app-aspect-ratio [ratio]="{w:3, h:4}">
+            <!-- image shell um bei ladefehler platzhalter + animation anzuzeigen -->
             <app-image-shell [src]="s.path" [alt]="'walkthrough'"></app-image-shell>
           </app-aspect-ratio>
           <span class="slide-text">{{s.text}}</span>

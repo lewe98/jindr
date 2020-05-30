@@ -10,4 +10,7 @@
     margin-right: 8px;
     margin-bottom: 8px;
   }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }

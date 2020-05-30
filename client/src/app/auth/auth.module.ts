@@ -1,12 +1,13 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
 import { LoginPage } from './login/login.page';
 import { RegisterPage } from './register/register.page';
 import { RouterModule, Routes } from '@angular/router';
+import { SharedModule } from '../shared/shared.module';
 
 const authRoutes: Routes = [
   {
@@ -24,8 +25,11 @@ const authRoutes: Routes = [
     CommonModule,
     FormsModule,
     RouterModule.forChild(authRoutes),
-    IonicModule
+    IonicModule,
+    SharedModule,
+    ReactiveFormsModule
   ],
-  declarations: [LoginPage, RegisterPage]
+  declarations: [LoginPage, RegisterPage],
+  exports: [SharedModule]
 })
 export class AuthModule {}

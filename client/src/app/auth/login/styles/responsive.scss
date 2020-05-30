@@ -1,0 +1,65 @@
+@import "../../../../sass/scrollbars";
+@media (max-width:320px){
+  .login-btn {
+    width: 250px;
+  }
+}
+@media screen and (min-width: 400px) {
+  .error-container {
+    .error-message {
+      font-size: 15px!important;
+    }
+  }
+}
+// iphone 4
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 480px)
+and (-webkit-min-device-pixel-ratio: 2)
+and (device-aspect-ratio: 2/3)
+{
+  ion-input {
+    --padding-start: 5px!important;
+    --padding-end: 5px!important;
+    --padding-top: 5px!important;
+    --padding-bottom: 5px!important;
+  }
+  .input {
+    font-size:14px!important;
+  }
+  .logo {
+    max-width: 100px!important;
+  }
+  .section-buttons {
+    height: 30px!important;
+  }
+}
+
+// iphone 5
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 568px)
+and (-webkit-min-device-pixel-ratio: 2)
+and (device-aspect-ratio: 40 / 71)
+{
+  .logo {
+    max-width: 120px!important;
+  }
+}
+
+// ipad pro
+@media only screen
+and (min-device-width : 1024px)
+and (max-device-width : 1366px)
+and (-webkit-min-device-pixel-ratio: 1.5)
+{
+  .logo {
+    margin-top: 300px!important;
+  }
+}
+
+// remove scrollbar
+ion-content {
+  @include hide-scrollbars();
+  --overflow: hidden;
+}
