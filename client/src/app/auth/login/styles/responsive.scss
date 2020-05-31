@@ -63,3 +63,7 @@ ion-content {
   @include hide-scrollbars();
   --overflow: hidden;
 }
+
+.let-overflow {
+  --overflow: visible!important;
+}

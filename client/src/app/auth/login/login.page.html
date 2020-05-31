@@ -6,7 +6,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ion-padding" [ngClass]="!checkPlatform() ? 'let-overflow' : ''">
   <form [formGroup]="loginForm">
   <object class="logo" data="./assets/images/logo.svg" type="image/svg+xml">
   </object>
@@ -33,7 +33,7 @@
         </div>
       </ng-container>
     </div>
-    <a class="forgot-password">Forgot Password?</a>
+    <a class="forgot-password" [routerLink]="['/auth/forgot-pw']">Forgot Password?</a>
   </div>
   <div class="section-buttons ion-padding">
     <app-jindr-button [disabled]="!loginForm.valid" class="login-btn" [text]="'Login'" (click)="submit()"></app-jindr-button>

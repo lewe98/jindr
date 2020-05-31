@@ -6,17 +6,18 @@
   --background: linear-gradient(to top right, var(--color-jindr-stop1) 0%, var(--color-jindr-stop2) 100%);
 }
 
-.section-brand {
-  flex: 1 0 auto;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
+.slider {
+  max-width: 400px;
+  margin: 30px auto;
+  width: 70%;
 }
 
 .section-buttons {
+  max-width: 500px;
+  width: 70%;
   flex: 0 0 auto;
   text-align: center;
+  margin: 20px auto;
 }
 
 .slide-text{
@@ -25,20 +26,19 @@
   bottom: 30px;
 }
 
-.logo {
-  margin-top: 30vh;
+.image {
+  width: 100%;
 }
 
-.logo-icon {
-  width: 40px;
-  height: 40px;
-  vertical-align: middle;
+:host::ng-deep .content-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 45px;
 }
-.logo-text {
-  vertical-align: middle;
-  font-size: 40px;
-  font-weight: 700;
-  letter-spacing: -2px
+
+.bottom-row {
+  justify-content: center;
 }
 
 .button-clear {
