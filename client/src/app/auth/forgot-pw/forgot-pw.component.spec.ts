@@ -2,6 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
 import { ForgotPwComponent } from './forgot-pw.component';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ForgotPwComponent', () => {
   let component: ForgotPwComponent;
@@ -10,7 +11,7 @@ describe('ForgotPwComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ForgotPwComponent],
-      imports: [IonicModule.forRoot()]
+      imports: [IonicModule.forRoot(), RouterTestingModule]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ForgotPwComponent);
