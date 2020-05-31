@@ -34,7 +34,7 @@ const authRoutes: Routes = [
     SharedModule,
     ReactiveFormsModule
   ],
-  declarations: [LoginPage, RegisterPage],
+  declarations: [LoginPage, RegisterPage, ForgotPwComponent],
   exports: [SharedModule]
 })
 export class AuthModule {}
