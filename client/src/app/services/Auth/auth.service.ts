@@ -26,6 +26,19 @@ export class AuthService {
   }
 
   /**
+   * Method to register a user
+   * @param firstname of the user
+   * @param lastname of the user
+   * @param email of the user
+   * @param password of the user
+   * lorem ipsum
+   */
+  async register(firstname: string, lastname: string, email: string, password: string): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+    });
+  }
+
+  /**
    * Method to log in a user
    * @param email of the user
    * @param password of the user
