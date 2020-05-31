@@ -1,16 +1,19 @@
 <ion-content force-overscroll="false" class="landing-page bg-gradient">
   <div class="vertical-layout">
-    <div class="ion-padding">
-      <ion-slides pager="true" [options]="slidesOptions" #slideWithNav
-                  (ionSlideDidChange)="SlideDidChange(sliderOne, slideWithNav)">
+    <div class="ion-padding slider">
+      <ion-slides pager="true" [options]="slidesOptions" #slideWithNav>
         <ion-slide *ngFor="let s of sliderOne.slidesItems">
-          <!-- aspect ratio um seitenverhältnis festzulegen -->
-          <app-aspect-ratio [ratio]="{w:3, h:4}">
-            <!-- image shell um bei ladefehler platzhalter + animation anzuzeigen -->
-            <app-image-shell [src]="s.path" [alt]="'walkthrough'"></app-image-shell>
-          </app-aspect-ratio>
-          <span class="slide-text">{{s.text}}</span>
-
+          <ion-grid>
+            <ion-row>
+              <app-aspect-ratio class="center" [ratio]="{w:3, h:4}">
+                <!-- image shell um bei ladefehler platzhalter + animation anzuzeigen -->
+                <img class="image" [src]="s.path" [alt]="'walkthrough'" >
+              </app-aspect-ratio>
+            </ion-row>
+            <ion-row class="bottom-row">
+              <span class="slide-text">{{s.text}}</span>
+            </ion-row>
+          </ion-grid>
         </ion-slide>
       </ion-slides>
 

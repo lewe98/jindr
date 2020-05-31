@@ -4,7 +4,7 @@ import { IonSlides } from '@ionic/angular';
 @Component({
   selector: 'app-landing',
   templateUrl: 'landing.page.html',
-  styleUrls: ['landing.page.scss']
+  styleUrls: ['styles/landing.page.scss', 'styles/responsive.scss']
 })
 export class LandingPage {
   @ViewChild('slideWithNav', { static: false }) slideWithNav: IonSlides;
@@ -15,8 +15,10 @@ export class LandingPage {
       toggle: false
     },
     initialSlide: 0,
+    loop: true,
     slidesPerView: 1,
-    autoplay: true
+    autoplay: true,
+    grabCursor: true
   };
   constructor() {
     this.sliderOne = {
@@ -24,34 +26,26 @@ export class LandingPage {
       isEndSlide: false,
       slidesItems: [
         {
-          path: './assets/walkthrough/walkthrough-illustration-1.svg',
-          text: 'JINDR'
+          path: './assets/images/logo.svg',
+          text: ''
         },
         {
-          path: './assets/walkthrough/walkthrough-illustration-2.svg',
-          text: 'BLA BLA'
+          path: './assets/walkthrough/find.svg',
+          text: 'Find Jobs in your area with your smartphone!'
+        },
+        {
+          path: './assets/walkthrough/chat.svg',
+          text: 'Talk about the details and get the job!'
+        },
+        {
+          path: './assets/walkthrough/work.svg',
+          text: 'Do the job!'
+        },
+        {
+          path: './assets/walkthrough/pay.svg',
+          text: 'Get paid!'
         }
       ]
     };
-  }
-
-  SlideDidChange(object, slideView) {
-    this.checkIfNavDisabled(object, slideView);
-  }
-
-  checkIfNavDisabled(object, slideView) {
-    this.checkisBeginning(object, slideView);
-    this.checkisEnd(object, slideView);
-  }
-
-  checkisBeginning(object, slideView) {
-    slideView.isBeginning().then((istrue) => {
-      object.isBeginningSlide = istrue;
-    });
-  }
-  checkisEnd(object, slideView) {
-    slideView.isEnd().then((istrue) => {
-      object.isEndSlide = istrue;
-    });
   }
 }

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/Auth/auth.service';
 import { Router } from '@angular/router';
-
+import { Platform } from '@ionic/angular';
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
@@ -25,7 +25,12 @@ export class LoginPage implements OnInit {
     ]
   };
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private platform: Platform
+  ) {
+    console.log(this.checkPlatform());
     this.loginForm = new FormGroup({
       email: new FormControl(
         '',
@@ -39,6 +44,17 @@ export class LoginPage implements OnInit {
         Validators.compose([Validators.minLength(5), Validators.required])
       )
     });
+  }
+
+  /**
+   * Returns true if platform is desktop, pwa or capacitor
+   */
+  checkPlatform() {
+    return (
+      this.platform.is('pwa') ||
+      this.platform.is('desktop') ||
+      this.platform.is('capacitor')
+    );
   }
 
   async submit() {
