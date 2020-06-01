@@ -8,7 +8,6 @@ const compression = require('compression');
 const cors = require('cors');
 const sslRedirect = require('heroku-ssl-redirect');
 const history = require('connect-history-api-fallback');
-const path = require('path');
 
 const User = require('./models/user');
 
@@ -50,10 +49,6 @@ if (process.env.NODE_ENV.trim() !== 'test') {
     })();
   });
 }
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname + '/../client/www/index.html'));
-});
 
 /* istanbul ignore next */
 async function dbConnect() {
