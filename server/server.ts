@@ -8,6 +8,7 @@ const compression = require('compression');
 const cors = require('cors');
 const sslRedirect = require('heroku-ssl-redirect');
 const history = require('connect-history-api-fallback');
+const path = require('path');
 
 const User = require('./models/user');
 
@@ -19,11 +20,14 @@ let db;
 
 const app = express();
 app.use(compression());
-app.use(express.static(__dirname + '/../client/www'));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-app.use(sslRedirect());
+app.use(sslRedirect([
+  'staging',
+  'production'
+]));
 app.use(history());
+app.use(express.static(__dirname + '/../client/www'));
 app.use(
   cors({
     credentials: true,
@@ -46,6 +50,10 @@ if (process.env.NODE_ENV.trim() !== 'test') {
     })();
   });
 }
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname + '/../client/www/index.html'));
+});
 
 /* istanbul ignore next */
 async function dbConnect() {
