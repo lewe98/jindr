@@ -4,6 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { LandingPage } from './landing.page';
 import { RouterTestingModule } from '@angular/router/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import {ScreenOrientation} from '@ionic-native/screen-orientation/ngx';
 
 describe('LandingPage', () => {
   let component: LandingPage;
@@ -14,7 +15,7 @@ describe('LandingPage', () => {
       declarations: [LandingPage],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       imports: [IonicModule.forRoot(), RouterTestingModule],
-      providers: []
+      providers: [{provide: ScreenOrientation}]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LandingPage);

@@ -33,9 +33,13 @@ export class AuthService {
    * @param password of the user
    * lorem ipsum
    */
-  async register(firstname: string, lastname: string, email: string, password: string): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-    });
+  async register(
+    firstname: string,
+    lastname: string,
+    email: string,
+    password: string
+  ): Promise<any> {
+    return new Promise<any>((resolve, reject) => {});
   }
 
   /**

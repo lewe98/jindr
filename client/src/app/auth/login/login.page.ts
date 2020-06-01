@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/Auth/auth.service';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
+import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
@@ -28,9 +29,12 @@ export class LoginPage implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private platform: Platform
+    private platform: Platform,
+    private screenOrientation: ScreenOrientation
   ) {
-    console.log(this.checkPlatform());
+    if (!this.platform.is('desktop')) {
+      this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.PORTRAIT);
+    }
     this.loginForm = new FormGroup({
       email: new FormControl(
         '',

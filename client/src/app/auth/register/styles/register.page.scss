@@ -1,4 +1,20 @@
+:host {
+  --page-margin: var(--app-broad-margin);
+  --page-background: var(--app-background-shade);
+}
 
+ion-content {
+  --background: var(--page-background);
+  --padding-start: var(--page-margin);
+  --padding-end: var(--page-margin);
+  --padding-top: var(--page-margin);
+  --padding-bottom: var(--page-margin);
+}
+
+ion-toolbar {
+  --background: transparent;
+  --ion-color-base: transparent !important;
+}
 .section-buttons {
   flex: 0 0 auto;
   text-align: center;
@@ -14,7 +30,7 @@
 }
 
 .logo {
-  max-width: 230px;
+  max-width: 130px;
   display: block;
   margin-left: auto;
   margin-right: auto;
@@ -34,6 +50,7 @@ ion-input {
   --padding-end: 15px;
   --padding-top: 15px;
   --padding-bottom: 15px;
+  --background: var(--ion-color-white);
 }
 
 .already-registered {
@@ -53,5 +70,18 @@ ion-input {
     ion-icon {
       padding-inline-end: calc(var(--page-margin) / 2);
     }
+  }
+}
+
+.legal-stuff {
+  text-align: center;
+  font-size: 14px;
+  margin: var(--page-margin) 0;
+  color: var(--ion-color-medium);
+
+  .legal-action {
+    font-weight: 500;
+    color: var(--ion-color-secondary);
+    cursor: pointer;
   }
 }

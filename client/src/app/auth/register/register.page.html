@@ -6,30 +6,30 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding" [scrollEvents]="true">
+<ion-content fullscreen class="ion-padding" [scrollEvents]="true">
   <form [formGroup]="registerForm">
     <object class="logo" data="./assets/images/logo.svg" type="image/svg+xml">
     </object>
 
     <div class="section-inputs ion-padding">
-      <h3>Join Jindr!</h3>
+      <h3 class="headline">Join Jindr!</h3>
 
-      <ion-input (ionChange)="clearErr()" formControlName="firstname" clearInput autocapitalize="off" type="text" inputmode="text" required placeholder="First name..." class="input"></ion-input>
+      <ion-input (ionChange)="clearErr()" formControlName="firstName" clearInput autocapitalize="off" type="text" inputmode="text" required placeholder="First name..." class="input"></ion-input>
 
       <div class="error-container ion-margin-bottom">
-        <ng-container *ngFor="let validation of validationMessages.firstname">
-          <div class="error-message" *ngIf="registerForm.get('firstname').hasError(validation.type) && (registerForm.get('firstname').dirty || registerForm.get('firstname').touched)">
+        <ng-container *ngFor="let validation of validationMessages.firstName">
+          <div class="error-message" *ngIf="registerForm.get('firstName').hasError(validation.type) && (registerForm.get('firstName').dirty || registerForm.get('firstName').touched)">
             <ion-icon name="information-circle-outline"></ion-icon>
             <span>{{ validation.message }}</span>
           </div>
         </ng-container>
       </div>
 
-      <ion-input (ionChange)="clearErr()" formControlName="lastname" clearInput autocapitalize="off" type="text" inputmode="text" required placeholder="Last name..." class="input"></ion-input>
+      <ion-input (ionChange)="clearErr()" formControlName="lastName" clearInput autocapitalize="off" type="text" inputmode="text" required placeholder="Last name..." class="input"></ion-input>
 
       <div class="error-container ion-margin-bottom">
-        <ng-container *ngFor="let validation of validationMessages.lastname">
-          <div class="error-message" *ngIf="registerForm.get('lastname').hasError(validation.type) && (registerForm.get('lastname').dirty || registerForm.get('lastname').touched)">
+        <ng-container *ngFor="let validation of validationMessages.lastName">
+          <div class="error-message" *ngIf="registerForm.get('lastName').hasError(validation.type) && (registerForm.get('lastName').dirty || registerForm.get('lastName').touched)">
             <ion-icon name="information-circle-outline"></ion-icon>
             <span>{{ validation.message }}</span>
           </div>
@@ -63,7 +63,10 @@
 
       <a class="already-registered" (click)="redirectToLogin()">Already registered? Sign in here!</a>
     </div>
-
+    <div class="legal-stuff">
+      By creating an account you agree to our <a class="legal-action" (click)="showPrivacyModal()">Privacy Policy </a> and
+      <a class="legal-action" (click)="showTermsModal()">Terms of use</a>.
+    </div>
     <div class="section-buttons ion-padding">
       <app-jindr-button [disabled]="!registerForm.valid" class="login-btn" [text]="'Register'" (click)="submit()"></app-jindr-button>
     </div>
