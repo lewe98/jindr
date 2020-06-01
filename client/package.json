@@ -7,7 +7,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ionic build --prod",
-    "generate-splash": "pwa-asset-generator ./src/assets/splash/logo.svg -i ./src/index.html -m .src/manifest.webmanifest -r -f -t png",
+    "generate-splash": "pwa-asset-generator ./src/assets/splash/logo.svg ./src/assets/splash -i ./src/index.html -m ./src/manifest.webmanifest -r -f -t png",
     "production": "ionic build --prod --c=production",
     "staging": "ionic build --prod --c=staging",
     "test": "ng test",

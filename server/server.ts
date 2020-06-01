@@ -19,11 +19,14 @@ let db;
 
 const app = express();
 app.use(compression());
-app.use(express.static(__dirname + '/../client/www'));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-app.use(sslRedirect());
+app.use(sslRedirect([
+  'staging',
+  'production'
+]));
 app.use(history());
+app.use(express.static(__dirname + '/../client/www'));
 app.use(
   cors({
     credentials: true,
