@@ -6,7 +6,6 @@ import { User } from '../../../../interfaces/user';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import {ScreenOrientation} from '@ionic-native/screen-orientation/ngx';
 
 describe('RegisterPage', () => {
   let component: RegisterPage;
@@ -28,7 +27,7 @@ describe('RegisterPage', () => {
         RouterTestingModule,
         HttpClientTestingModule
       ],
-      providers: [{provide: ScreenOrientation}]
+      providers: []
     }).compileComponents();
 
     fixture = TestBed.createComponent(RegisterPage);
