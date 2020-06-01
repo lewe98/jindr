@@ -2,8 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/Auth/auth.service';
 import { Router } from '@angular/router';
-import { ModalController, Platform } from '@ionic/angular';
-import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
+import { ModalController } from '@ionic/angular';
 import { TermsComponent } from '../terms/terms.component';
 import { PrivacyComponent } from '../privacy/privacy.component';
 
@@ -34,13 +33,8 @@ export class RegisterPage implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private platform: Platform,
-    private screenOrientation: ScreenOrientation,
     public modalController: ModalController
   ) {
-    if (!this.platform.is('desktop')) {
-      this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.PORTRAIT);
-    }
     this.registerForm = new FormGroup({
       firstName: new FormControl('', Validators.compose([Validators.required])),
       lastName: new FormControl('', Validators.compose([Validators.required])),

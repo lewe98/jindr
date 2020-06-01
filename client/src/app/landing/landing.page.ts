@@ -1,6 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { IonSlides, Platform } from '@ionic/angular';
-import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
+import { IonSlides } from '@ionic/angular';
 @Component({
   selector: 'app-landing',
   templateUrl: 'landing.page.html',
@@ -20,13 +19,7 @@ export class LandingPage {
     autoplay: true,
     grabCursor: true
   };
-  constructor(
-    private screenOrientation: ScreenOrientation,
-    private platform: Platform
-  ) {
-    if (!this.platform.is('desktop')) {
-      this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.PORTRAIT);
-    }
+  constructor() {
     this.sliderOne = {
       isBeginningSlide: true,
       isEndSlide: false,
