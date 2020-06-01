@@ -1,9 +1,11 @@
 {
-  "name": "app",
-  "short_name": "app",
+  "name": "Jindr - Die Jobbörse für die Hosentasche",
+  "description": "Finde schnell und bequem Nebenjobs in deiner Nähe!",
+  "short_name": "Jindr",
   "theme_color": "#1976d2",
   "background_color": "#fafafa",
   "display": "standalone",
+  "orientation": "portrait",
   "scope": "./",
   "start_url": "./",
   "icons": [

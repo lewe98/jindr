@@ -1,7 +1,7 @@
 {
   "routes": {
     "/**": "index.html",
-    "/assets/*": "../client/www/assets/"
+    "/assets/*": "client/www/assets/"
   },
   "headers": {
     "ngsw-worker.js": {
@@ -13,5 +13,5 @@
     }
   },
   "https_only": true,
-  "root": "../client/www/"
+  "root": "client/www/"
 }
