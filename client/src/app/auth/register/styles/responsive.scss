@@ -28,10 +28,17 @@ and (device-aspect-ratio: 2/3)
     font-size:14px!important;
   }
   .logo {
-    max-width: 100px!important;
+    max-width: 60px!important;
   }
   .section-buttons {
     height: 30px!important;
+    margin-top: 0;
+  }
+  .already-registered {
+    font-size: 12px;
+  }
+  .headline {
+    font-size: 15px;
   }
 }
 
@@ -43,7 +50,48 @@ and (-webkit-min-device-pixel-ratio: 2)
 and (device-aspect-ratio: 40 / 71)
 {
   .logo {
-    max-width: 120px!important;
+    max-width: 90px!important;
+  }
+
+  ion-input {
+    --padding-start: 10px!important;
+    --padding-end: 10px!important;
+    --padding-top: 10px!important;
+    --padding-bottom: 10px!important;
+  }
+  .input {
+    font-size:14px!important;
+  }
+  .section-buttons {
+    height: 30px!important;
+  }
+  .already-registered {
+    font-size: 12px;
+  }
+}
+
+@media only screen
+and (min-device-width : 360px)
+and (max-device-width : 640px)
+{
+  .logo {
+    max-width: 110px!important;
+  }
+
+  ion-input {
+    --padding-start: 10px!important;
+    --padding-end: 10px!important;
+    --padding-top: 10px!important;
+    --padding-bottom: 10px!important;
+  }
+  .input {
+    font-size:14px!important;
+  }
+  .section-buttons {
+    height: 30px!important;
+  }
+  .already-registered {
+    font-size: 12px;
   }
 }
 
@@ -55,5 +103,11 @@ and (-webkit-min-device-pixel-ratio: 1.5)
 {
   .logo {
     margin-top: 300px!important;
+  }
+}
+
+@media (min-aspect-ratio: 16/9) {
+  .logo {
+    max-width: 200px!important;
   }
 }

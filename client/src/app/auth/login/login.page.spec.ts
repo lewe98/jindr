@@ -7,6 +7,7 @@ import { AuthService } from '../../services/Auth/auth.service';
 import { User } from '../../../../interfaces/user';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 
 describe('LoginPage', () => {
   let component: LoginPage;
@@ -25,7 +26,7 @@ describe('LoginPage', () => {
         RouterTestingModule,
         HttpClientTestingModule
       ],
-      providers: [{ provide: AuthService }]
+      providers: [{ provide: AuthService }, {provide: ScreenOrientation}]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginPage);
