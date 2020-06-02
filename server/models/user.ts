@@ -24,6 +24,14 @@ const userSchema = mongoose.Schema({
     },
     deviceID: {
         type: String
+    },
+    distance: {
+        type: Number,
+        default: 5
+    },
+    image: {
+        type: String,
+        default: './assets/avatar.jpg'
     }
 });
 

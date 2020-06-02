@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { PagesRoutingModule } from './pages.router.module';
 import { HomePage } from './home/home.page';
 import { SharedModule } from '../shared/shared.module';
-import { ProfileComponent } from './profile/profile.component';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   imports: [
@@ -14,9 +14,10 @@ import { ProfileComponent } from './profile/profile.component';
     CommonModule,
     FormsModule,
     PagesRoutingModule,
-    SharedModule
+    SharedModule,
+    RouterModule
   ],
-  declarations: [HomePage, ProfileComponent],
+  declarations: [HomePage],
   exports: [SharedModule]
 })
-export class TabsPageModule {}
+export class PagesModule {}

@@ -25,6 +25,10 @@ export class AuthService {
     return info.model + info.uuid + info.platform;
   }
 
+  getUser(): User {
+    return this.user;
+  }
+
   /**
    * Method to register a user
    * @param firstname of the user

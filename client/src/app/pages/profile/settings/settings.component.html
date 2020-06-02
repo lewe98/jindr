@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-toolbar class="toolbar-no-border">
+    <ion-title>Settings</ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="danger" (click)="close()">
+        Done
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="settings-page bg-muted">
+  <ion-list class="list-custom">
+    <ion-list-header>
+      <ion-label>ACCOUNT SETTINGS</ion-label>
+    </ion-list-header>
+    <ion-item detail="true" lines="none">
+      <ion-label>Email</ion-label>
+      <ion-note slot="end" color="primary">{{user.email}}</ion-note>
+    </ion-item>
+    <ion-item detail="true" lines="none">
+      <ion-label>Password</ion-label>
+      <ion-note slot="end" color="primary"></ion-note>
+    </ion-item>
+  </ion-list>
+
+  <ion-list class="list-custom">
+    <ion-list-header>
+      <ion-label>LOCATION</ion-label>
+    </ion-list-header>
+    <ion-item detail="true">
+      <ion-label>Location</ion-label>
+      <ion-note slot="end" class="ion-text-right">
+        Current Location
+        <br>
+        <span class="text-xs text-muted">Gießen</span>
+      </ion-note>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-label>Maximum Distance</ion-label>
+      <ion-note slot="end">
+        {{user.distance}}km
+      </ion-note>
+    </ion-item>
+    <ion-item>
+      <ion-range min="2" max="160" [(ngModel)]="user.distance" color="primary"></ion-range>
+    </ion-item>
+  </ion-list>
+
+  <ion-list class="list-custom">
+    <ion-item lines="none">
+      <ion-label>Allow Push Notifications</ion-label>
+      <ion-toggle color="primary" checked="true"></ion-toggle>
+    </ion-item>
+    <ion-list-header class="help-block">
+      <ion-label color="medium">
+        You get push notifications if you receive messages, get job offers or job applications.
+      </ion-label>
+    </ion-list-header>
+  </ion-list>
+
+  <ion-list class="list-custom">
+    <ion-item class="ion-text-center" button="true" detail="false" (click)="logout()" lines="none">
+      <ion-label>Logout</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

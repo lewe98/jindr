@@ -1,10 +1,9 @@
 :host {
   --page-margin: var(--app-broad-margin);
-  --page-background: var(--app-background-shade);
 }
 
 ion-content {
-  --background: var(--page-background);
+  --background: url(./../../../../assets/images/background.svg) no-repeat center center / cover;
   --padding-start: var(--page-margin);
   --padding-end: var(--page-margin);
   --padding-top: var(--page-margin);
