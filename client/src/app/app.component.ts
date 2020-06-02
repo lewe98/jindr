@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AuthService } from './services/Auth/auth.service';
 import { Router } from '@angular/router';
-import {Plugins} from '@capacitor/core';
+import { Plugins } from '@capacitor/core';
 const { SplashScreen } = Plugins;
 
 @Component({
@@ -10,10 +10,7 @@ const { SplashScreen } = Plugins;
   styleUrls: ['app.component.scss']
 })
 export class AppComponent {
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {
+  constructor(private authService: AuthService, private router: Router) {
     this.initializeApp();
   }
 

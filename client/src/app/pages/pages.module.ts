@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { PagesRoutingModule } from './pages.router.module';
 import { HomePage } from './home/home.page';
 import { SharedModule } from '../shared/shared.module';
+import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
   imports: [
@@ -15,7 +16,7 @@ import { SharedModule } from '../shared/shared.module';
     PagesRoutingModule,
     SharedModule
   ],
-  declarations: [HomePage],
+  declarations: [HomePage, ProfileComponent],
   exports: [SharedModule]
 })
 export class TabsPageModule {}
