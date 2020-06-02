@@ -31,19 +31,34 @@ export class AuthService {
 
   /**
    * Method to register a user
-   * @param firstname of the user
-   * @param lastname of the user
+   * @param firstName of the user
+   * @param lastName of the user
    * @param email of the user
    * @param password of the user
-   * lorem ipsum
+   * Creates a user by sending all the information to the server to store the user in the database
+   * set(key, value) is a localStorage helper method from services/storage.ts to write data to local storage
+   * resolves if successfully registered and created a new user
+   * rejects if registration failed
    */
-  async register(
-    firstname: string,
-    lastname: string,
-    email: string,
-    password: string
-  ): Promise<any> {
-    return new Promise<any>((resolve, reject) => {});
+  async register(firstName: string, lastName: string, email: string, password: string): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      const data = {
+        firstName,
+        lastName,
+        email,
+        password
+      };
+      this.databaseController
+          .postRequest('register', JSON.stringify(data), User)
+          .then((res) => {
+            set('currentUser', res.data);
+            this.user = res.data;
+            resolve();
+          })
+          .catch((err) => {
+            reject(err);
+          });
+    });
   }
 
   /**
