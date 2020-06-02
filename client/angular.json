@@ -109,6 +109,9 @@
             "production": {
               "browserTarget": "app:build:production"
             },
+            "staging": {
+              "browserTarget": "app:build:production"
+            },
             "ci": {
               "progress": false
             }
