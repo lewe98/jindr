@@ -68,7 +68,7 @@
       <a class="legal-action" (click)="showTermsModal()">Terms of use</a>.
     </div>
     <div class="section-buttons ion-padding">
-      <app-jindr-button [disabled]="!registerForm.valid" class="login-btn" [text]="'Register'" (click)="submit()"></app-jindr-button>
+      <app-jindr-button [disabled]="!registerForm.valid" class="login-btn" [text]="'Register'" (click)="registerForm.valid ? submit() : ''"></app-jindr-button>
     </div>
 
   </form>
