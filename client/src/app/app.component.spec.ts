@@ -7,15 +7,11 @@ import { AuthService } from './services/Auth/auth.service';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
-
     TestBed.configureTestingModule({
       declarations: [AppComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       imports: [HttpClientModule, RouterTestingModule],
-      providers: [
-        { provide: AuthService },
-        { provide: HttpClientModule }
-      ]
+      providers: [{ provide: AuthService }, { provide: HttpClientModule }]
     }).compileComponents();
   }));
 

@@ -31,7 +31,6 @@ export class DatabaseControllerService {
         reject('Data is not valid JSON');
         return;
       }
-      console.log(typeof data);
       this.http.post(`${this.apiURL}/${URL}`, data, this.httpOptions).subscribe(
         (res) => {
           resolve(this.convert(res, type));

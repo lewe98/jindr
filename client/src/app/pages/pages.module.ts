@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { PagesRoutingModule } from './pages.router.module';
 import { HomePage } from './home/home.page';
 import { SharedModule } from '../shared/shared.module';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   imports: [
@@ -13,9 +14,10 @@ import { SharedModule } from '../shared/shared.module';
     CommonModule,
     FormsModule,
     PagesRoutingModule,
-    SharedModule
+    SharedModule,
+    RouterModule
   ],
   declarations: [HomePage],
   exports: [SharedModule]
 })
-export class TabsPageModule {}
+export class PagesModule {}

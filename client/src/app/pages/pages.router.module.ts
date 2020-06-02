@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
 import { HomePage } from './home/home.page';
 
 const routes: Routes = [
@@ -8,17 +7,16 @@ const routes: Routes = [
     path: '',
     component: HomePage
   },
-  // /app/ redirect
   {
-    path: '',
-    redirectTo: 'home',
-    pathMatch: 'full'
+    path: 'profile',
+    loadChildren: () =>
+      import('./profile/profile.module').then((m) => m.ProfileModule)
   }
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes), HttpClientModule],
-  exports: [RouterModule],
+  imports: [RouterModule.forChild(routes)],
+  exports: [],
   providers: []
 })
 export class PagesRoutingModule {}

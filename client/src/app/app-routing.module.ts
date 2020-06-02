@@ -20,10 +20,10 @@ const routes: Routes = [
   {
     path: 'pages',
     loadChildren: () =>
-      import('./pages/pages.router.module').then((m) => m.PagesRoutingModule),
+      import('./pages/pages.module').then((m) => m.PagesModule),
     canActivate: [AuthGuard]
   },
-  { path: '**', redirectTo: 'pages/landing' }
+  { path: '**', redirectTo: 'pages' }
 ];
 
 @NgModule({
