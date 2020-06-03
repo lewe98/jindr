@@ -3,6 +3,9 @@ import { ModalController, NavController } from '@ionic/angular';
 import { SettingsComponent } from '../settings/settings.component';
 import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
+import { ImageService } from '../../../services/Image/image.service';
+import { ToastService } from '../../../services/Toast/toast.service';
+import { ProfileViewComponent } from '../profile-view/profile-view.component';
 
 @Component({
   selector: 'app-profile-me',
@@ -14,18 +17,21 @@ export class ProfileMeComponent implements OnInit {
   constructor(
     private navCtrl: NavController,
     private modalCtrl: ModalController,
-    private authService: AuthService
+    private authService: AuthService,
+    public imageService: ImageService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
   }
 
-  goToExplore() {
-    this.navCtrl.navigateForward('/explore');
+  async viewProfile() {
+    const modal = await this.modalCtrl.create({
+      component: ProfileViewComponent
+    });
+    return await modal.present();
   }
-
-  async viewProfile() {}
 
   async viewSettings() {
     const modal = await this.modalCtrl.create({
@@ -34,5 +40,25 @@ export class ProfileMeComponent implements OnInit {
     return await modal.present();
   }
 
-  async viewEditProfile() {}
+  async editPicture() {
+    this.imageService
+      .takePicture('profilePicture')
+      .then(async (image) => {
+        await this.toastService.presentLoading('Save...');
+        this.user.image = image;
+        this.authService
+          .updateUser(this.user)
+          .then(() => {
+            Object.assign(this.user, this.authService.getUser());
+            this.toastService.dismissLoading();
+          })
+          .catch((e) => {
+            this.toastService.dismissLoading();
+            this.toastService.presentWarningToast(e.message, 'Error!');
+          });
+      })
+      .catch((error) => {
+        this.toastService.presentWarningToast(error, 'Error!');
+      });
+  }
 }

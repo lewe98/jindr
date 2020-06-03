@@ -17,7 +17,7 @@
           <app-aspect-ratio [ratio]="{w: 1, h: 1}">
             <app-image-shell class="user-image" animation="spinner" [src]="user.image"></app-image-shell>
           </app-aspect-ratio>
-          <ion-button class="change-image-btn">
+          <ion-button class="change-image-btn" (click)="editPicture()">
             <ion-icon class="btn-icon" slot="icon-only" name="camera"></ion-icon>
           </ion-button>
         </ion-avatar>
@@ -48,7 +48,7 @@
               <div class="button-label">VIEW</div>
             </ion-col>
             <ion-col class="ion-text-center">
-              <ion-button color="white" class="button-custom button-icon" (click)="viewEditProfile()">
+              <ion-button color="white" class="button-custom button-icon" [routerLink]="['edit']">
                 <ion-icon name="pencil-sharp" slot="icon-only"></ion-icon>
               </ion-button>
               <div class="button-label">EDIT</div>

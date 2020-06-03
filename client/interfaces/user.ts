@@ -6,4 +6,5 @@ export class User {
   public email: string;
   public image: string;
   public distance: number;
+  public allowNotifications: boolean;
 }

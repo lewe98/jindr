@@ -32,6 +32,10 @@ const userSchema = mongoose.Schema({
     image: {
         type: String,
         default: './assets/images/avatar.jpg'
+    },
+    allowNotifications: {
+        type: Boolean,
+        default: true
     }
 });
 

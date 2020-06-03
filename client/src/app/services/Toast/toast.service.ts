@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
-import { ToastController } from '@ionic/angular';
+import { LoadingController, ToastController } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ToastService {
-  constructor(public toastController: ToastController) {}
+  loading;
+  constructor(
+    public toastController: ToastController,
+    private loadingController: LoadingController
+  ) {}
 
   /**
    * Presents a toast on the top of the screen for 2 sec
@@ -47,5 +51,24 @@ export class ToastService {
       ]
     });
     toast.present();
+  }
+
+  /**
+   * Call this method to display a loading animation
+   * @param message to be displayed on the loading animation
+   */
+  async presentLoading(message) {
+    this.loading = await this.loadingController.create({
+      message,
+      duration: 20000
+    });
+    await this.loading.present();
+  }
+
+  /**
+   * Call this method to dismiss the loading animation
+   */
+  dismissLoading() {
+    this.loading.dismiss();
   }
 }

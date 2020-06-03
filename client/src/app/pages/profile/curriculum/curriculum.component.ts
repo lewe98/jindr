@@ -2,11 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-profile-view',
-  templateUrl: './profile-view.component.html',
-  styleUrls: ['./profile-view.component.scss']
+  selector: 'app-curriculum',
+  templateUrl: './curriculum.component.html',
+  styleUrls: ['./curriculum.component.scss']
 })
-export class ProfileViewComponent implements OnInit {
+export class CurriculumComponent implements OnInit {
   constructor(public modalCtrl: ModalController) {}
 
   ngOnInit() {}
