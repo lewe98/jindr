@@ -75,8 +75,7 @@ export class RegisterPage implements OnInit {
   }
 
   redirectToLogin() {
-    this.router.navigate(['auth/login']).then(() => {
-    });
+    this.router.navigate(['auth/login']).then(() => {});
   }
 
   clearErr() {

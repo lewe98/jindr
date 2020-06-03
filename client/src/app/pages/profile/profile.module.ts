@@ -9,6 +9,7 @@ import { SharedModule } from '../../shared/shared.module';
 import { ProfileViewComponent } from './profile-view/profile-view.component';
 import { ProfileEditComponent } from './profile-edit/profile-edit.component';
 import { FormsModule } from '@angular/forms';
+import { CurriculumComponent } from './curriculum/curriculum.component';
 
 const profileRoutes: Routes = [
   {
@@ -26,7 +27,8 @@ const profileRoutes: Routes = [
     ProfileMeComponent,
     SettingsComponent,
     ProfileViewComponent,
-    ProfileEditComponent
+    ProfileEditComponent,
+    CurriculumComponent
   ],
   imports: [
     CommonModule,

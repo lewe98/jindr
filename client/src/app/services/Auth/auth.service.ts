@@ -42,7 +42,12 @@ export class AuthService {
    * resolves if successfully registered and created a new user
    * rejects if registration failed
    */
-  async register(firstName: string, lastName: string, email: string, password: string): Promise<any> {
+  async register(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string
+  ): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const data = {
         user: {

@@ -11,6 +11,8 @@ import { ToastService } from '../../../services/Toast/toast.service';
 })
 export class SettingsComponent implements OnInit {
   user: User = new User();
+  distance: number;
+  allowNotifications: boolean;
   constructor(
     public modalCtrl: ModalController,
     private authService: AuthService,
@@ -20,9 +22,19 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
+    this.distance = this.authService.getUser().distance;
+    this.allowNotifications = this.authService.getUser().allowNotifications;
   }
 
   close() {
+    if (
+      this.user.distance !== this.distance ||
+      this.user.allowNotifications !== this.allowNotifications
+    ) {
+      this.authService.updateUser(this.user).catch((err) => {
+        this.toastService.presentWarningToast(err.message, 'Error');
+      });
+    }
     this.modalCtrl.dismiss();
   }
 

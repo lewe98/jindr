@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/Auth/auth.service';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
+import { ToastService } from '../../services/Toast/toast.service';
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
@@ -28,7 +29,8 @@ export class LoginPage implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private platform: Platform
+    private platform: Platform,
+    private toastService: ToastService
   ) {
     this.loginForm = new FormGroup({
       email: new FormControl(
@@ -57,12 +59,14 @@ export class LoginPage implements OnInit {
   }
 
   async submit() {
+    await this.toastService.presentLoading('Please wait...');
     this.authService
       .login(
         this.loginForm.controls.email.value,
         this.loginForm.controls.password.value
       )
       .then(() => {
+        this.toastService.dismissLoading();
         this.router.navigate(['pages']).then(() => {
           this.error = '';
           this.loginForm.controls.email.setValue('');
@@ -70,6 +74,7 @@ export class LoginPage implements OnInit {
         });
       })
       .catch((err) => {
+        this.toastService.dismissLoading();
         this.error = err.message;
       });
   }
