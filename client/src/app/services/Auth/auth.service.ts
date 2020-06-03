@@ -42,13 +42,15 @@ export class AuthService {
   async register(firstName: string, lastName: string, email: string, password: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const data = {
-        firstName,
-        lastName,
-        email,
-        password
+        user: {
+          firstName,
+          lastName,
+          email,
+          password
+        }
       };
       this.databaseController
-          .postRequest('register', JSON.stringify({user: data}))
+          .postRequest('register', JSON.stringify(data))
           .then(() => {
             resolve();
           })
