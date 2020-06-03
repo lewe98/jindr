@@ -2,11 +2,11 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
 import { ProfileMeComponent } from './profile-me.component';
-import {RouterTestingModule} from '@angular/router/testing';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
-import {AuthService} from '../../../services/Auth/auth.service';
-import {User} from '../../../../../interfaces/user';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AuthService } from '../../../services/Auth/auth.service';
+import { User } from '../../../../../interfaces/user';
 
 describe('ProfileMeComponent', () => {
   let component: ProfileMeComponent;
@@ -20,7 +20,11 @@ describe('ProfileMeComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ProfileMeComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      imports: [IonicModule.forRoot(), RouterTestingModule,  HttpClientTestingModule],
+      imports: [
+        IonicModule.forRoot(),
+        RouterTestingModule,
+        HttpClientTestingModule
+      ],
       providers: [{ provide: AuthService, useValue: authSpy }]
     }).compileComponents();
 

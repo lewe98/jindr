@@ -3,10 +3,10 @@ Content-Type: application/json
 
 {
   "user": {
-    "firstName": "Valentin",
-    "lastName": "Laucht",
-    "email": "valentin.laucht@mni.thm.de",
-    "password": "laucht3284"
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@doe.de",
+    "password": "johndoe"
   }
 }
 
@@ -15,8 +15,8 @@ POST http://localhost:8080/login
 Content-Type: application/json
 
 {
-  "email": "valentin.laucht@mni.thm.de",
-  "password": "laucht3284",
+  "email": "test@test.de",
+  "password": "test123",
   "deviceID": "abc1234rst12"
 }
 
@@ -32,5 +32,24 @@ Content-Type: application/json
 {
   "userID": "5ecf8d4fb6f1da394c25d7e0"
 }
+
+###
+
+PUT http://localhost:8080/update-user
+Content-Type: application/json
+
+{
+  "user": {
+    "_id": "5ed27c926c31d33518cc81c2",
+    "firstName": "Hallo",
+    "lastName": "Test",
+    "email": "valle@test.de"
+  },
+  "password": "test123"
+}
+
+###
+GET http://localhost:8080/user/5ed27c926c31d33518cc81c2
+Accept: application/json
 
 ###

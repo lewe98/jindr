@@ -11,10 +11,12 @@ describe('AuthService', () => {
   beforeEach(() => {
     databaseSpy = jasmine.createSpyObj('DatabaseControllerService', {
       getRequest: 'getRequest',
-      postRequest: 'postRequest'
+      postRequest: 'postRequest',
+      putRequest: 'putRequest'
     });
     databaseSpy.getRequest.and.returnValue(Promise.resolve(new User()));
     databaseSpy.postRequest.and.returnValue(Promise.resolve(new User()));
+    databaseSpy.putRequest.and.returnValue(Promise.resolve(new User()));
     TestBed.configureTestingModule({
       imports: [RouterTestingModule, HttpClientTestingModule],
       providers: [{ provide: DatabaseControllerService, useValue: databaseSpy }]
@@ -46,6 +48,21 @@ describe('AuthService', () => {
           User
         );
         expect(result).toBe(true);
+        done();
+      });
+    });
+  });
+
+  describe('Update User', () => {
+    it('should make a put request', (done) => {
+      const user = new User();
+      user.firstName = 'Test';
+      service.updateUser(user).then((result) => {
+        expect(databaseSpy.putRequest).toHaveBeenCalledWith(
+          'update-user',
+          JSON.stringify({ user: { firstName: 'Test' }, password: null }),
+          User
+        );
         done();
       });
     });

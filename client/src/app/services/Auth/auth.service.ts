@@ -94,13 +94,14 @@ export class AuthService {
    * Method to log out a user
    * Sets the user object to null, removes currentUser from storage and navigates to login page
    */
-  async logOut() {
+  async logOut(): Promise<any> {
     this.databaseController
-      .postRequest('logout', JSON.stringify({ dummy: '' }))
+      .postRequest('logout', JSON.stringify({ userID: this.user._id }))
       .then(() => {
         remove('currentUser');
         this.user = null;
         this.router.navigate(['auth/login']);
+        return;
       });
   }
 
@@ -125,6 +126,28 @@ export class AuthService {
           resolve(false);
         }
       );
+    });
+  }
+
+  /**
+   * Method to update a user in the database
+   * @param user the user to be updated (with updated values)
+   * @param password Optional a password, if the password has changed.
+   * NOTE: if a password is passed, ONLY the password will be updated
+   */
+  updateUser(user: User, password?: string): Promise<User> {
+    return new Promise<User>((resolve, reject) => {
+      const data = { user, password: password ? password : null };
+      this.databaseController
+        .putRequest('update-user', JSON.stringify(data), User)
+        .then((res) => {
+          this.user = res.data;
+          set('currentUser', res.data);
+          resolve(res.data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
     });
   }
 }

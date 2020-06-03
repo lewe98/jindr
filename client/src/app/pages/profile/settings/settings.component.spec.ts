@@ -2,10 +2,10 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
 import { SettingsComponent } from './settings.component';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {RouterTestingModule} from '@angular/router/testing';
-import {User} from '../../../../../interfaces/user';
-import {AuthService} from '../../../services/Auth/auth.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { User } from '../../../../../interfaces/user';
+import { AuthService } from '../../../services/Auth/auth.service';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
@@ -19,7 +19,11 @@ describe('SettingsComponent', () => {
     authSpy.getUser.and.returnValue(new User());
     TestBed.configureTestingModule({
       declarations: [SettingsComponent],
-      imports: [IonicModule.forRoot(), HttpClientTestingModule, RouterTestingModule],
+      imports: [
+        IonicModule.forRoot(),
+        HttpClientTestingModule,
+        RouterTestingModule
+      ],
       providers: [{ provide: AuthService, useValue: authSpy }]
     }).compileComponents();
 

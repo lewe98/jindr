@@ -14,13 +14,13 @@
     <ion-list-header>
       <ion-label>ACCOUNT SETTINGS</ion-label>
     </ion-list-header>
-    <ion-item detail="true" lines="none">
+    <ion-item detail="true" lines="none" (click)="presentEmailPrompt()">
       <ion-label>Email</ion-label>
-      <ion-note slot="end" color="primary">{{user.email}}</ion-note>
+      <ion-note slot="end" color="primary" >{{user.email}}</ion-note>
     </ion-item>
-    <ion-item detail="true" lines="none">
+    <ion-item detail="true" lines="none" (click)="presentPasswordPrompt()">
       <ion-label>Password</ion-label>
-      <ion-note slot="end" color="primary"></ion-note>
+      <ion-note slot="end" color="primary" ></ion-note>
     </ion-item>
   </ion-list>
 
