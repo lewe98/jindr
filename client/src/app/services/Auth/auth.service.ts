@@ -4,6 +4,7 @@ import { Plugins } from '@capacitor/core';
 import { DatabaseControllerService } from '../DatabaseController/database-controller.service';
 import { set, remove } from '../storage';
 import { Router } from '@angular/router';
+import {ToastService} from '../Toast/toast.service';
 
 const { Device } = Plugins;
 
@@ -14,7 +15,8 @@ export class AuthService {
   user: User;
   constructor(
     private databaseController: DatabaseControllerService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   /**
@@ -36,6 +38,7 @@ export class AuthService {
    * @param email of the user
    * @param password of the user
    * Creates a user by sending all the information to the server to store the user in the database
+   * status message is reported by ToastService
    * resolves if successfully registered and created a new user
    * rejects if registration failed
    */
@@ -51,10 +54,14 @@ export class AuthService {
       };
       this.databaseController
           .postRequest('register', JSON.stringify(data))
-          .then(() => {
+          .then((res) => {
+            this.toastService.presentToast(res.message);
             resolve();
           })
           .catch((err) => {
+            this.toastService.presentWarningToast(
+                err.errors.email,
+                err.message + ': ');
             reject(err);
           });
     });
