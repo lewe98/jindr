@@ -28,7 +28,7 @@ export class ToastService {
   }
 
   /**
-   * Presents a waring/error toast (yellow) on the top of the screen for 2 sec
+   * Presents a warning/error toast (yellow) on the top of the screen for 2 sec
    * @param message the message to be displayed
    * @param header the header to be displayed (e.g. Error or Warning)
    */

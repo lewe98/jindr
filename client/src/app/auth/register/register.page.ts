@@ -25,7 +25,7 @@ export class RegisterPage implements OnInit {
       { type: 'required', message: 'Password is required.' },
       {
         type: 'minlength',
-        message: 'Password must be at least 5 characters long.'
+        message: 'Password must be at least 6 characters long.'
       }
     ]
   };
@@ -47,7 +47,7 @@ export class RegisterPage implements OnInit {
       ),
       password: new FormControl(
         '',
-        Validators.compose([Validators.minLength(5), Validators.required])
+        Validators.compose([Validators.minLength(6), Validators.required])
       )
     });
   }
