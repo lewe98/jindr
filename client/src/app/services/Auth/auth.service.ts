@@ -36,7 +36,6 @@ export class AuthService {
    * @param email of the user
    * @param password of the user
    * Creates a user by sending all the information to the server to store the user in the database
-   * set(key, value) is a localStorage helper method from services/storage.ts to write data to local storage
    * resolves if successfully registered and created a new user
    * rejects if registration failed
    */
@@ -49,10 +48,8 @@ export class AuthService {
         password
       };
       this.databaseController
-          .postRequest('register', JSON.stringify(data), User)
-          .then((res) => {
-            set('currentUser', res.data);
-            this.user = res.data;
+          .postRequest('register', JSON.stringify({user: data}))
+          .then(() => {
             resolve();
           })
           .catch((err) => {
