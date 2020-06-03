@@ -31,8 +31,13 @@ const userSchema = mongoose.Schema({
     },
     image: {
         type: String,
-        default: './assets/avatar.jpg'
+        default: './assets/images/avatar.jpg'
     }
+});
+
+userSchema.pre('findOneAndUpdate', function(next) {
+    this.options.runValidators = true;
+    next();
 });
 
 userSchema.pre('save', function(next) {
@@ -59,6 +64,7 @@ userSchema.pre('save', function(next) {
 userSchema.methods.validatePassword = async function validatePassword(data) {
     return bcrypt.compare(data, this.password);
 };
+
 
 userSchema.plugin(mongooseUniqueValidator, {message: 'Email already in use.'});
 module.exports = mongoose.model('User', userSchema, 'users');

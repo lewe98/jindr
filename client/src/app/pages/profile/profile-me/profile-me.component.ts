@@ -10,7 +10,7 @@ import { AuthService } from '../../../services/Auth/auth.service';
   styleUrls: ['./profile-me.component.scss']
 })
 export class ProfileMeComponent implements OnInit {
-  user: User;
+  user: User = new User();
   constructor(
     private navCtrl: NavController,
     private modalCtrl: ModalController,
@@ -18,7 +18,7 @@ export class ProfileMeComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.user = this.authService.getUser();
+    Object.assign(this.user, this.authService.getUser());
   }
 
   goToExplore() {
