@@ -239,3 +239,22 @@ describe('Test Get User', () => {
         expect(res.body.message).toBe('User not found');
     });
 });
+
+describe('Send mail', () => {
+    it('should send a mail', async () => {
+        const res = await request(app)
+            .post('/sendmail')
+            .send({
+                user: {email: EMAIL_ONE}
+            })
+        expect(res.statusCode).toEqual(201);
+    });
+    it('should fail if email is invalid', async () => {
+        const res = await request(app)
+            .post('/register')
+            .send({
+                user: {email: 'John.com'}
+            })
+        expect(res.statusCode).toEqual(400)
+    });
+});
