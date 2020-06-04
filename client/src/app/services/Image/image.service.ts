@@ -35,11 +35,13 @@ export class ImageService {
         direction: CameraDirection.Front
       });
       const imageUrl = image.base64String;
-      try {
-        return this.uploadPicture(usage, imageUrl);
-      } catch (err) {
-        return err.message;
-      }
+      return new Promise((resolve, reject) => {
+        this.uploadPicture(usage, imageUrl).then(result => {
+          resolve(result);
+        }).catch(err => {
+          reject(err.message);
+        });
+      });
     } catch (e) {
       console.log(e);
     }

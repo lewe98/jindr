@@ -22,7 +22,6 @@ const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_KEY_ID,
   secretAccessKey: process.env.AWS_ACCESS_KEY
 });
-const BUCKET_NAME = process.env.BUCKET_NAME;
 // eslint-disable-next-line
 let db;
 
@@ -424,7 +423,7 @@ function uploadFile(file, name): Promise<string> {
     fs.writeFile('image.png', base64Image, {encoding: 'base64'}, () => {
       const fileContent = fs.readFileSync('image.png');
       params = {
-        Bucket: BUCKET_NAME,
+        Bucket: 'jindr-images',
         Key: name, // File name you want to save as in S3
         Body: fileContent,
         ContentType: 'image/jpeg',
