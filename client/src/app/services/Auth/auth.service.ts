@@ -162,4 +162,26 @@ export class AuthService {
         });
     });
   }
+
+    async sendmail(email: string): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            const data = {
+                user: {
+                   email
+                }
+            };
+            this.databaseController
+                .postRequest('sendmail', JSON.stringify(data))
+                .then((res) => {
+                    this.toastService.presentToast(res.message);
+                    resolve();
+                })
+                .catch((err) => {
+                    this.toastService.presentWarningToast(
+                        err.errors,
+                        err.message);
+                    reject(err);
+                });
+        });
+    }
 }

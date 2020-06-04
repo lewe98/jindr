@@ -12,6 +12,7 @@ const history = require('connect-history-api-fallback');
 const SALT_WORK_FACTOR = 10;
 const fs = require('fs');
 const AWS = require('aws-sdk');
+const nodemailer = require('nodemailer');
 
 const User = require('./models/user');
 
@@ -398,6 +399,69 @@ app.post('/upload-image', (req: Request, res: Response) => {
     });
   });
 });
+
+/**
+ * @api {post} /sendmail sends mail containing a link to reset password
+ * @apiName SendMail
+ * @apiGroup Mail
+ *
+ * @apiDescription Pass mail in request body.
+ * The configured mail client sends a mail to the users mailing address.
+ *
+ * @apiParam {String} mail User's mailing address
+ *
+ * @apiSuccess {String} message Notification that the mail has been sent successfully.
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 Created
+ *     {
+ *       message: 'Mail has been sent: ' + info.messageId
+ *     }
+ *
+ * @apiError InvalidInput Method fails if user transmits an invalid mailing address.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "message: 'Could not send mail!',
+ *       "errors": an Array of Errors
+ *     }
+ */
+app.post('/sendmail', (req: Request, res: Response) => {
+  const email: string = req.body.user.email;
+  // eslint-disable-next-line
+  const html = `<a href="https://google.com">Click here to reset your password.</a>`;
+
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.web.de',
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'app.jindr@web.de',
+      pass: 'JindrPW1!',
+    }
+  });
+
+  const mailOptions = {
+    from: 'jindr Support app.jindr@web.de',
+    to: email,
+    subject: 'jindr - Reset password',
+    html: html
+  };
+
+  transporter.sendMail(mailOptions, (err, info) => {
+    if (err) {
+      res.status(400).send({
+        message: 'Could not send mail!',
+        errors: err.toString()
+      });
+    } else {
+      res.status(201).send({
+        message: 'Mail has been sent: ' + info.messageId
+      });
+    }
+  });
+});
+
 /**
  * Prepares user to be sent to client
  * Removes password and deviceID

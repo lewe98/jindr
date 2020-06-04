@@ -4,6 +4,7 @@ import { AuthService } from '../../services/Auth/auth.service';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
 import { ToastService } from '../../services/Toast/toast.service';
+import { ResetPwService } from '../../services/Reset-PW/reset-pw.service';
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
@@ -30,7 +31,8 @@ export class LoginPage implements OnInit {
     private authService: AuthService,
     private router: Router,
     private platform: Platform,
-    private toastService: ToastService
+    private toastService: ToastService,
+    public resetPwService: ResetPwService
   ) {
     this.loginForm = new FormGroup({
       email: new FormControl(

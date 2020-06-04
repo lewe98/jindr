@@ -1,12 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import {Component} from '@angular/core';
 
 @Component({
-  selector: 'app-forgot-pw',
-  templateUrl: './forgot-pw.component.html',
-  styleUrls: ['./forgot-pw.component.scss']
+    selector: 'app-forgot-pw',
+    templateUrl: './forgot-pw.component.html',
+    styleUrls: ['./forgot-pw.component.scss']
 })
-export class ForgotPwComponent implements OnInit {
-  constructor() {}
-
-  ngOnInit() {}
+export class ForgotPwComponent {
+    constructor() {
+    }
 }
