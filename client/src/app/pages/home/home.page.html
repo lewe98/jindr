@@ -3,7 +3,30 @@
     <ion-title>home</ion-title>
   </ion-toolbar>
 </ion-header>
-
+  <svg id="home_map" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="437" height="436" viewBox="0 0 437 436">
+    <defs>
+      <filter id="Pfad_1" x="0" y="0" width="437" height="436">
+        <feOffset dy="3" input="SourceAlpha"/>
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feFlood flood-opacity="0.161"/>
+        <feComposite operator="in" in2="blur"/>
+        <feComposite in="SourceGraphic"/>
+      </filter>
+      <pattern id="pattern" width="1" height="1" viewBox="70.74 0 340.174 340.174">
+        <image preserveAspectRatio="xMidYMid slice" width="488.134" height="393" xlink:href="../../../assets/images/background-prism.svg"/>
+      </pattern>
+    </defs>
+    <g id="Gruppe_43" data-name="Gruppe 43" transform="translate(31 -104)">
+      <g class="cls-5" transform="matrix(1, 0, 0, 1, -31, 104)">
+        <path id="Pfad_1-2" data-name="Pfad 1" class="cls-2" d="M209.5,0C325.2,0,419,93.572,419,209S325.2,418,209.5,418,0,324.428,0,209,93.8,0,209.5,0Z" transform="translate(9 6)"/>
+      </g>
+      <circle id="circle" data-name="circle" class="cls-3" cx="196.5" cy="196.5" r="196.5" transform="translate(-9 123)"/>
+      <path id="Schnittmenge_2" data-name="Schnittmenge 2" class="cls-2" d="M-2013.5,402c-47.185,0-90.944-16.259-126.968-44h253.936C-1922.556,385.741-1966.315,402-2013.5,402Z" transform="translate(2201 123)"/>
+      <path id="Schnittmenge_3" data-name="Schnittmenge 3" class="cls-2" d="M-2012.5,403c-47.557,0-91.66-16.628-127.968-45h255.936C-1920.84,386.371-1964.943,403-2012.5,403Z" transform="translate(-1825 516) rotate(180)"/>
+      <text id="_12_km" data-name="􀊫 12 km" class="cls-4" transform="translate(180 505)"><tspan x="-34.407" y="0">􀊫 {{mapRadius}} km</tspan></text>
+      <text id="_15_Jobs_" data-name="􀎜 15 Jobs " class="cls-4" transform="translate(188 147)"><tspan x="-45.209" y="0">􀎜 {{jobs}} Jobs </tspan></text>
+    </g>
+  </svg>
 <ion-content>
-<ion-button [routerLink]="['/pages/profile']">Profile</ion-button>
+<button class="button-home" [routerLink]="['/pages/profile']">Profile</button>
 </ion-content>

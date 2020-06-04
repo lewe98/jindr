@@ -6,6 +6,8 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./home.page.scss']
 })
 export class HomePage implements OnInit {
+  mapRadius = 11
+  jobs = 14
   constructor() {}
 
   ngOnInit() {}
