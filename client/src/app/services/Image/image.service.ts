@@ -39,7 +39,6 @@ export class ImageService {
         this.uploadPicture(usage, imageUrl).then(result => {
           resolve(result);
         }).catch(err => {
-          console.log(err);
           reject(err.message);
         });
       });
