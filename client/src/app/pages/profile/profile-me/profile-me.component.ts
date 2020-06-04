@@ -6,6 +6,7 @@ import { AuthService } from '../../../services/Auth/auth.service';
 import { ImageService } from '../../../services/Image/image.service';
 import { ToastService } from '../../../services/Toast/toast.service';
 import { ProfileViewComponent } from '../profile-view/profile-view.component';
+import { LocationService } from '../../../services/Location/location.service';
 
 @Component({
   selector: 'app-profile-me',
@@ -14,16 +15,30 @@ import { ProfileViewComponent } from '../profile-view/profile-view.component';
 })
 export class ProfileMeComponent implements OnInit {
   user: User = new User();
+  location: string;
   constructor(
     private navCtrl: NavController,
     private modalCtrl: ModalController,
     private authService: AuthService,
     public imageService: ImageService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private locationService: LocationService
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
+    this.getLocation();
+  }
+
+  getLocation() {
+    this.locationService
+      .getLocationName()
+      .then((loc) => {
+        this.location = loc;
+      })
+      .catch((err) => {
+        this.toastService.presentWarningToast(err, 'Error');
+      });
   }
 
   async viewProfile() {

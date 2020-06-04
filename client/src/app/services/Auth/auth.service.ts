@@ -4,7 +4,7 @@ import { Plugins } from '@capacitor/core';
 import { DatabaseControllerService } from '../DatabaseController/database-controller.service';
 import { set, remove } from '../storage';
 import { Router } from '@angular/router';
-import {ToastService} from '../Toast/toast.service';
+import { ToastService } from '../Toast/toast.service';
 
 const { Device } = Plugins;
 
@@ -58,17 +58,18 @@ export class AuthService {
         }
       };
       this.databaseController
-          .postRequest('register', JSON.stringify(data))
-          .then((res) => {
-            this.toastService.presentToast(res.message);
-            resolve();
-          })
-          .catch((err) => {
-            this.toastService.presentWarningToast(
-                err.errors.email,
-                err.message + ': ');
-            reject(err);
-          });
+        .postRequest('register', JSON.stringify(data))
+        .then((res) => {
+          this.toastService.presentToast(res.message);
+          resolve();
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(
+            err.errors.email,
+            err.message + ': '
+          );
+          reject(err);
+        });
     });
   }
 
