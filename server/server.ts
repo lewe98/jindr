@@ -387,17 +387,19 @@ app.get('/user/:userID', (req: Request, res: Response) => {
 app.post('/upload-image', (req: Request, res: Response) => {
   const name = req.body.name;
   const file = req.body.file;
-  uploadFile(file, name).then((result) => {
-    res.status(201).send({
-      message: 'Image saved',
-      data: result
+  uploadFile(file, name)
+    .then((result) => {
+      res.status(201).send({
+        message: 'Image saved',
+        data: result
+      });
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: 'Upload failed',
+        errors: err
+      });
     });
-  }).catch(err => {
-    res.status(500).send({
-      message: 'Upload failed',
-      errors: err
-    });
-  });
 });
 
 /**
@@ -437,7 +439,7 @@ app.post('/sendmail', (req: Request, res: Response) => {
     secure: false,
     auth: {
       user: 'app.jindr@web.de',
-      pass: 'JindrPW1!',
+      pass: 'JindrPW1!'
     }
   });
 
@@ -484,7 +486,7 @@ function uploadFile(file, name): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     let params;
     const base64Image = file.split(';base64,').pop();
-    fs.writeFile('image.png', base64Image, {encoding: 'base64'}, () => {
+    fs.writeFile('image.png', base64Image, { encoding: 'base64' }, () => {
       const fileContent = fs.readFileSync('image.png');
       params = {
         Bucket: 'jindr-images',
@@ -493,7 +495,7 @@ function uploadFile(file, name): Promise<string> {
         ContentType: 'image/jpeg',
         ACL: 'public-read'
       };
-      s3.upload(params,  (error, data) => {
+      s3.upload(params, (error, data) => {
         if (error) {
           reject(error);
         } else {
