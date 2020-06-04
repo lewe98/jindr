@@ -102,17 +102,24 @@ export class SettingsComponent implements OnInit {
         {
           text: 'Save',
           handler: (data) => {
-            this.authService
-              .updateUser(this.user, data.password)
-              .then(() => {
-                this.toastService.presentToast('Password changed.');
-              })
-              .catch((err) => {
-                this.toastService.presentWarningToast(
-                  err.errors.password,
+            if (data.password.length >= 6) {
+              this.authService
+                  .updateUser(this.user, data.password)
+                  .then(() => {
+                    this.toastService.presentToast('Password changed.');
+                  })
+                  .catch((err) => {
+                    this.toastService.presentWarningToast(
+                        err.errors.password,
+                        'Error!'
+                    );
+                  });
+            } else {
+              this.toastService.presentWarningToast(
+                  'Password needs to contain at least 6 characters!',
                   'Error!'
-                );
-              });
+              );
+            }
           }
         }
       ]
