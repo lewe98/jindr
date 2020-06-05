@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController, NavParams } from '@ionic/angular';
 import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
 import { ToastService } from '../../../services/Toast/toast.service';
@@ -12,16 +12,19 @@ import { ToastService } from '../../../services/Toast/toast.service';
 export class SettingsComponent implements OnInit {
   user: User = new User();
   distance: number;
+  location: string;
   allowNotifications: boolean;
   constructor(
     public modalCtrl: ModalController,
     private authService: AuthService,
     private alertCtrl: AlertController,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private navParams: NavParams
   ) {}
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
+    this.location = this.navParams.get('location');
     this.distance = this.authService.getUser().distance;
     this.allowNotifications = this.authService.getUser().allowNotifications;
   }
@@ -104,20 +107,20 @@ export class SettingsComponent implements OnInit {
           handler: (data) => {
             if (data.password.length >= 6) {
               this.authService
-                  .updateUser(this.user, data.password)
-                  .then(() => {
-                    this.toastService.presentToast('Password changed.');
-                  })
-                  .catch((err) => {
-                    this.toastService.presentWarningToast(
-                        err.errors.password,
-                        'Error!'
-                    );
-                  });
+                .updateUser(this.user, data.password)
+                .then(() => {
+                  this.toastService.presentToast('Password changed.');
+                })
+                .catch((err) => {
+                  this.toastService.presentWarningToast(
+                    err.errors.password,
+                    'Error!'
+                  );
+                });
             } else {
               this.toastService.presentWarningToast(
-                  'Password needs to contain at least 6 characters!',
-                  'Error!'
+                'Password needs to contain at least 6 characters!',
+                'Error!'
               );
             }
           }

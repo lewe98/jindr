@@ -27,18 +27,7 @@ export class ProfileMeComponent implements OnInit {
 
   async ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
-    this.getLocation();
-  }
-
-  getLocation() {
-    this.locationService
-      .getLocationName()
-      .then((loc) => {
-        this.location = loc;
-      })
-      .catch((err) => {
-        this.toastService.presentWarningToast(err, 'Error');
-      });
+    this.location = this.locationService.location;
   }
 
   async viewProfile() {
@@ -50,7 +39,10 @@ export class ProfileMeComponent implements OnInit {
 
   async viewSettings() {
     const modal = await this.modalCtrl.create({
-      component: SettingsComponent
+      component: SettingsComponent,
+      componentProps: {
+        location: this.location
+      }
     });
     return await modal.present();
   }
