@@ -18,10 +18,13 @@ const User = require('./models/user');
 const MONGODB_URI: string = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.MONGODB_NAME;
 const ORIGIN_URL = process.env.ORIGIN_URL;
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_KEY_ID,
-  secretAccessKey: process.env.AWS_ACCESS_KEY
+const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
+const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
+AWS.config.update({
+  accessKeyId: AWS_ACCESS_KEY_ID,
+  secretAccessKey: AWS_SECRET_ACCESS_KEY,
 });
+const s3 = new AWS.S3();
 // eslint-disable-next-line
 let db;
 

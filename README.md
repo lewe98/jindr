@@ -43,6 +43,7 @@ Tool | Usage
 [GitLab](https://git.thm.de/) | Version Control
 [Heroku](https://heroku.com/) | Hosting Platform
 [Jest](https://jestjs.io/) | Server side testing
+[MapBox](https://www.mapbox.com/) | Map API
 
 
 ## Prerequisites
@@ -114,3 +115,4 @@ and name it after the functionality you are going to implement.
 7. Fix possible problems
 8. Commit and push and wait for pipelines to finish
 9. Once everything is tested and works, make merge request to ``staging``
+
