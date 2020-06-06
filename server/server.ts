@@ -1,5 +1,7 @@
+import {Coords, Tile} from "./models/tile";
+
 require('dotenv').config();
-import { Request, Response } from 'express';
+import {Request, Response} from 'express';
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -70,6 +72,7 @@ async function dbConnect() {
     db = mongoose.connection;
     // eslint-disable-next-line
     console.log('Database is connected ...\n');
+    rasterizeMap(50);
   } catch (err) {
     // eslint-disable-next-line
     console.error('Error connecting to database ...\n' + err);
@@ -443,6 +446,93 @@ function uploadFile(file, name): Promise<string> {
     });
   });
 }
+
+/**
+ * Method to find the tile of the map, the user is currently in
+ * @param tiles an array of all tiles
+ * @param coords the users current coordinates
+ * @return returns the index of the tile, returns null if user is not in rasterized area
+ */
+function findTile(tiles: Tile[], coords: Coords): number {
+  tiles.forEach(tile => {
+    if (coords.lat >= tile.southWest.lat && coords.lat <= tile.northEast.lat) {
+      if (coords.lng >= tile.southWest.lng && coords.lng <= tile.northEast.lng) {
+        return tile.index;
+      }
+    }
+  });
+  return null;
+}
+
+/**
+ * Method to rasterize the the map into equal rectangles
+ * @param radius the approx. size of each tile. This value should equal the maximum search radius specified in the client
+ * southWest and northEast are coordinates of points that build a rectangle around the required area (for now only germany)
+ * The rectangle must contain all areas of germany, so by the shape of germany, they will lay outside
+ * longitudeDistance is the distance in KM between longitudes. Germany is at around 50 degree and thus the distance is around 71KM
+ * xTiles and yTiles is the calculated number of equal tiles on x and y axis the area can be divided in by the specified radius
+ * tileWidth and tileHeight is the actual size of each tile. This will be roughly the radius.
+ * The function then rasterize the specified area, starting at the southWest coordinates and create a Tile for each rectangle
+ * Each Tile has an index (southWest = 0), southWest and northEast coordinates, and an array of indexes of neighboring tiles
+ * @return an array of Tiles
+ */
+function rasterizeMap(radius: number): Tile[] {
+  const southWest = {lat: 47.344777, lng: 5.888672};
+  const northEast = {lat: 54.41893, lng: 14.888671};
+  const longitudeDistance = 71;
+  const xTiles = Math.round(((northEast.lng - southWest.lng) * longitudeDistance) / radius);
+  const yTiles = Math.round(((northEast.lat - southWest.lat) * 111) / radius);
+
+  const tileWidth = (northEast.lng - southWest.lng) / xTiles;
+  const tileHeight = (northEast.lat - southWest.lat) / yTiles;
+  let arr: Tile[] = [];
+  let i = 0;
+  for (let y = 0; y < yTiles; y++) {
+    for (let x = 0; x < xTiles; x++) {
+      let tile = new Tile();
+      tile.index = i;
+      tile.northEast = {lat: southWest.lat + (tileHeight * (y + 1)), lng: southWest.lng + (tileWidth * (x + 1))};
+      tile.southWest = {lat: southWest.lat + (tileHeight * y), lng: southWest.lng + (tileWidth * x)};
+      tile.neighbours = getBoundingAreas(i, xTiles, yTiles);
+      arr.push(tile);
+      i++;
+    }
+  }
+  return arr;
+}
+
+/**
+ * Method to return the indexes of all neighboring tiles
+ * @param pos the index of the current tile
+ * @param xTiles the number of tiles on the x axis
+ * @param yTiles the number of tiles on the y axis
+ * @return an array of indexes
+ */
+function getBoundingAreas(pos, xTiles, yTiles): number[] {
+  const bounds = [];
+  let hasLeftRow = false;
+  let hasRightRow = false;
+  if (pos > 0 && !(pos % xTiles === 0)) {
+    hasLeftRow = true;
+    bounds.push(pos - 1);
+  }
+  if (!((pos + 1) % xTiles === 0)) {
+    hasRightRow = true;
+    bounds.push(pos + 1);
+  }
+  if (pos - xTiles >= 0) { // hasTopRow?
+    bounds.push(pos - xTiles);
+    if (hasLeftRow) bounds.push(pos - xTiles - 1);
+    if (hasRightRow) bounds.push(pos - xTiles + 1);
+  }
+  if (pos + xTiles <= xTiles * yTiles) { // hasBottomRow?
+    bounds.push(pos + xTiles);
+    if (hasLeftRow) bounds.push(pos + xTiles - 1);
+    if (hasRightRow) bounds.push(pos + xTiles + 1);
+  }
+ return bounds;
+}
+
 /**
  * Exports for testing
  * add every method like this: {app: app, method1: method1, method2: method2}
