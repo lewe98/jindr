@@ -101,7 +101,7 @@ export class LocationService implements OnDestroy {
 
   /**
    * calculates the distance between two coordinates
-   * This Calculation is not very accurate, but enough for this use case
+   * This Calculation is not perfectly accurate, but enough for this use case
    * @param lat1 origin latitude
    * @param lon1 origin longitude
    * @param lat2 destiantion latitue

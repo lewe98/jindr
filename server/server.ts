@@ -11,7 +11,6 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const sslRedirect = require('heroku-ssl-redirect');
 const history = require('connect-history-api-fallback');
-const SALT_WORK_FACTOR = 10;
 const fs = require('fs');
 const AWS = require('aws-sdk');
 
@@ -45,6 +44,14 @@ app.use(
 );
 
 /**
+ * VARIABLES
+ */
+let germanTiles: Tile[] = [];
+const southWest = {lat: 47.344777, lng: 5.888672}; // coordinates for southWestern point of a rectangle containing germany
+const northEast = {lat: 54.41893, lng: 14.888671}; // coordinates for northEastern point of a rectangle containing germany
+const SALT_WORK_FACTOR = 10;
+const maxRadius = 50; // Max search radius users can set in the app
+/**
  * Only starts server if Environment is not test,
  * This is required for Jest Memory Database Tests
  */
@@ -56,6 +63,7 @@ if (process.env.NODE_ENV.trim() !== 'test') {
       // eslint-disable-next-line
       console.log('Server connected at: ' + app.get('port'));
       await dbConnect();
+      germanTiles = rasterizeMap(maxRadius, southWest, northEast);
     })();
   });
 }
@@ -72,7 +80,6 @@ async function dbConnect() {
     db = mongoose.connection;
     // eslint-disable-next-line
     console.log('Database is connected ...\n');
-    rasterizeMap(50);
   } catch (err) {
     // eslint-disable-next-line
     console.error('Error connecting to database ...\n' + err);
@@ -404,6 +411,18 @@ app.post('/upload-image', (req: Request, res: Response) => {
     });
   });
 });
+
+app.post('/create-job', (req: Request, res: Response) => {
+  const coords = req.body.coords;
+  const tile = findTile(germanTiles, coords);
+  if (!tile) {
+    res.status(400).send({
+      message: 'Your country is currently not supported.'
+    });
+  }
+
+  // TODO add rest of the route
+});
 /**
  * Prepares user to be sent to client
  * Removes password and deviceID
@@ -467,6 +486,9 @@ function findTile(tiles: Tile[], coords: Coords): number {
 /**
  * Method to rasterize the the map into equal rectangles
  * @param radius the approx. size of each tile. This value should equal the maximum search radius specified in the client
+ * @param southWest coordinates of the southWestern point of the area to rasterize
+ * @param northEast coordinates of the northEastern point of the area to rasterize
+ * @return an array of Tiles
  * southWest and northEast are coordinates of points that build a rectangle around the required area (for now only germany)
  * The rectangle must contain all areas of germany, so by the shape of germany, they will lay outside
  * longitudeDistance is the distance in KM between longitudes. Germany is at around 50 degree and thus the distance is around 71KM
@@ -474,18 +496,14 @@ function findTile(tiles: Tile[], coords: Coords): number {
  * tileWidth and tileHeight is the actual size of each tile. This will be roughly the radius.
  * The function then rasterize the specified area, starting at the southWest coordinates and create a Tile for each rectangle
  * Each Tile has an index (southWest = 0), southWest and northEast coordinates, and an array of indexes of neighboring tiles
- * @return an array of Tiles
  */
-function rasterizeMap(radius: number): Tile[] {
-  const southWest = {lat: 47.344777, lng: 5.888672};
-  const northEast = {lat: 54.41893, lng: 14.888671};
+function rasterizeMap(radius: number, southWest: Coords, northEast: Coords): Tile[] {
   const longitudeDistance = 71;
   const xTiles = Math.round(((northEast.lng - southWest.lng) * longitudeDistance) / radius);
   const yTiles = Math.round(((northEast.lat - southWest.lat) * 111) / radius);
-
+  const array: Tile[] = [];
   const tileWidth = (northEast.lng - southWest.lng) / xTiles;
   const tileHeight = (northEast.lat - southWest.lat) / yTiles;
-  let arr: Tile[] = [];
   let i = 0;
   for (let y = 0; y < yTiles; y++) {
     for (let x = 0; x < xTiles; x++) {
@@ -494,11 +512,11 @@ function rasterizeMap(radius: number): Tile[] {
       tile.northEast = {lat: southWest.lat + (tileHeight * (y + 1)), lng: southWest.lng + (tileWidth * (x + 1))};
       tile.southWest = {lat: southWest.lat + (tileHeight * y), lng: southWest.lng + (tileWidth * x)};
       tile.neighbours = getBoundingAreas(i, xTiles, yTiles);
-      arr.push(tile);
+      array.push(tile);
       i++;
     }
   }
-  return arr;
+  return array;
 }
 
 /**
@@ -520,12 +538,12 @@ function getBoundingAreas(pos, xTiles, yTiles): number[] {
     hasRightRow = true;
     bounds.push(pos + 1);
   }
-  if (pos - xTiles >= 0) { // hasTopRow?
+  if (pos - xTiles >= 0) { // hasBottomRow?
     bounds.push(pos - xTiles);
     if (hasLeftRow) bounds.push(pos - xTiles - 1);
     if (hasRightRow) bounds.push(pos - xTiles + 1);
   }
-  if (pos + xTiles <= xTiles * yTiles) { // hasBottomRow?
+  if (pos + xTiles <= (xTiles * yTiles) - 1) { // hasTopRow?
     bounds.push(pos + xTiles);
     if (hasLeftRow) bounds.push(pos + xTiles - 1);
     if (hasRightRow) bounds.push(pos + xTiles + 1);
@@ -534,9 +552,38 @@ function getBoundingAreas(pos, xTiles, yTiles): number[] {
 }
 
 /**
+ * calculates the distance between two coordinates with haversine formula
+ * This Calculation is not perfectly accurate, but enough for this use case
+ * @param lat1 origin latitude
+ * @param lon1 origin longitude
+ * @param lat2 destiantion latitue
+ * @param lon2 destination longitude
+ * @return calculated distance
+ */
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2): number {
+  const R = 6371; // Radius of the earth in km
+  const dLat = this.deg2rad(lat2 - lat1);
+  const dLon = this.deg2rad(lon2 - lon1);
+  const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.deg2rad(lat1)) *
+      Math.cos(this.deg2rad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in km
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI / 180);
+}
+
+/**
  * Exports for testing
  * add every method like this: {app: app, method1: method1, method2: method2}
  * routes don't need to be added
  *
  */
-module.exports = { app: app, prepareUser: prepareUser };
+module.exports = { app: app, prepareUser: prepareUser,
+  rasterizeMap: rasterizeMap, getDistanceFromLatLonInKm: getDistanceFromLatLonInKm,
+  getBoundingAreas: getBoundingAreas, findTile: findTile };
