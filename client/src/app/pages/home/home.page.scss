@@ -1,43 +1,55 @@
-#home_map {
-  position: relative;
-  top: 225px;
+$mapWidthAndHeight: 380px;
+$topSpace: 220px;
+
+ion-content {
+  --background: url(../../../assets/images/Background1024.svg) no-repeat center/cover fixed;
+}
+
+#map_overlay {
+  pointer-events: none;
+  position: absolute;
+  width: $mapWidthAndHeight;
+  height: $mapWidthAndHeight;
+  top: $topSpace;
   left: 50%;
   margin-right: -50%;
   transform: translate(-50%, -50%);
 }
-.button-home {
-  width: 100px;
-  height: 100px;
-  border: 5px solid #7AE3D7;
-  outline: 6px solid white;
 
-  background-color: white;
-  border-radius: 50%;
+#map {
+  position: relative;
+  display: block;
+  clip-path: circle($mapWidthAndHeight/2-4 at center);
+  width: $mapWidthAndHeight;
+  height: $mapWidthAndHeight;
+  top: $topSpace +1px;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
 }
 
 .cls-1 {
-  // Background
-  font-size: 23px;
+  fill: #ffffff;
+  border: 2px solid black;
+  box-shadow: black;
+  // box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-.cls-1, .cls-4 {
+.cls-2 {
+  fill: var(--color-jindr-basic);
+  font-size: 17px;
   font-family: SFProText-Regular, SF Pro Text;
   letter-spacing: -0.024em;
 }
 
-.cls-2 {
-  fill: #fff;
+.me-button-group, app-jindr-button {
+  padding-top: 30px;
+  width: ($mapWidthAndHeight - $mapWidthAndHeight*0.2);
+  margin-left: 50%;
+  transform: translate(-50%, 0%);
 }
 
-.cls-3 {
-  fill: url(#pattern);
-}
-
-.cls-4 {
-  fill: #7ae3d7;
-  font-size: 17px;
-}
-
-.cls-5 {
-  filter: url(#Pfad_1);
+app-jindr-button {
+  display: block;
+  cursor: pointer;
 }
