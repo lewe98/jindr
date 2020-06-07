@@ -1,34 +1,37 @@
-import { Component, OnInit } from '@angular/core';
-import {SettingsComponent} from '../profile/settings/settings.component';
-import {ModalController, NavController} from '@ionic/angular';
-import {LocationService} from '../../services/Location/location.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ModalController, NavController } from '@ionic/angular';
+import { AuthService } from '../../services/Auth/auth.service';
+import { User } from '../../../../interfaces/user';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss']
 })
-export class HomePage implements OnInit {
-  mapRadius = 11;
+export class HomePage implements OnInit, OnDestroy {
+  user: User = new User();
+  sub: Subscription[] = [];
   jobs = 14;
-  location: string;
   constructor(
-      private navCtrl: NavController,
-      private modalCtrl: ModalController,
-      private locationService: LocationService
+    private navCtrl: NavController,
+    private modalCtrl: ModalController,
+    private authService: AuthService
   ) {}
 
   async ngOnInit() {
-    this.location = this.locationService.location;
+    this.sub.push(
+      this.authService.user$.subscribe((user) => {
+        this.user = user;
+      })
+    );
   }
 
-  async viewSettings() {
-    const modal = await this.modalCtrl.create({
-      component: SettingsComponent,
-      componentProps: {
-        location: this.location
+  ngOnDestroy(): void {
+    this.sub.forEach((s) => {
+      if (s) {
+        s.unsubscribe();
       }
     });
-    return await modal.present();
   }
 }

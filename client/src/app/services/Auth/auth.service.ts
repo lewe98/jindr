@@ -5,6 +5,7 @@ import { DatabaseControllerService } from '../DatabaseController/database-contro
 import { set, remove } from '../storage';
 import { Router } from '@angular/router';
 import { ToastService } from '../Toast/toast.service';
+import { BehaviorSubject } from 'rxjs';
 
 const { Device } = Plugins;
 
@@ -13,6 +14,8 @@ const { Device } = Plugins;
 })
 export class AuthService {
   user: User;
+  private userSubject = new BehaviorSubject<User>(null);
+  user$ = this.userSubject.asObservable();
   constructor(
     private databaseController: DatabaseControllerService,
     private router: Router,
@@ -94,6 +97,7 @@ export class AuthService {
         .postRequest('login', JSON.stringify(data), User)
         .then((res) => {
           set('currentUser', res.data);
+          this.userSubject.next(res.data);
           this.user = res.data;
           resolve();
         })
@@ -130,6 +134,7 @@ export class AuthService {
         (res) => {
           set('currentUser', res.data);
           this.user = res.data;
+          this.userSubject.next(res.data);
           resolve(true);
         },
         () => {
@@ -155,6 +160,7 @@ export class AuthService {
         .putRequest('update-user', JSON.stringify(data), User)
         .then((res) => {
           this.user = res.data;
+          this.userSubject.next(res.data);
           set('currentUser', res.data);
           resolve(res.data);
         })
