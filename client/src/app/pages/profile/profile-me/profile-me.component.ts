@@ -6,6 +6,7 @@ import { AuthService } from '../../../services/Auth/auth.service';
 import { ImageService } from '../../../services/Image/image.service';
 import { ToastService } from '../../../services/Toast/toast.service';
 import { ProfileViewComponent } from '../profile-view/profile-view.component';
+import { LocationService } from '../../../services/Location/location.service';
 
 @Component({
   selector: 'app-profile-me',
@@ -14,16 +15,19 @@ import { ProfileViewComponent } from '../profile-view/profile-view.component';
 })
 export class ProfileMeComponent implements OnInit {
   user: User = new User();
+  location: string;
   constructor(
     private navCtrl: NavController,
     private modalCtrl: ModalController,
     private authService: AuthService,
     public imageService: ImageService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private locationService: LocationService
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
+    this.location = this.locationService.location;
   }
 
   async viewProfile() {
@@ -35,14 +39,17 @@ export class ProfileMeComponent implements OnInit {
 
   async viewSettings() {
     const modal = await this.modalCtrl.create({
-      component: SettingsComponent
+      component: SettingsComponent,
+      componentProps: {
+        location: this.location
+      }
     });
     return await modal.present();
   }
 
   async editPicture() {
     this.imageService
-      .takePicture('profilePicture')
+      .getImage('profilePicture')
       .then(async (image) => {
         await this.toastService.presentLoading('Save...');
         this.user.image = image;

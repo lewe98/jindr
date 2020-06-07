@@ -18,10 +18,13 @@ const User = require('./models/user');
 const MONGODB_URI: string = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.MONGODB_NAME;
 const ORIGIN_URL = process.env.ORIGIN_URL;
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_KEY_ID,
-  secretAccessKey: process.env.AWS_ACCESS_KEY
+const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
+const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
+AWS.config.update({
+  accessKeyId: AWS_ACCESS_KEY_ID,
+  secretAccessKey: AWS_SECRET_ACCESS_KEY,
 });
+const s3 = new AWS.S3();
 // eslint-disable-next-line
 let db;
 
@@ -218,7 +221,7 @@ app.get('/login/:deviceID', async (req: Request, res: Response) => {
         if (user) {
           res.status(200).send({
             message: 'User still logged in',
-            data: user
+            data: prepareUser(user)
           });
         } else {
           res.status(401).send({
@@ -310,9 +313,10 @@ app.put('/update-user', async (req: Request, res: Response) => {
       }
     } else {
       try {
-        doc = await User.findOneAndUpdate({ _id: req.body.user._id }, data, {
+        doc = await User.findOneAndUpdate({ _id: req.body.user._id }, {$set: data}, {
           new: true,
-          context: 'query'
+          context: 'query',
+          setDefaultsOnInsert: true
         });
         res.status(200).send({
           message: 'Updated User',
