@@ -1,5 +1,11 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import * as mapboxgl from 'mapbox-gl';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild
+} from '@angular/core';
 import { LocationService } from '../../services/Location/location.service';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/Auth/auth.service';
@@ -10,37 +16,64 @@ import { User } from '../../../../interfaces/user';
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss']
 })
-export class MapComponent implements OnInit, OnDestroy {
-  map: mapboxgl.Map;
-  marker: mapboxgl.Marker;
-  style = 'mapbox://styles/mapbox/light-v10';
-  lat = 37.75;
-  lng = -122.41;
-  user: User;
+export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('map', { static: false }) mapElement: ElementRef;
+  map;
+  mapOptions: google.maps.MapOptions = {
+    zoom: 13,
+    scrollwheel: false,
+    mapTypeControl: false,
+    scaleControl: false,
+    draggable: false,
+    center: { lat: 50.94843174, lng: 10.315375 },
+    disableDefaultUI: true,
+    styles: [
+      {
+        featureType: 'poi',
+        elementType: 'labels',
+        stylers: [{ visibility: 'off' }]
+      }
+    ]
+  };
+
+  user: User = new User();
   subscription: Subscription[] = [];
   constructor(
     private locationService: LocationService,
     private authService: AuthService
   ) {}
 
-  ngOnInit() {
-    this.user = this.authService.user;
-    this.map = new mapboxgl.Map({
-      container: 'map',
-      style: this.style,
-      zoom: 13,
-      center: [this.lng, this.lat]
-    });
+  async ngOnInit() {
+    this.subscription.push(
+      this.authService.user$.subscribe((user) => {
+        this.user = user;
+      })
+    );
+  }
 
+  async ngAfterViewInit() {
+    this.map = new google.maps.Map(
+      this.mapElement.nativeElement,
+      this.mapOptions
+    );
     this.initPosition();
+    this.locationService.$mapReady.subscribe((isReady) => {
+      if (isReady) {
+        this.locationService.getCurrentPosition();
+      }
+    });
   }
 
   initPosition() {
     this.subscription.push(
       this.locationService.coordsSubscription.subscribe((sub) => {
-        this.map.setZoom(10);
-        this.map.setCenter([sub.lng, sub.lat]);
-        this.setMarker(sub.lng, sub.lat);
+        if (sub.lat && sub.lng) {
+          this.map.setZoom(13);
+          const currentLocation = new google.maps.LatLng(sub.lat, sub.lng);
+          this.map.setCenter(currentLocation);
+        } else {
+          this.map.setZoom(8);
+        }
       })
     );
   }
@@ -51,23 +84,5 @@ export class MapComponent implements OnInit, OnDestroy {
         sub.unsubscribe();
       }
     });
-  }
-
-  setMarker(lng, lat) {
-    const markerStyle = `
-    background-image: url(${this.user.image});
-    background-size: cover;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    cursor: pointer;
-  `;
-    const el = document.createElement('div');
-    el.className = 'marker';
-    el.setAttribute('style', `${markerStyle}`);
-    if (this.marker) {
-      this.marker.remove();
-    }
-    this.marker = new mapboxgl.Marker(el).setLngLat([lng, lat]).addTo(this.map);
   }
 }

@@ -29,7 +29,7 @@ const userSchema = mongoose.Schema({
     },
     distance: {
         type: Number,
-        default: 5
+        default: 10
     },
     image: {
         type: String,
