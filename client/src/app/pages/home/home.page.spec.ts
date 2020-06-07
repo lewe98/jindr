@@ -19,10 +19,14 @@ describe('HomePage', () => {
     TestBed.configureTestingModule({
       declarations: [HomePage],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      imports: [IonicModule.forRoot(), RouterTestingModule, HttpClientTestingModule],
+      imports: [
+        IonicModule.forRoot(),
+        RouterTestingModule,
+        HttpClientTestingModule
+      ],
       providers: [
-        {provide: AuthService},
-        {provide: LocationService, useValue: locationStub}
+        { provide: AuthService },
+        { provide: LocationService, useValue: locationStub }
       ]
     }).compileComponents();
 

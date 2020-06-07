@@ -49,7 +49,7 @@ export class ProfileMeComponent implements OnInit {
 
   async editPicture() {
     this.imageService
-      .takePicture('profilePicture')
+      .getImage('profilePicture')
       .then(async (image) => {
         await this.toastService.presentLoading('Save...');
         this.user.image = image;

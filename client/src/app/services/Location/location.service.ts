@@ -1,9 +1,8 @@
-import { Injectable, NgZone, OnDestroy } from '@angular/core';
-import * as mapboxgl from 'mapbox-gl';
-import { environment } from '../../../environments/environment';
+import { EventEmitter, Injectable, NgZone, OnDestroy } from '@angular/core';
 import { Plugins } from '@capacitor/core';
 import { BehaviorSubject } from 'rxjs';
-import { HttpBackend, HttpClient } from '@angular/common/http';
+import { ToastService } from '../Toast/toast.service';
+import { LoadingController } from '@ionic/angular';
 
 const { Geolocation } = Plugins;
 @Injectable({
@@ -11,11 +10,12 @@ const { Geolocation } = Plugins;
 })
 export class LocationService implements OnDestroy {
   wait;
+  loadingElement: any;
   location: string;
+  geocoder = new google.maps.Geocoder();
   currentPosition: Coords;
+  public $mapReady: EventEmitter<any> = new EventEmitter();
   coords: Coords = { lat: 50.05, lng: 8.8 };
-  private readonly accessToken: string;
-  private httpClient: HttpClient;
   private coordsSubject: BehaviorSubject<Coords> = new BehaviorSubject<Coords>(
     this.coords
   );
@@ -23,24 +23,38 @@ export class LocationService implements OnDestroy {
    * Subscribe to this to get live coordinates on location change
    */
   public coordsSubscription = this.coordsSubject.asObservable();
-  constructor(public ngZone: NgZone, private handler: HttpBackend) {
-    this.accessToken = environment.mapbox.accessToken;
-    (mapboxgl as any).accessToken = this.accessToken;
-    this.httpClient = new HttpClient(handler);
+  constructor(
+    public ngZone: NgZone,
+    private toastService: ToastService,
+    private loadingController: LoadingController
+  ) {
+    this.init();
+  }
+
+  async init() {
+    await this.createLoader();
+    this.$mapReady.emit(true);
     this.watchPosition();
-    this.getLocationName();
+    this.geocodeLatLng();
   }
 
   /**
    * Method to get the current position as coordinates
    */
   async getCurrentPosition(): Promise<Coords> {
-    const coordinates = await Geolocation.getCurrentPosition();
-    this.currentPosition = {
-      lat: coordinates.coords.latitude,
-      lng: coordinates.coords.longitude
-    };
-    return this.currentPosition;
+    this.presentLoader();
+    try {
+      const coordinates = await Geolocation.getCurrentPosition();
+      this.currentPosition = {
+        lat: coordinates.coords.latitude,
+        lng: coordinates.coords.longitude
+      };
+      return this.currentPosition;
+    } catch (e) {
+      this.toastService.presentWarningToast(e, 'Error getting location!');
+    } finally {
+      this.dismissLoader();
+    }
   }
 
   /**
@@ -67,28 +81,50 @@ export class LocationService implements OnDestroy {
               position?.coords.longitude
             ) > 8
           ) {
-            this.getLocationName();
+            this.geocodeLatLng();
           }
         });
       }
     );
   }
 
-  /**
-   * Method to get the name of a city from its coordinates
-   * It gets the current coordinates from capacitor geolocation
-   * and sends them to the mapbox api to get the city name
-   */
-  async getLocationName() {
+  async createLoader() {
+    this.loadingElement = await this.loadingController.create({
+      message: 'Trying to get your current location...'
+    });
+  }
+
+  async geocodeLatLng() {
     const coords = await this.getCurrentPosition();
-    this.httpClient
-      .get(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${coords.lng},${coords.lat}.json?types=poi&access_token=${this.accessToken}`
-      )
-      .subscribe((sub) => {
-        // tslint:disable-next-line
-        this.location = sub['features'][0].context[2].text;
-      });
+    this.geocoder.geocode({ location: coords }, (results, status) => {
+      if (status === 'OK') {
+        if (results[0]) {
+          this.location = 'Unknown';
+          results[0].address_components.forEach((adr) => {
+            if (adr.types[0] === 'locality') {
+              this.location = adr.long_name;
+            }
+          });
+        } else {
+          this.location = 'Unknown';
+        }
+      } else {
+        this.toastService.presentWarningToast(
+          status,
+          'Geocoder failed due to: '
+        );
+      }
+    });
+  }
+
+  async presentLoader() {
+    await this.loadingElement.present();
+  }
+
+  async dismissLoader() {
+    if (this.loadingElement) {
+      await this.loadingElement.dismiss();
+    }
   }
 
   stopTracking() {

@@ -129,4 +129,12 @@ export class SettingsComponent implements OnInit {
     });
     await alert.present();
   }
+
+  handleScroll(event: any) {
+    const scrollTop = event.detail.scrollTop;
+    // Slide down to go back
+    if (scrollTop < 0 && Math.abs(scrollTop) >= 150) {
+      this.close();
+    }
+  }
 }

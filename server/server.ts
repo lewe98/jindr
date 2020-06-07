@@ -221,7 +221,7 @@ app.get('/login/:deviceID', async (req: Request, res: Response) => {
         if (user) {
           res.status(200).send({
             message: 'User still logged in',
-            data: user
+            data: prepareUser(user)
           });
         } else {
           res.status(401).send({
@@ -313,9 +313,10 @@ app.put('/update-user', async (req: Request, res: Response) => {
       }
     } else {
       try {
-        doc = await User.findOneAndUpdate({ _id: req.body.user._id }, data, {
+        doc = await User.findOneAndUpdate({ _id: req.body.user._id }, {$set: data}, {
           new: true,
-          context: 'query'
+          context: 'query',
+          setDefaultsOnInsert: true
         });
         res.status(200).send({
           message: 'Updated User',
