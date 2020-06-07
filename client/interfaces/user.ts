@@ -7,4 +7,6 @@ export class User {
   public image: string;
   public distance: number;
   public allowNotifications: boolean;
+  public description: string;
+  public dateofbirth: number;
 }

@@ -36,6 +36,14 @@ const userSchema = mongoose.Schema({
     allowNotifications: {
         type: Boolean,
         default: true
+    },
+    description: {
+        type: String,
+        trim: true
+    },
+    dateofbirth: {
+        type: Date,
+        trim: true
     }
 });
 

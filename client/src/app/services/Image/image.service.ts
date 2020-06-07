@@ -36,11 +36,13 @@ export class ImageService {
       });
       const imageUrl = image.base64String;
       return new Promise((resolve, reject) => {
-        this.uploadPicture(usage, imageUrl).then(result => {
-          resolve(result);
-        }).catch(err => {
-          reject(err.message);
-        });
+        this.uploadPicture(usage, imageUrl)
+          .then((result) => {
+            resolve(result);
+          })
+          .catch((err) => {
+            reject(err.message);
+          });
       });
     } catch (e) {
       console.log(e);

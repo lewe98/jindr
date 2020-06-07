@@ -1,10 +1,40 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar>
+<ion-header>
+  <ion-toolbar class="toolbar-no-border">
+    <ion-title>Edit Profile</ion-title>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="pages/profile"></ion-back-button>
+      <ion-back-button defaultHref="pages/edit"></ion-back-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content>
-  <ion-button (click)="editCurriculum()">Open Edit Lebenslauf</ion-button>
+
+<ion-content class="settings-page bg-muted">
+  <ion-list class="list-custom">
+    <ion-list-header>
+      <ion-label>Edit Lebenslauf</ion-label>
+    </ion-list-header>
+    <ion-item detail="true" lines="none" (click)="editCurriculum()">
+      <ion-label>Lebenslauf</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list class="list-custom">
+    <ion-list-header>
+      <ion-label>Edit Profile</ion-label>
+    </ion-list-header>
+    <ion-item detail="true" lines="none" (click)="editfirstname()">
+      <ion-label>Name</ion-label>
+      <ion-note slot="end" color="primary" >{{user.firstName}}</ion-note>
+    </ion-item>
+    <ion-item detail="true" lines="none" (click)="editlastname()">
+      <ion-label>Lastname</ion-label>
+      <ion-note slot="end" color="primary" >{{user.lastName}}</ion-note>
+    </ion-item>
+    <ion-item detail="true" lines="none" (click)="adddateofbirth()">
+      <ion-label>Date of Birth</ion-label>
+      <ion-note slot="end" color="primary" >{{user.dateofbirth}}</ion-note>
+    </ion-item>
+    <ion-item detail="true" lines="none" (click)="adddescription()">
+      <ion-label>Description</ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>
