@@ -10,7 +10,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "importHelpers": true,
-    "types": [ "googlemaps"],
+    "types": [ "googlemaps", "jasmine"],
     "target": "es2015",
     "lib": [
       "es2018",

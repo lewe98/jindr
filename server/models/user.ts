@@ -39,6 +39,14 @@ const userSchema = mongoose.Schema({
         type: Boolean,
         default: true
     },
+    description: {
+        type: String,
+        trim: true
+    },
+    dateofbirth: {
+        type: Date,
+        trim: true
+    },
     resume: {
         type: [{
             startDate: Date,
