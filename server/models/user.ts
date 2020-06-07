@@ -1,3 +1,5 @@
+import { ResumeEntry } from "../../client/interfaces/ResumeEntry";
+
 export {};
 const mongoose = require('mongoose');
 const { isEmail } = require('validator');
@@ -36,6 +38,17 @@ const userSchema = mongoose.Schema({
     allowNotifications: {
         type: Boolean,
         default: true
+    },
+    resume: {
+        type: [{
+            startDate: Date,
+            endDate:Date,
+            title: String,
+            description: String,
+            industrysector: String,
+            employmentType: String
+        }],
+        default: []
     }
 });
 

@@ -1,0 +1,17 @@
+<ion-header>
+  <ion-toolbar class="toolbar-no-border">
+    <ion-title>Edit CV</ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="danger" (click)="close()">
+        Cancel
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <input [(ngModel)]="title">
+  <ng-container *ngFor="user.resume">
+
+  </ng-container>
+  <h1>Der Lebenslauf: {{user.resume}}</h1>
+</ion-content>
