@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar class="toolbar-no-border">
-    <ion-title>Profile</ion-title>
+    <ion-title>Public view</ion-title>
     <ion-buttons slot="end">
       <ion-button color="danger" (click)="close()">
         Close
@@ -8,3 +8,61 @@
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
+
+<ion-content>
+
+  <ion-card>
+    <ion-grid>
+      <ion-row class="view-enumeration">
+        <ion-col size-lg="6" size-md="6" size-sm="6" size="12">
+          <div>
+            <ion-avatar class="avatar">
+              <app-aspect-ratio [ratio]="{w: 1, h: 1}">
+                <app-image-shell class="user-image" [src]="user?.image"></app-image-shell>
+              </app-aspect-ratio>
+            </ion-avatar>
+          </div>
+        </ion-col>
+        <ion-col size-lg="6" size-md="6" size-sm="6" size="12">
+          <div style="margin-top: 20%">
+            <ion-card-title>{{user.firstName}} {{user.lastName}}</ion-card-title>
+          </div>
+        </ion-col>
+
+
+        <ion-item-divider>
+        </ion-item-divider>
+
+        <ion-col size-lg="12" size-md="12" size-sm="12" size="12">
+          <div *ngIf="user.dateofbirth">
+            <ion-col size-lg="6" size-md="6" size-sm="12" size="12">
+              <ion-card-title>Date of Birth</ion-card-title>
+            </ion-col>
+            <ion-col size-lg="6" size-md="6" size-sm="12" size="12">
+              <ion-card-content>{{user.dateofbirth|date:'dd.MM.yyyy'}}</ion-card-content>
+            </ion-col>
+          </div>
+        </ion-col>
+
+        <ion-item-divider>
+        </ion-item-divider>
+
+        <ion-col size-lg="12" size-md="12" size-sm="12" size="12">
+          <div *ngIf="user.description">
+            <ion-col size-lg="6" size-md="6" size-sm="12" size="12">
+              <ion-card-title>Description</ion-card-title>
+            </ion-col>
+            <ion-col size-lg="6" size-md="6" size-sm="12" size="12">
+              <ion-card-content>{{user.description}}</ion-card-content>
+            </ion-col>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card>
+
+</ion-content>
+
+
+
+
