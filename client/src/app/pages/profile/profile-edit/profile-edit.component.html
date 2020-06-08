@@ -10,10 +10,12 @@
 <ion-content class="settings-page bg-muted">
   <ion-list class="list-custom">
     <ion-list-header>
-      <ion-label>Edit Lebenslauf</ion-label>
+      <ion-label>Edit resume</ion-label>
     </ion-list-header>
-    <ion-item detail="true" lines="none" (click)="editCurriculum()">
-      <ion-label>Lebenslauf</ion-label>
+    <ion-item>
+      <ion-label>
+        <app-curriculum [myView]="true" [inputUser]="user"></app-curriculum>
+      </ion-label>
     </ion-item>
   </ion-list>
 

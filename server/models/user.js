@@ -6,6 +6,14 @@ var isEmail = require('validator').isEmail;
 var mongooseUniqueValidator = require('mongoose-unique-validator');
 var bcrypt = require('bcrypt');
 var SALT_WORK_FACTOR = 10;
+var resumeSchema = mongoose.Schema({
+    startDate: { type: Date },
+    endDate: { type: Date },
+    title: { type: String },
+    description: { type: String },
+    industrysector: { type: String },
+    employmentType: { type: String },
+});
 var userSchema = mongoose.Schema({
     firstName: { type: String, required: [true, 'First Name is required.'], trim: true },
     lastName: { type: String, required: [true, 'Last Name is required.'], trim: true },
@@ -51,6 +59,10 @@ var userSchema = mongoose.Schema({
     },
     resetPasswordExpires: {
         type: Date
+    },
+    resume: {
+        type: [resumeSchema],
+        default: []
     }
 });
 userSchema.pre('findOneAndUpdate', function (next) {

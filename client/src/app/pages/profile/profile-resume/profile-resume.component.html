@@ -8,40 +8,34 @@
         </ion-buttons>
     </ion-toolbar>
 </ion-header>
-<ion-app>
-    <ion-header translucent>
-        <ion-toolbar>
-            <ion-title>DateTime</ion-title>
-        </ion-toolbar>
-    </ion-header>
-    <ion-content fullscreen>
-        <ion-list>
-            <ion-item>
-                <ion-input placeholder="Title" [(ngModel)]="title"></ion-input>
-            </ion-item>
-            <ion-item>
-                <ion-input placeholder="description" [(ngModel)]="description"></ion-input>
-            </ion-item>
-            <ion-item>
-                <ion-input placeholder="industrysector" [(ngModel)]="industrysector"></ion-input>
-            </ion-item>
-            <ion-item>
-                <ion-input placeholder="employmentType" [(ngModel)]="employmentType"></ion-input>
-            </ion-item>
-            <ion-item-divider></ion-item-divider>
-            <ion-item>
-                <ion-label>Start Date</ion-label>
-                <ion-datetime placeholder="Select Date" [(ngModel)]="startDate"></ion-datetime>
-            </ion-item>
-            <ion-item>
-                <ion-label>Ends</ion-label>
-                <ion-datetime value="1990-02-20" placeholder="Select Date" [(ngModel)]="endDate"></ion-datetime>
-            </ion-item>
-        </ion-list>
-        <ion-fab horizontal="center">
-            <ion-fab-button (click)="addResumeEntry()">
-                <ion-icon name="checkmark-outline"></ion-icon>
-            </ion-fab-button>
-        </ion-fab>
-    </ion-content>
-</ion-app>
+
+<ion-content fullscreen>
+    <ion-list>
+        <ion-item>
+            <ion-input placeholder="Title" [(ngModel)]="title"></ion-input>
+        </ion-item>
+        <ion-item>
+            <ion-input placeholder="description" [(ngModel)]="description"></ion-input>
+        </ion-item>
+        <ion-item>
+            <ion-input placeholder="industrysector" [(ngModel)]="industrysector"></ion-input>
+        </ion-item>
+        <ion-item>
+            <ion-input placeholder="employmentType" [(ngModel)]="employmentType"></ion-input>
+        </ion-item>
+        <ion-item-divider></ion-item-divider>
+        <ion-item>
+            <ion-label>Start Date</ion-label>
+            <ion-datetime placeholder="Select Date" [(ngModel)]="startDate"></ion-datetime>
+        </ion-item>
+        <ion-item>
+            <ion-label>Ends</ion-label>
+            <ion-datetime value="1990-02-20" placeholder="Select Date" [(ngModel)]="endDate"></ion-datetime>
+        </ion-item>
+    </ion-list>
+    <ion-fab horizontal="center">
+        <ion-fab-button (click)="addResumeEntry()">
+            <ion-icon name="checkmark-outline"></ion-icon>
+        </ion-fab-button>
+    </ion-fab>
+</ion-content>

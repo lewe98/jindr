@@ -14,16 +14,14 @@ import { LocationService } from '../../../services/Location/location.service';
 export class ProfileViewComponent implements OnInit {
   user: User = new User();
   constructor(
-      private navCtrl: NavController,
       private modalCtrl: ModalController,
-      private authService: AuthService,
-      private toastService: ToastService,
-      private locationService: LocationService,
+      public authService: AuthService,
       private navParams: NavParams
   ) {}
 
   async ngOnInit() {
     Object.assign(this.user, this.navParams.get('user'));
+    console.log(this.user);
   }
 
 

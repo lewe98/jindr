@@ -8,6 +8,39 @@
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content>
-  <app-curriculum [myView]="false" [inputUser]="authService.getUser()"></app-curriculum>
+
+<ion-content class="view-enumeration">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>{{user.firstName}}. {{user.lastName?.charAt(0)}}.</ion-card-title>
+    </ion-card-header>
+    <ion-avatar class="avatar">
+      <app-aspect-ratio [ratio]="{w: 1, h: 1}">
+        <app-image-shell class="user-image" [src]="user?.image"></app-image-shell>
+      </app-aspect-ratio>
+    </ion-avatar>
+  </ion-card>
+
+  <ion-card *ngIf="user.dateofbirth">
+    <ion-card-header>
+      <ion-card-title>Date of Birth</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>{{user.dateofbirth|date:'dd.MM.yyyy'}}</ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="user.description">
+    <ion-card-header>
+      <ion-card-title>Description</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>{{user.description}}</ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="user.resume">
+    <ion-card-header>
+      <ion-card-title>Resume</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <app-curriculum [myView]="false" [inputUser]="user"></app-curriculum>
+    </ion-card-content>
+  </ion-card>
 </ion-content>
