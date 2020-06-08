@@ -27,7 +27,7 @@ const userSchema = mongoose.Schema({
     },
     distance: {
         type: Number,
-        default: 5
+        default: 10
     },
     image: {
         type: String,
@@ -36,6 +36,14 @@ const userSchema = mongoose.Schema({
     allowNotifications: {
         type: Boolean,
         default: true
+    },
+    description: {
+        type: String,
+        trim: true
+    },
+    dateofbirth: {
+        type: Date,
+        trim: true
     },
     resetPasswordToken: {
         type: String

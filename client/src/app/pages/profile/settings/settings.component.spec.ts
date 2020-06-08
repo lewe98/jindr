@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, NavParams } from '@ionic/angular';
 
 import { SettingsComponent } from './settings.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -24,7 +24,10 @@ describe('SettingsComponent', () => {
         HttpClientTestingModule,
         RouterTestingModule
       ],
-      providers: [{ provide: AuthService, useValue: authSpy }]
+      providers: [
+        { provide: AuthService, useValue: authSpy },
+        { provide: NavParams }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SettingsComponent);

@@ -8,6 +8,7 @@ import { Component, Input, OnInit } from '@angular/core';
 export class JindrButtonComponent implements OnInit {
   @Input() text: string;
   @Input() disabled = false;
+  @Input() icon = false;
   constructor() {}
 
   ngOnInit() {}

@@ -4,7 +4,8 @@ import { Plugins } from '@capacitor/core';
 import { DatabaseControllerService } from '../DatabaseController/database-controller.service';
 import { set, remove } from '../storage';
 import { Router } from '@angular/router';
-import {ToastService} from '../Toast/toast.service';
+import { ToastService } from '../Toast/toast.service';
+import { BehaviorSubject } from 'rxjs';
 
 const { Device } = Plugins;
 
@@ -15,6 +16,8 @@ export class AuthService {
   user: User;
   token: string;
   exp: Date;
+  private userSubject = new BehaviorSubject<User>(null);
+  user$ = this.userSubject.asObservable();
   constructor(
     private databaseController: DatabaseControllerService,
     private router: Router,
@@ -60,17 +63,18 @@ export class AuthService {
         }
       };
       this.databaseController
-          .postRequest('register', JSON.stringify(data))
-          .then((res) => {
-            this.toastService.presentToast(res.message);
-            resolve();
-          })
-          .catch((err) => {
-            this.toastService.presentWarningToast(
-                err.errors.email,
-                err.message + ': ');
-            reject(err);
-          });
+        .postRequest('register', JSON.stringify(data))
+        .then((res) => {
+          this.toastService.presentToast(res.message);
+          resolve();
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(
+            err.errors.email,
+            err.message + ': '
+          );
+          reject(err);
+        });
     });
   }
 
@@ -95,6 +99,7 @@ export class AuthService {
         .postRequest('login', JSON.stringify(data), User)
         .then((res) => {
           set('currentUser', res.data);
+          this.userSubject.next(res.data);
           this.user = res.data;
           resolve();
         })
@@ -131,6 +136,7 @@ export class AuthService {
         (res) => {
           set('currentUser', res.data);
           this.user = res.data;
+          this.userSubject.next(res.data);
           resolve(true);
         },
         () => {
@@ -156,6 +162,7 @@ export class AuthService {
         .putRequest('update-user', JSON.stringify(data), User)
         .then((res) => {
           this.user = res.data;
+          this.userSubject.next(res.data);
           set('currentUser', res.data);
           resolve(res.data);
         })
