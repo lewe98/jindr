@@ -25,7 +25,37 @@ var userSchema = mongoose.Schema({
     },
     deviceID: {
         type: String
+    },
+    distance: {
+        type: Number,
+        default: 10
+    },
+    image: {
+        type: String,
+        default: './assets/images/avatar.jpg'
+    },
+    allowNotifications: {
+        type: Boolean,
+        default: true
+    },
+    description: {
+        type: String,
+        trim: true
+    },
+    dateofbirth: {
+        type: Date,
+        trim: true
+    },
+    resetPasswordToken: {
+        type: String
+    },
+    resetPasswordExpires: {
+        type: Date
     }
+});
+userSchema.pre('findOneAndUpdate', function (next) {
+    this.options.runValidators = true;
+    next();
 });
 userSchema.pre('save', function (next) {
     var user = this;

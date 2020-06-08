@@ -44,6 +44,12 @@ const userSchema = mongoose.Schema({
     dateofbirth: {
         type: Date,
         trim: true
+    },
+    resetPasswordToken: {
+        type: String
+    },
+    resetPasswordExpires: {
+        type: Date
     }
 });
 
