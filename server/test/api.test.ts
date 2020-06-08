@@ -239,3 +239,41 @@ describe('Test Get User', () => {
         expect(res.body.message).toBe('User not found');
     });
 });
+
+describe('Send mail', () => {
+    it('should send a mail', async () => {
+        const res = await request(app)
+            .post('/sendmail')
+            .send({
+                user: {email: EMAIL_ONE}
+            })
+        expect(res.statusCode).toEqual(201);
+    });
+    it('should fail if email is invalid', async () => {
+        const res = await request(app)
+            .post('/register')
+            .send({
+                user: {email: 'John.com'}
+            })
+        expect(res.statusCode).toEqual(400)
+    });
+});
+
+describe('Get token and expiration date', () => {
+    it('should fail if no token and expiration date is set in server', async () => {
+        const res = await request(app)
+            .post('/forgot-pw')
+        expect(res.statusCode).toEqual(404)
+    });
+});
+
+describe('Reset password', () => {
+    it('should fail if token is invalid, expired or unset', async () => {
+        const res = await request(app)
+            .post('/forgot-pw/a89c41adf3b479af510c36e83274bde9f80ed8dd')
+            .send({
+                user: {password: 'passwort74'}
+            })
+        expect(res.statusCode).toEqual(400)
+    });
+});
