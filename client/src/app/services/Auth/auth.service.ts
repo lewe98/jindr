@@ -212,6 +212,11 @@ export class AuthService {
                     resolve();
                 })
                 .catch((err) => {
+                    this.router.navigate(['']);
+                    this.toastService.presentWarningToast(
+                        err.message,
+                        'Error:'
+                    );
                     reject(err);
                 });
         });

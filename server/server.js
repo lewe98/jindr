@@ -528,10 +528,8 @@ app.post('/sendmail', function (req, res) {
     }); });
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     function send() {
-        var html = '<p>Hey there! Click </p><a href=' +
-            RESET_URL +
-            '>here</a>' +
-            '<p> to reset your password. \n This email was sent to ' +
+        var html = '<p>Hey there! \n </p> ' +
+            '<a href=' + RESET_URL + '><p>Click here to reset your password.</a> \n This email was sent to ' +
             email +
             '. ' +
             '\n If you do not want to change your password, just ignore this email.</p>';
@@ -655,10 +653,14 @@ app.post('/forgot-pw/:token', function (req, res) {
                 case 1:
                     if (!user) return [3 /*break*/, 3];
                     return [4 /*yield*/, User.findOneAndUpdate({ resetPasswordToken: req.params.token }, {
-                            password: bcrypt.hashSync(req.body.user.password, SALT_WORK_FACTOR)
+                            password: bcrypt.hashSync(req.body.user.password, SALT_WORK_FACTOR),
+                            resetPasswordExpires: null,
+                            resetPasswordToken: null
                         })];
                 case 2:
                     _a.sent();
+                    token = undefined;
+                    expirationDate = undefined;
                     res.status(201).send({
                         message: 'New password has been set.'
                     });
