@@ -26,7 +26,7 @@ const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
 const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 AWS.config.update({
   accessKeyId: AWS_ACCESS_KEY_ID,
-  secretAccessKey: AWS_SECRET_ACCESS_KEY,
+  secretAccessKey: AWS_SECRET_ACCESS_KEY
 });
 const s3 = new AWS.S3();
 // eslint-disable-next-line
@@ -317,11 +317,15 @@ app.put('/update-user', async (req: Request, res: Response) => {
       }
     } else {
       try {
-        doc = await User.findOneAndUpdate({ _id: req.body.user._id }, {$set: data}, {
-          new: true,
-          context: 'query',
-          setDefaultsOnInsert: true
-        });
+        doc = await User.findOneAndUpdate(
+          { _id: req.body.user._id },
+          { $set: data },
+          {
+            new: true,
+            context: 'query',
+            setDefaultsOnInsert: true
+          }
+        );
         res.status(200).send({
           message: 'Updated User',
           data: prepareUser(doc)

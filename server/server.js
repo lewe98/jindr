@@ -21,10 +21,13 @@ var expirationDate;
 var MONGODB_URI = process.env.MONGODB_URI;
 var MONGODB_NAME = process.env.MONGODB_NAME;
 var ORIGIN_URL = process.env.ORIGIN_URL;
-var s3 = new AWS.S3({
-    accessKeyId: process.env.AWS_KEY_ID,
-    secretAccessKey: process.env.AWS_ACCESS_KEY
+var AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
+var AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
+AWS.config.update({
+    accessKeyId: AWS_ACCESS_KEY_ID,
+    secretAccessKey: AWS_SECRET_ACCESS_KEY
 });
+var s3 = new AWS.S3();
 // eslint-disable-next-line
 var db;
 var app = express();
@@ -249,7 +252,7 @@ app.get('/login/:deviceID', function (req, res) { return tslib_1.__awaiter(void 
                 if (user) {
                     res.status(200).send({
                         message: 'User still logged in',
-                        data: user
+                        data: prepareUser(user)
                     });
                 }
                 else {
@@ -360,9 +363,10 @@ app.put('/update-user', function (req, res) { return tslib_1.__awaiter(void 0, v
             case 5: return [3 /*break*/, 9];
             case 6:
                 _e.trys.push([6, 8, , 9]);
-                return [4 /*yield*/, User.findOneAndUpdate({ _id: req.body.user._id }, data, {
+                return [4 /*yield*/, User.findOneAndUpdate({ _id: req.body.user._id }, { $set: data }, {
                         new: true,
-                        context: 'query'
+                        context: 'query',
+                        setDefaultsOnInsert: true
                     })];
             case 7:
                 doc = _e.sent();
