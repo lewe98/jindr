@@ -15,6 +15,11 @@ import { ToastService } from '../../../services/Toast/toast.service';
   styleUrls: ['./profile-edit.component.scss']
 })
 export class ProfileEditComponent implements OnInit {
+  public description: string;
+  public dateofbirth: number;
+  public firstName: string;
+  public lastName: string;
+
   user: User = new User();
   constructor(
     private modalCtrl: ModalController,
@@ -28,164 +33,23 @@ export class ProfileEditComponent implements OnInit {
     Object.assign(this.user, this.authService.getUser());
   }
 
-  async editfirstname() {
-    const alert = await this.alertCtrl.create({
-      header: 'Edit Firstname',
-      inputs: [
-        {
-          name: 'firstName',
-          placeholder: 'Firstname...',
-          value: this.user.firstName,
-          type: 'text'
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'Save',
-          handler: (data) => {
-            this.user.firstName = data.firstName;
-            this.authService
-              .updateUser(this.user)
-              .then(() => {
-                this.toastService.presentToast('Firstname changed.');
-              })
-              .catch((err) => {
-                this.toastService.presentWarningToast(
-                  err.errors.email,
-                  'Error!'
-                );
-                this.user = this.authService.getUser();
-                console.log(this.authService.user);
-              });
-          }
-        }
-      ]
-    });
-    await alert.present();
+  saveedit() {
+    this.user.description = this.description;
+    this.user.dateofbirth = this.dateofbirth;
+    this.user.firstName = this.firstName;
+    this.user.lastName = this.lastName;
+    this.authService
+      .updateUser(this.user)
+      .then(() => {
+        this.toastService.presentToast('Profil updated.');
+      })
+      .catch((err) => {
+        this.toastService.presentWarningToast(err.errors.email, 'Error!');
+        this.user = this.authService.getUser();
+        console.log(this.authService.user);
+      });
   }
 
-  async editlastname() {
-    const alert = await this.alertCtrl.create({
-      header: 'Edit Lastname',
-      inputs: [
-        {
-          name: 'lastName',
-          placeholder: 'Lastname...',
-          value: this.user.lastName,
-          type: 'text'
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'Save',
-          handler: (data) => {
-            this.user.lastName = data.lastName;
-            this.authService
-              .updateUser(this.user)
-              .then(() => {
-                this.toastService.presentToast('Lastname changed.');
-              })
-              .catch((err) => {
-                this.toastService.presentWarningToast(
-                  err.errors.email,
-                  'Error!'
-                );
-                this.user = this.authService.getUser();
-                console.log(this.authService.user);
-              });
-          }
-        }
-      ]
-    });
-    await alert.present();
-  }
-
-  async adddateofbirth() {
-    const alert = await this.alertCtrl.create({
-      header: 'Add Date of Birth',
-      inputs: [
-        {
-          name: 'dateofbirth',
-          placeholder: 'Date of Birth...',
-          value: this.user.dateofbirth,
-          type: 'date'
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'Save',
-          handler: (data) => {
-            this.user.dateofbirth = data.dateofbirth;
-            this.authService
-              .updateUser(this.user)
-              .then(() => {
-                this.toastService.presentToast('Date of birth changed.');
-              })
-              .catch((err) => {
-                this.toastService.presentWarningToast(
-                  err.errors.email,
-                  'Error!'
-                );
-                this.user = this.authService.getUser();
-                console.log(this.authService.user);
-              });
-          }
-        }
-      ]
-    });
-    await alert.present();
-  }
-  async adddescription() {
-    const alert = await this.alertCtrl.create({
-      header: 'Add Description',
-      inputs: [
-        {
-          name: 'description',
-          placeholder: 'Description...',
-          value: this.user.description,
-          type: 'text'
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'Save',
-          handler: (data) => {
-            this.user.description = data.description;
-            this.authService
-              .updateUser(this.user)
-              .then(() => {
-                this.toastService.presentToast('Description changed.');
-              })
-              .catch((err) => {
-                this.toastService.presentWarningToast(
-                  err.errors.email,
-                  'Error!'
-                );
-                this.user = this.authService.getUser();
-                console.log(this.authService.user);
-              });
-          }
-        }
-      ]
-    });
-    await alert.present();
-  }
   async editCurriculum() {
     const modal = await this.modalCtrl.create({
       component: CurriculumComponent
