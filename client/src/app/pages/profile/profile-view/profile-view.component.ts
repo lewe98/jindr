@@ -12,7 +12,7 @@ export class ProfileViewComponent implements OnInit {
   public user: User;
   constructor(
     public modalCtrl: ModalController,
-    private authService: AuthService) {}
+    public authService: AuthService) {}
 
   ngOnInit() {}
 

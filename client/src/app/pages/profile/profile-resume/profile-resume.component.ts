@@ -14,21 +14,21 @@ import { ModalController } from '@ionic/angular';
 export class ProfileResumeComponent implements OnInit {
   @Input() inputUser: User;
   @Input() resumeIndex: number;
-  private myReview = false;
+  myReview = false;
 
-  private user = new User();
-  private resumeEntry: ResumeEntry;
-  private startDate: Date;
-  private endDate: Date;
-  private title: string;
-  private description: string;
-  private industrysector: string;
-  private employmentType: string;
+  user = new User();
+  resumeEntry: ResumeEntry;
+  startDate: Date;
+  endDate: Date;
+  title: string;
+  description: string;
+  industrysector: string;
+  employmentType: string;
 
   constructor(
     private databaseController: DatabaseControllerService,
     private toastService: ToastService,
-    private authService: AuthService,
+    public authService: AuthService,
     public modalCtrl: ModalController
   ) {
   }
