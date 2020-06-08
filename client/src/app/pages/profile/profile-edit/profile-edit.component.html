@@ -17,24 +17,42 @@
     </ion-item>
   </ion-list>
 
-  <ion-list class="list-custom">
-    <ion-list-header>
-      <ion-label>Edit Profile</ion-label>
-    </ion-list-header>
-    <ion-item detail="true" lines="none" (click)="editfirstname()">
-      <ion-label>Name</ion-label>
-      <ion-note slot="end" color="primary" >{{user.firstName}}</ion-note>
-    </ion-item>
-    <ion-item detail="true" lines="none" (click)="editlastname()">
-      <ion-label>Lastname</ion-label>
-      <ion-note slot="end" color="primary" >{{user.lastName}}</ion-note>
-    </ion-item>
-    <ion-item detail="true" lines="none" (click)="adddateofbirth()">
-      <ion-label>Date of Birth</ion-label>
-      <ion-note slot="end" color="primary" >{{user.dateofbirth}}</ion-note>
-    </ion-item>
-    <ion-item detail="true" lines="none" (click)="adddescription()">
-      <ion-label>Description</ion-label>
-    </ion-item>
-  </ion-list>
+<ion-list class="list-custom">
+  <ion-list-header>
+    <ion-label>Edit Profile</ion-label>
+  </ion-list-header>
+  <ion-item>
+    <ion-label position="stacked">Firstname</ion-label>
+    <ion-input  type="text" [(ngModel)]="user.firstName"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">Lastname</ion-label>
+    <ion-input type="text" [(ngModel)]="user.lastName"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label>Date of Birth</ion-label>
+    <ion-datetime placeholder="{{user.dateofbirth|date:'dd.MM.yyyy'}}" display-format="DD . MM . YYYY" [(ngModel)]="dateofbirth">
+    </ion-datetime>
+  </ion-item>
+  <ion-item lines="none">
+    <ion-label position="stacked">Description</ion-label>
+
+    <ion-textarea rows="2" auto-grow="true" type="text" spellcheck="true" autocapitalize="on"
+                  maxlength="400"  [(ngModel)]="user.description">
+    </ion-textarea>
+  </ion-item>
+  <ion-item lines="none">
+    <ion-note slot="end">
+      {{ 400 - user.description?.length }}
+    </ion-note>
+  </ion-item>
+</ion-list>
+
+
 </ion-content>
+
+<ion-footer>
+
+      <ion-button type="button" expand="full" fill="solid" color="success" (click)="saveedit()">Save</ion-button>
+
+</ion-footer>
