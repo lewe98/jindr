@@ -5,7 +5,6 @@ import { AuthService } from '../../../services/Auth/auth.service';
 import { ToastService } from '../../../services/Toast/toast.service';
 import { LocationService } from '../../../services/Location/location.service';
 
-
 @Component({
   selector: 'app-profile-view',
   templateUrl: './profile-view.component.html',
@@ -14,18 +13,17 @@ import { LocationService } from '../../../services/Location/location.service';
 export class ProfileViewComponent implements OnInit {
   user: User = new User();
   constructor(
-      private navCtrl: NavController,
-      private modalCtrl: ModalController,
-      private authService: AuthService,
-      private toastService: ToastService,
-      private locationService: LocationService,
-      private navParams: NavParams
+    private navCtrl: NavController,
+    private modalCtrl: ModalController,
+    private authService: AuthService,
+    private toastService: ToastService,
+    private locationService: LocationService,
+    private navParams: NavParams
   ) {}
 
   async ngOnInit() {
     Object.assign(this.user, this.navParams.get('user'));
   }
-
 
   close() {
     this.modalCtrl.dismiss();
