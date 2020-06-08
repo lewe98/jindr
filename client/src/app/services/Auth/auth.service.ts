@@ -172,77 +172,70 @@ export class AuthService {
     });
   }
 
-    /**
-     * Method to send a mail to user that includes the link to reset the password
-     * @param email user's email
-     * resolves if mail was sent successfully
-     * rejects if email could not be sent
-     */
-    async sendmail(email: string): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
-            const BASE_URL = document.location.origin;
-            const data = { user: {email, BASE_URL} };
-            this.databaseController
-                .postRequest('sendmail', JSON.stringify(data))
-                .then((res) => {
-                    this.toastService.presentToast(res.message);
-                    resolve();
-                })
-                .catch((err) => {
-                    this.toastService.presentWarningToast(
-                        err.errors,
-                        err.message
-                    );
-                    reject(err);
-                });
+  /**
+   * Method to send a mail to user that includes the link to reset the password
+   * @param email user's email
+   * resolves if mail was sent successfully
+   * rejects if email could not be sent
+   */
+  async sendmail(email: string): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      const BASE_URL = document.location.origin;
+      const data = { user: { email, BASE_URL } };
+      this.databaseController
+        .postRequest('sendmail', JSON.stringify(data))
+        .then((res) => {
+          this.toastService.presentToast(res.message);
+          resolve();
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err.errors, err.message);
+          reject(err);
         });
-    }
+    });
+  }
 
-    /**
-     * Method to get token and expiration date
-     * resolves if token and expiration date were sent successfully
-     * rejects if token could not be assigned to a user
-     */
-    async get(): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
-            this.databaseController.getRequest('forgot-pw', '')
-                .then((res) => {
-                    this.token = res.token;
-                    this.exp = res.exp;
-                    resolve();
-                })
-                .catch((err) => {
-                    this.router.navigate(['']);
-                    this.toastService.presentWarningToast(
-                        err.message,
-                        'Error:'
-                    );
-                    reject(err);
-                });
+  /**
+   * Method to get token and expiration date
+   * resolves if token and expiration date were sent successfully
+   * rejects if token could not be assigned to a user
+   */
+  async get(): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      this.databaseController
+        .getRequest('forgot-pw', '')
+        .then((res) => {
+          this.token = res.token;
+          this.exp = res.exp;
+          resolve();
+        })
+        .catch((err) => {
+          this.router.navigate(['']);
+          this.toastService.presentWarningToast(err.message, 'Error:');
+          reject(err);
         });
-    }
+    });
+  }
 
-    /**
-     * Method to reset a password
-     * @param password user's new password
-     * resolves if password was changed successfully
-     * rejects if email could not be sent
-     */
-    async resetPassword(password: string): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
-            const data = {user: {password}};
-            this.databaseController
-                .postRequest('forgot-pw/' + this.token, JSON.stringify(data))
-                .then((res) => {
-                    this.toastService.presentToast(res.message);
-                    resolve();
-                })
-                .catch((err) => {
-                    this.toastService.presentWarningToast(
-                        err.message,
-                        'Error: ');
-                    reject(err);
-                });
+  /**
+   * Method to reset a password
+   * @param password user's new password
+   * resolves if password was changed successfully
+   * rejects if email could not be sent
+   */
+  async resetPassword(password: string): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      const data = { user: { password } };
+      this.databaseController
+        .postRequest('forgot-pw/' + this.token, JSON.stringify(data))
+        .then((res) => {
+          this.toastService.presentToast(res.message);
+          resolve();
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err.message, 'Error: ');
+          reject(err);
         });
-    }
+    });
+  }
 }

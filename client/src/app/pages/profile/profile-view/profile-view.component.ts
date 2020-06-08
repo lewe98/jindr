@@ -2,9 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ModalController, NavController, NavParams } from '@ionic/angular';
 import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
-import { ToastService } from '../../../services/Toast/toast.service';
-import { LocationService } from '../../../services/Location/location.service';
-
 
 @Component({
   selector: 'app-profile-view',
@@ -21,9 +18,7 @@ export class ProfileViewComponent implements OnInit {
 
   async ngOnInit() {
     Object.assign(this.user, this.navParams.get('user'));
-    console.log(this.user);
   }
-
 
   close() {
     this.modalCtrl.dismiss();
