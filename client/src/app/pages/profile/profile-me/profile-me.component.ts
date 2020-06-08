@@ -32,7 +32,8 @@ export class ProfileMeComponent implements OnInit {
 
   async viewProfile() {
     const modal = await this.modalCtrl.create({
-      component: ProfileViewComponent
+      component: ProfileViewComponent,
+      componentProps: { user: this.user }
     });
     return await modal.present();
   }

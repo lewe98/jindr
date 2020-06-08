@@ -1,13 +1,14 @@
-export {};
-const mongoose = require('mongoose');
-const { isEmail } = require('validator');
-const mongooseUniqueValidator = require('mongoose-unique-validator');
-const bcrypt = require('bcrypt');
-const SALT_WORK_FACTOR = 10;
-
-const userSchema = mongoose.Schema({
-    firstName: {type: String, required: [true, 'First Name is required.'], trim: true},
-    lastName: {type: String, required: [true, 'Last Name is required.'], trim: true},
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var mongoose = require('mongoose');
+var isEmail = require('validator').isEmail;
+var mongooseUniqueValidator = require('mongoose-unique-validator');
+var bcrypt = require('bcrypt');
+var SALT_WORK_FACTOR = 10;
+var userSchema = mongoose.Schema({
+    firstName: { type: String, required: [true, 'First Name is required.'], trim: true },
+    lastName: { type: String, required: [true, 'Last Name is required.'], trim: true },
     email: {
         type: String,
         required: [true, 'Email is required.'],
@@ -52,37 +53,36 @@ const userSchema = mongoose.Schema({
         type: Date
     }
 });
-
-userSchema.pre('findOneAndUpdate', function(next) {
+userSchema.pre('findOneAndUpdate', function (next) {
     this.options.runValidators = true;
     next();
 });
-
-userSchema.pre('save', function(next) {
-    let user = this;
-
+userSchema.pre('save', function (next) {
+    var user = this;
     // only hash the password if it has been modified (or is new)
-    if (!user.isModified('password')) return next();
-
+    if (!user.isModified('password'))
+        return next();
     // generate a salt
-    bcrypt.genSalt(SALT_WORK_FACTOR, (err, salt) => {
-        if (err) return next(err);
-
+    bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
+        if (err)
+            return next(err);
         // hash the password using our new salt
-        bcrypt.hash(user.password, salt, (err, hash) => {
-            if (err) return next(err);
-
+        bcrypt.hash(user.password, salt, function (err, hash) {
+            if (err)
+                return next(err);
             // override the cleartext password with the hashed one
             user.password = hash;
             next();
         });
     });
 });
-
-userSchema.methods.validatePassword = async function validatePassword(data) {
-    return bcrypt.compare(data, this.password);
+userSchema.methods.validatePassword = function validatePassword(data) {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            return [2 /*return*/, bcrypt.compare(data, this.password)];
+        });
+    });
 };
-
-
-userSchema.plugin(mongooseUniqueValidator, {message: 'Email already in use.'});
+userSchema.plugin(mongooseUniqueValidator, { message: 'Email already in use.' });
 module.exports = mongoose.model('User', userSchema, 'users');
+//# sourceMappingURL=user.js.map

@@ -12,8 +12,12 @@ const history = require('connect-history-api-fallback');
 const SALT_WORK_FACTOR = 10;
 const fs = require('fs');
 const AWS = require('aws-sdk');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const User = require('./models/user');
+let token: string;
+let expirationDate: number;
 
 const MONGODB_URI: string = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.MONGODB_NAME;
@@ -22,7 +26,7 @@ const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
 const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 AWS.config.update({
   accessKeyId: AWS_ACCESS_KEY_ID,
-  secretAccessKey: AWS_SECRET_ACCESS_KEY,
+  secretAccessKey: AWS_SECRET_ACCESS_KEY
 });
 const s3 = new AWS.S3();
 // eslint-disable-next-line
@@ -313,11 +317,15 @@ app.put('/update-user', async (req: Request, res: Response) => {
       }
     } else {
       try {
-        doc = await User.findOneAndUpdate({ _id: req.body.user._id }, {$set: data}, {
-          new: true,
-          context: 'query',
-          setDefaultsOnInsert: true
-        });
+        doc = await User.findOneAndUpdate(
+          { _id: req.body.user._id },
+          { $set: data },
+          {
+            new: true,
+            context: 'query',
+            setDefaultsOnInsert: true
+          }
+        );
         res.status(200).send({
           message: 'Updated User',
           data: prepareUser(doc)
@@ -390,18 +398,232 @@ app.get('/user/:userID', (req: Request, res: Response) => {
 app.post('/upload-image', (req: Request, res: Response) => {
   const name = req.body.name;
   const file = req.body.file;
-  uploadFile(file, name).then((result) => {
-    res.status(201).send({
-      message: 'Image saved',
-      data: result
+  uploadFile(file, name)
+    .then((result) => {
+      res.status(201).send({
+        message: 'Image saved',
+        data: result
+      });
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: 'Upload failed',
+        errors: err
+      });
     });
-  }).catch(err => {
-    res.status(500).send({
-      message: 'Upload failed',
-      errors: err
-    });
-  });
 });
+
+/**
+ * @api {post} /sendmail sends mail containing a link to reset password
+ * @apiName SendMail
+ *
+ * @apiDescription Pass mail in request body.
+ * The configured mail client sends a mail to the users mailing address that includes a link, to reset the user's password.
+ *
+ * @apiParam {String} mail User's mailing address
+ * @apiParam {String} BASE_URL the Location object's URL's origin
+ * @apiParam {String} RESET_URL Addition of the required route to BASE_URL
+ * @apiParam {String} token random token to authenticate the user
+ * @apiParam {Date} expirationDate timestamp when the reset link expires
+ *
+ * @apiSuccess {String} message Notification that the mail has been sent successfully.
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 Created
+ *     {
+ *       message: 'Mail has been sent. Check your inbox.'
+ *     }
+ *
+ * @apiError InvalidInput Method fails if user transmits an invalid mailing address.
+ * @apiError MailingError Mail could not be sent because of issues of mailing provider (smtp.web.de).
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "message: 'Could not send mail!',
+ *       "errors": 'No account with that email address exists.'
+ *     }
+ */
+app.post('/sendmail', (req: Request, res: Response) => {
+  const email: string = req.body.user.email;
+  token = crypto.randomBytes(20).toString('hex');
+  expirationDate = new Date().setHours(new Date().getHours() + 1);
+  const BASE_URL: string = req.body.user.BASE_URL;
+  const RESET_URL: string = BASE_URL + '/auth/forgot-pw/' + token;
+
+  User.findOne({ email: email })
+    .select('+password')
+    .exec(async (err, user) => {
+      if (err) {
+        res.status(500).send({
+          message: 'Error: ' + err
+        });
+      } else {
+        if (user) {
+          await User.findOneAndUpdate(
+            { email: user.email },
+            {
+              resetPasswordToken: token,
+              resetPasswordExpires: expirationDate
+            }
+          );
+          await send();
+        } else {
+          res.status(400).send({
+            message: 'No account with that email address exists.'
+          });
+        }
+      }
+    });
+
+  // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+  function send() {
+    const html =
+      '<p>Hey there! \n </p> ' +
+        '<a href=' + RESET_URL + '><p>Click here to reset your password.</a> \n This email was sent to ' +
+      email +
+      '. ' +
+      '\n If you do not want to change your password, just ignore this email.</p>';
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.web.de',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'app.jindr@web.de',
+        pass: 'JindrPW1!'
+      }
+    });
+
+    const mailOptions = {
+      from: 'jindr Support app.jindr@web.de',
+      to: email,
+      subject: 'jindr - Reset password',
+      html: html
+    };
+
+    transporter.sendMail(mailOptions, (err) => {
+      if (err) {
+        res.status(400).send({
+          message: 'Could not send mail!',
+          errors: err.toString()
+        });
+      } else {
+        res.status(201).send({
+          message: 'Mail has been sent. Check your inbox.'
+        });
+      }
+    });
+  }
+});
+
+/**
+ * @api {get} /forgot-pw returns the token and the date of expiration
+ * @apiName ForgotPassword
+ *
+ * @apiDescription when entering the password reset site, the token and the expiration date are sent to the client,
+ * to authenticate the user
+ *
+ * @apiParam {String} token random token to authenticate the user
+ * @apiParam {Date} expirationDate timestamp when the reset link expires
+ *
+ * @apiSuccess {String} message Success Message if user is still logged in.
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       "token": token
+ *       "exp": expirationDate
+ *     }
+ *
+ * @apiError TokenError Token is invalid or has expired.
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "message: 'Password reset token is invalid or has expired.'
+ *     }
+ */
+app.get('/forgot-pw', (req: Request, res: Response) => {
+  User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() }
+  })
+    .select('+password')
+    .exec(async (err, user) => {
+      if (!user) {
+        res.status(400).send({
+          message: 'Password reset token is invalid or has expired.'
+        });
+      } else {
+        res.status(201).send({
+          token: token,
+          exp: expirationDate
+        });
+      }
+    });
+});
+
+/**
+ * @api {post} /forgot-pw/:token route to reset the users password
+ * @apiName ForgotPassword
+ *
+ * @apiDescription checks if token is valid and not expired yet.
+ *
+ * @apiParam {String} token random token to authenticate the user
+ * @apiParam {String} password user's new password, that is immediately encrypted
+ *
+ * @apiSuccess {String} message Success Message if user is still logged in.
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       "message": 'New password has been set.'
+ *     }
+ *
+ * @apiError MailError Email is invalid.
+ * @apiError TokenError Token is invalid or has expired.
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "message: 'Password reset token is invalid or has expired.'
+ *     }
+ */
+app.post('/forgot-pw/:token', (req: Request, res: Response) => {
+  User.findOne({
+    resetPasswordToken: req.params.token,
+    resetPasswordExpires: { $gt: Date.now() }
+  })
+    .select('+password')
+    .exec(async (err, user) => {
+      if (err) {
+        res.status(400).send({
+          message: 'Password reset token is invalid or has expired.'
+        });
+      } else {
+        if (user) {
+          await User.findOneAndUpdate(
+            { resetPasswordToken: req.params.token },
+            {
+              password: bcrypt.hashSync(
+                req.body.user.password,
+                SALT_WORK_FACTOR
+              ),
+              resetPasswordExpires: null,
+              resetPasswordToken: null
+            }
+          );
+          token = undefined;
+          expirationDate = undefined;
+
+          res.status(201).send({
+            message: 'New password has been set.'
+          });
+        } else {
+          res.status(400).send({
+            message: 'No account with that email address exists.'
+          });
+        }
+      }
+    });
+});
+
 /**
  * Prepares user to be sent to client
  * Removes password and deviceID
@@ -424,7 +646,7 @@ function uploadFile(file, name): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     let params;
     const base64Image = file.split(';base64,').pop();
-    fs.writeFile('image.png', base64Image, {encoding: 'base64'}, () => {
+    fs.writeFile('image.png', base64Image, { encoding: 'base64' }, () => {
       const fileContent = fs.readFileSync('image.png');
       params = {
         Bucket: 'jindr-images',
@@ -433,7 +655,7 @@ function uploadFile(file, name): Promise<string> {
         ContentType: 'image/jpeg',
         ACL: 'public-read'
       };
-      s3.upload(params,  (error, data) => {
+      s3.upload(params, (error, data) => {
         if (error) {
           reject(error);
         } else {
