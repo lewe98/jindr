@@ -188,7 +188,11 @@ export class ProfileEditComponent implements OnInit {
   }
   async editCurriculum() {
     const modal = await this.modalCtrl.create({
-      component: CurriculumComponent
+      component: CurriculumComponent,
+      componentProps: {
+        inputUser: this.authService.getUser(),
+        myView: true
+      }
     });
     return await modal.present();
   }

@@ -1,11 +1,18 @@
-import { ResumeEntry } from "../../client/interfaces/ResumeEntry";
-
 export {};
 const mongoose = require('mongoose');
 const { isEmail } = require('validator');
 const mongooseUniqueValidator = require('mongoose-unique-validator');
 const bcrypt = require('bcrypt');
 const SALT_WORK_FACTOR = 10;
+
+const resumeSchema = mongoose.Schema({
+    startDate: {type: Date },
+    endDate: {type: Date },
+    title: {type: String },
+    description: {type: String },
+    industrysector: {type: String },
+    employmentType: {type: String },
+})
 
 const userSchema = mongoose.Schema({
     firstName: {type: String, required: [true, 'First Name is required.'], trim: true},
@@ -48,14 +55,7 @@ const userSchema = mongoose.Schema({
         trim: true
     },
     resume: {
-        type: [{
-            startDate: Date,
-            endDate:Date,
-            title: String,
-            description: String,
-            industrysector: String,
-            employmentType: String
-        }],
+        type: [resumeSchema],
         default: []
     }
 });

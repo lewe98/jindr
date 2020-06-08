@@ -1,10 +1,55 @@
-<ion-header>
-  <ion-toolbar class="toolbar-no-border">
-    <ion-title>Edit CV</ion-title>
-    <ion-buttons slot="end">
-      <ion-button color="danger" (click)="close()">
-        Cancel
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+<ion-header [hidden]="!myView">
+    <ion-toolbar class="toolbar-no-border">
+        <ion-title>Edit CV of {{inputUser?.firstName}}</ion-title>
+        <ion-buttons slot="end">
+            <ion-button color="danger" (click)="close()">
+                Cancel
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
 </ion-header>
+
+<ion-content fullscreen>
+    <ion-list>
+        <ng-container *ngFor="let resumeEntry of inputUser?.resume; index as entryIndex;">
+            <ion-item>
+                <ion-grid>
+                    <ion-row>
+                        <ion-col size="9">
+                            <ion-label>
+                                <h2>{{resumeEntry.title}}</h2>
+                                <h3>{{resumeEntry.description}}</h3>
+                                <p>{{resumeEntry.employmentType}}, {{resumeEntry.industrysector}}</p>
+                                <ion-chip>
+                                    <ion-label>{{getResumeEntryDate(resumeEntry.startDate, resumeEntry.endDate)}}</ion-label>
+                                </ion-chip>
+                                <ion-chip color="medium">
+                                    <ion-label>{{getResumeEntryTime(resumeEntry.startDate, resumeEntry.endDate)}}</ion-label>
+                                </ion-chip>
+                            </ion-label>
+                        </ion-col>
+                        <ion-col size="3" [hidden]="!myView">
+                            <ion-grid>
+                                <ion-row>
+                                    <ion-col>
+                                        <ion-button color="warning" (click)="editResume(resumeEntry)">edit</ion-button>
+                                    </ion-col>
+                                </ion-row>
+                                <ion-row>
+                                    <ion-col>
+                                        <ion-button color="danger" (click)="deleteResume(entryIndex)">delete</ion-button>
+                                    </ion-col>
+                                </ion-row>
+                            </ion-grid>
+                        </ion-col>
+                    </ion-row>
+                </ion-grid>
+            </ion-item>
+        </ng-container>
+    </ion-list>
+    <ion-fab horizontal="center" [hidden]="!myView">
+        <ion-fab-button (click)="newResume()">
+            <ion-icon name="add"></ion-icon>
+        </ion-fab-button>
+    </ion-fab>
+</ion-content>

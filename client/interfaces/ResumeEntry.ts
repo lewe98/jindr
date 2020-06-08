@@ -1,5 +1,12 @@
 export class ResumeEntry {
-  constructor(startDate: Date, endDate: Date, title: string, description: string, industrysector: string, employmentType: string) {
+  constructor(
+    startDate: Date,
+    endDate: Date,
+    title: string,
+    description: string,
+    industrysector: string,
+    employmentType: string
+  ) {
     this.startDate = startDate;
     this.endDate = endDate;
     this.title = title;

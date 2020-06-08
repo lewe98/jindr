@@ -2,7 +2,8 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
 import { ProfileResumeComponent } from './profile-resume.component';
-import { HttpClientTestingModule } from "@angular/common/http/testing";
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ProfileResumeComponent', () => {
   let component: ProfileResumeComponent;
@@ -10,8 +11,8 @@ describe('ProfileResumeComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ProfileResumeComponent, HttpClientTestingModule ],
-      imports: [IonicModule.forRoot()]
+      declarations: [ ProfileResumeComponent ],
+      imports: [IonicModule.forRoot(), HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfileResumeComponent);

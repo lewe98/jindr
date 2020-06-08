@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
+import { AuthService } from '../../../services/Auth/auth.service';
+import { User } from '../../../../../interfaces/user';
 
 @Component({
   selector: 'app-profile-view',
@@ -7,7 +9,10 @@ import { ModalController } from '@ionic/angular';
   styleUrls: ['./profile-view.component.scss']
 })
 export class ProfileViewComponent implements OnInit {
-  constructor(public modalCtrl: ModalController) {}
+  public user: User;
+  constructor(
+    public modalCtrl: ModalController,
+    private authService: AuthService) {}
 
   ngOnInit() {}
 
