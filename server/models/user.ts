@@ -36,6 +36,12 @@ const userSchema = mongoose.Schema({
     allowNotifications: {
         type: Boolean,
         default: true
+    },
+    resetPasswordToken: {
+        type: String
+    },
+    resetPasswordExpires: {
+        type: Date
     }
 });
 

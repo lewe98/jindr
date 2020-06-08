@@ -23,7 +23,7 @@ const authRoutes: Routes = [
     component: RegisterPage
   },
   {
-    path: 'forgot-pw',
+    path: 'forgot-pw/:token',
     component: ForgotPwComponent
   }
 ];

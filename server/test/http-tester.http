@@ -58,7 +58,23 @@ Content-Type: application/json
 
 {
   "user": {
-    "email": "john@doe.de"
+    "email": "valle@test.de",
+    "token": "a89c41adf3b479af510c36e83274bde9f80ed8dd"
+  }
+}
+
+###
+GET http://localhost:8080/forgot-pw
+Content-Type: application/json
+
+###
+POST http://localhost:8080/forgot-pw/jsjsjsjsjsjsjsjs
+Content-Type: application/json
+
+{
+  "user": {
+    "email": "valle@test.de",
+    "password:": "passwort27"
   }
 }
 

@@ -1,41 +1,6 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
 require('dotenv').config();
 var express = require('express');
 var mongoose = require('mongoose');
@@ -49,7 +14,10 @@ var SALT_WORK_FACTOR = 10;
 var fs = require('fs');
 var AWS = require('aws-sdk');
 var nodemailer = require('nodemailer');
+var crypto = require('crypto');
 var User = require('./models/user');
+var token;
+var expirationDate;
 var MONGODB_URI = process.env.MONGODB_URI;
 var MONGODB_NAME = process.env.MONGODB_NAME;
 var ORIGIN_URL = process.env.ORIGIN_URL;
@@ -78,8 +46,8 @@ app.set('port', process.env.PORT);
 /* istanbul ignore next */
 if (process.env.NODE_ENV.trim() !== 'test') {
     app.listen(app.get('port'), function () {
-        (function () { return __awaiter(void 0, void 0, void 0, function () {
-            return __generator(this, function (_a) {
+        (function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         // eslint-disable-next-line
@@ -95,9 +63,9 @@ if (process.env.NODE_ENV.trim() !== 'test') {
 }
 /* istanbul ignore next */
 function dbConnect() {
-    return __awaiter(this, void 0, void 0, function () {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
         var err_1;
-        return __generator(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
@@ -135,7 +103,7 @@ var errorFormatter = function (e) {
     var all = e.substring(e.indexOf(':') + 1).trim();
     var allAsArray = all.split(',').map(function (err) { return err.trim(); });
     allAsArray.forEach(function (error) {
-        var _a = error.split(':').map(function (err) { return err.trim(); }), key = _a[0], value = _a[1];
+        var _a = tslib_1.__read(error.split(':').map(function (err) { return err.trim(); }), 2), key = _a[0], value = _a[1];
         errors[key] = value;
     });
     return errors;
@@ -208,12 +176,12 @@ app.post('/login', function (req, res) {
     var email = req.body.email;
     var password = req.body.password;
     var deviceID = req.body.deviceID;
-    var opts = { "new": true };
+    var opts = { new: true };
     User.findOne({ email: email })
         .select('+password')
-        .exec(function (err, user) { return __awaiter(void 0, void 0, void 0, function () {
+        .exec(function (err, user) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
         var _a;
-        return __generator(this, function (_b) {
+        return tslib_1.__generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     if (!err) return [3 /*break*/, 1];
@@ -267,8 +235,8 @@ app.post('/login', function (req, res) {
  *       "data": user
  *     }
  */
-app.get('/login/:deviceID', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
+app.get('/login/:deviceID', function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+    return tslib_1.__generator(this, function (_a) {
         User.findOne({ deviceID: req.params.deviceID })
             .select('-password')
             .exec(function (err, user) {
@@ -311,10 +279,10 @@ app.get('/login/:deviceID', function (req, res) { return __awaiter(void 0, void 
  *       "message": "Successfully logged out"
  *     }
  */
-app.post('/logout', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
+app.post('/logout', function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+    return tslib_1.__generator(this, function (_a) {
         if (mongoose.Types.ObjectId.isValid(req.body.userID)) {
-            User.findByIdAndUpdate(req.body.userID, { $set: { deviceID: null } }, { "new": true }).then(function () {
+            User.findByIdAndUpdate(req.body.userID, { $set: { deviceID: null } }, { new: true }).then(function () {
                 res.status(200).send({
                     message: 'Successfully logged out'
                 });
@@ -343,37 +311,47 @@ app.post('/logout', function (req, res) { return __awaiter(void 0, void 0, void 
  *       "message": "Updated User"
  *     }
  */
-app.put('/update-user', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var doc, data, _i, _a, _b, key, value, hash, e_1, e_2;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
+app.put('/update-user', function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+    var doc, data, _a, _b, _c, key, value, hash, e_1, e_2;
+    var e_3, _d;
+    return tslib_1.__generator(this, function (_e) {
+        switch (_e.label) {
             case 0:
                 data = {};
-                // eslint-disable-next-line no-loops/no-loops
-                for (_i = 0, _a = Object.entries(req.body.user); _i < _a.length; _i++) {
-                    _b = _a[_i], key = _b[0], value = _b[1];
-                    if (key !== '_id') {
-                        data[key] = value;
+                try {
+                    // eslint-disable-next-line no-loops/no-loops
+                    for (_a = tslib_1.__values(Object.entries(req.body.user)), _b = _a.next(); !_b.done; _b = _a.next()) {
+                        _c = tslib_1.__read(_b.value, 2), key = _c[0], value = _c[1];
+                        if (key !== '_id') {
+                            data[key] = value;
+                        }
                     }
+                }
+                catch (e_3_1) { e_3 = { error: e_3_1 }; }
+                finally {
+                    try {
+                        if (_b && !_b.done && (_d = _a.return)) _d.call(_a);
+                    }
+                    finally { if (e_3) throw e_3.error; }
                 }
                 if (!mongoose.Types.ObjectId.isValid(req.body.user._id)) return [3 /*break*/, 9];
                 if (!req.body.password) return [3 /*break*/, 6];
                 return [4 /*yield*/, bcrypt.hashSync(req.body.password, SALT_WORK_FACTOR)];
             case 1:
-                hash = _c.sent();
-                _c.label = 2;
+                hash = _e.sent();
+                _e.label = 2;
             case 2:
-                _c.trys.push([2, 4, , 5]);
-                return [4 /*yield*/, User.findOneAndUpdate({ _id: req.body.user._id }, { password: hash }, { "new": true })];
+                _e.trys.push([2, 4, , 5]);
+                return [4 /*yield*/, User.findOneAndUpdate({ _id: req.body.user._id }, { password: hash }, { new: true })];
             case 3:
-                doc = _c.sent();
+                doc = _e.sent();
                 res.status(200).send({
                     message: 'Password changed',
                     data: prepareUser(doc)
                 });
                 return [3 /*break*/, 5];
             case 4:
-                e_1 = _c.sent();
+                e_1 = _e.sent();
                 res.status(400).send({
                     message: 'Something went wrong',
                     errors: errorFormatter(e_1.message)
@@ -381,20 +359,20 @@ app.put('/update-user', function (req, res) { return __awaiter(void 0, void 0, v
                 return [3 /*break*/, 5];
             case 5: return [3 /*break*/, 9];
             case 6:
-                _c.trys.push([6, 8, , 9]);
+                _e.trys.push([6, 8, , 9]);
                 return [4 /*yield*/, User.findOneAndUpdate({ _id: req.body.user._id }, data, {
-                        "new": true,
+                        new: true,
                         context: 'query'
                     })];
             case 7:
-                doc = _c.sent();
+                doc = _e.sent();
                 res.status(200).send({
                     message: 'Updated User',
                     data: prepareUser(doc)
                 });
                 return [3 /*break*/, 9];
             case 8:
-                e_2 = _c.sent();
+                e_2 = _e.sent();
                 res.status(400).send({
                     message: 'Something went wrong',
                     errors: errorFormatter(e_2.message)
@@ -468,7 +446,8 @@ app.post('/upload-image', function (req, res) {
             message: 'Image saved',
             data: result
         });
-    })["catch"](function (err) {
+    })
+        .catch(function (err) {
         res.status(500).send({
             message: 'Upload failed',
             errors: err
@@ -478,61 +457,217 @@ app.post('/upload-image', function (req, res) {
 /**
  * @api {post} /sendmail sends mail containing a link to reset password
  * @apiName SendMail
- * @apiGroup Mail
  *
  * @apiDescription Pass mail in request body.
- * The configured mail client sends a mail to the users mailing address.
+ * The configured mail client sends a mail to the users mailing address that includes a link, to reset the user's password.
  *
  * @apiParam {String} mail User's mailing address
+ * @apiParam {String} BASE_URL the Location object's URL's origin
+ * @apiParam {String} RESET_URL Addition of the required route to BASE_URL
+ * @apiParam {String} token random token to authenticate the user
+ * @apiParam {Date} expirationDate timestamp when the reset link expires
  *
  * @apiSuccess {String} message Notification that the mail has been sent successfully.
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 201 Created
  *     {
- *       message: 'Mail has been sent: ' + info.messageId
+ *       message: 'Mail has been sent. Check your inbox.'
  *     }
  *
  * @apiError InvalidInput Method fails if user transmits an invalid mailing address.
+ * @apiError MailingError Mail could not be sent because of issues of mailing provider (smtp.web.de).
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {
  *       "message: 'Could not send mail!',
- *       "errors": an Array of Errors
+ *       "errors": 'No account with that email address exists.'
  *     }
  */
 app.post('/sendmail', function (req, res) {
     var email = req.body.user.email;
-    // eslint-disable-next-line
-    var html = "<a href=\"https://google.com\">Click here to reset your password.</a>";
-    var transporter = nodemailer.createTransport({
-        host: 'smtp.web.de',
-        port: 587,
-        secure: false,
-        auth: {
-            user: 'app.jindr@web.de',
-            pass: 'JindrPW1!'
-        }
-    });
-    var mailOptions = {
-        from: 'jindr Support app.jindr@web.de',
-        to: email,
-        subject: 'jindr - Reset password',
-        html: html
-    };
-    transporter.sendMail(mailOptions, function (err, info) {
-        if (err) {
-            res.status(400).send({
-                message: 'Could not send mail!',
-                errors: err.toString()
-            });
-        }
-        else {
-            res.status(201).send({
-                message: 'Mail has been sent: ' + info.messageId
-            });
-        }
-    });
+    token = crypto.randomBytes(20).toString('hex');
+    expirationDate = new Date().setHours(new Date().getHours() + 1);
+    var BASE_URL = req.body.user.BASE_URL;
+    var RESET_URL = BASE_URL + '/auth/forgot-pw/' + token;
+    User.findOne({ email: email })
+        .select('+password')
+        .exec(function (err, user) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!err) return [3 /*break*/, 1];
+                    res.status(500).send({
+                        message: 'Error: ' + err
+                    });
+                    return [3 /*break*/, 5];
+                case 1:
+                    if (!user) return [3 /*break*/, 4];
+                    return [4 /*yield*/, User.findOneAndUpdate({ email: user.email }, {
+                            resetPasswordToken: token,
+                            resetPasswordExpires: expirationDate
+                        })];
+                case 2:
+                    _a.sent();
+                    return [4 /*yield*/, send()];
+                case 3:
+                    _a.sent();
+                    return [3 /*break*/, 5];
+                case 4:
+                    res.status(400).send({
+                        message: 'No account with that email address exists.'
+                    });
+                    _a.label = 5;
+                case 5: return [2 /*return*/];
+            }
+        });
+    }); });
+    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+    function send() {
+        var html = '<p>Hey there! Click </p><a href=' +
+            RESET_URL +
+            '>here</a>' +
+            '<p> to reset your password. \n This email was sent to ' +
+            email +
+            '. ' +
+            '\n If you do not want to change your password, just ignore this email.</p>';
+        var transporter = nodemailer.createTransport({
+            host: 'smtp.web.de',
+            port: 587,
+            secure: false,
+            auth: {
+                user: 'app.jindr@web.de',
+                pass: 'JindrPW1!'
+            }
+        });
+        var mailOptions = {
+            from: 'jindr Support app.jindr@web.de',
+            to: email,
+            subject: 'jindr - Reset password',
+            html: html
+        };
+        transporter.sendMail(mailOptions, function (err) {
+            if (err) {
+                res.status(400).send({
+                    message: 'Could not send mail!',
+                    errors: err.toString()
+                });
+            }
+            else {
+                res.status(201).send({
+                    message: 'Mail has been sent. Check your inbox.'
+                });
+            }
+        });
+    }
+});
+/**
+ * @api {get} /forgot-pw returns the token and the date of expiration
+ * @apiName ForgotPassword
+ *
+ * @apiDescription when entering the password reset site, the token and the expiration date are sent to the client,
+ * to authenticate the user
+ *
+ * @apiParam {String} token random token to authenticate the user
+ * @apiParam {Date} expirationDate timestamp when the reset link expires
+ *
+ * @apiSuccess {String} message Success Message if user is still logged in.
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       "token": token
+ *       "exp": expirationDate
+ *     }
+ *
+ * @apiError TokenError Token is invalid or has expired.
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "message: 'Password reset token is invalid or has expired.'
+ *     }
+ */
+app.get('/forgot-pw', function (req, res) {
+    User.findOne({
+        resetPasswordToken: token,
+        resetPasswordExpires: { $gt: Date.now() }
+    })
+        .select('+password')
+        .exec(function (err, user) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            if (!user) {
+                res.status(400).send({
+                    message: 'Password reset token is invalid or has expired.'
+                });
+            }
+            else {
+                res.status(201).send({
+                    token: token,
+                    exp: expirationDate
+                });
+            }
+            return [2 /*return*/];
+        });
+    }); });
+});
+/**
+ * @api {post} /forgot-pw/:token route to reset the users password
+ * @apiName ForgotPassword
+ *
+ * @apiDescription checks if token is valid and not expired yet.
+ *
+ * @apiParam {String} token random token to authenticate the user
+ * @apiParam {String} password user's new password, that is immediately encrypted
+ *
+ * @apiSuccess {String} message Success Message if user is still logged in.
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       "message": 'New password has been set.'
+ *     }
+ *
+ * @apiError MailError Email is invalid.
+ * @apiError TokenError Token is invalid or has expired.
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "message: 'Password reset token is invalid or has expired.'
+ *     }
+ */
+app.post('/forgot-pw/:token', function (req, res) {
+    User.findOne({
+        resetPasswordToken: req.params.token,
+        resetPasswordExpires: { $gt: Date.now() }
+    })
+        .select('+password')
+        .exec(function (err, user) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!err) return [3 /*break*/, 1];
+                    res.status(400).send({
+                        message: 'Password reset token is invalid or has expired.'
+                    });
+                    return [3 /*break*/, 4];
+                case 1:
+                    if (!user) return [3 /*break*/, 3];
+                    return [4 /*yield*/, User.findOneAndUpdate({ resetPasswordToken: req.params.token }, {
+                            password: bcrypt.hashSync(req.body.user.password, SALT_WORK_FACTOR)
+                        })];
+                case 2:
+                    _a.sent();
+                    res.status(201).send({
+                        message: 'New password has been set.'
+                    });
+                    return [3 /*break*/, 4];
+                case 3:
+                    res.status(400).send({
+                        message: 'No account with that email address exists.'
+                    });
+                    _a.label = 4;
+                case 4: return [2 /*return*/];
+            }
+        });
+    }); });
 });
 /**
  * Prepares user to be sent to client
@@ -583,3 +718,4 @@ function uploadFile(file, name) {
  *
  */
 module.exports = { app: app, prepareUser: prepareUser };
+//# sourceMappingURL=server.js.map

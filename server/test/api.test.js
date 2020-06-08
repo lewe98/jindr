@@ -422,4 +422,71 @@ jest_without_globals_1.describe('Test Get User', function () {
         });
     }); });
 });
+jest_without_globals_1.describe('Send mail', function () {
+    jest_without_globals_1.it('should send a mail', function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+        var res;
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, request(app)
+                        .post('/sendmail')
+                        .send({
+                        user: { email: EMAIL_ONE }
+                    })];
+                case 1:
+                    res = _a.sent();
+                    jest_without_globals_1.expect(res.statusCode).toEqual(201);
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+    jest_without_globals_1.it('should fail if email is invalid', function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+        var res;
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, request(app)
+                        .post('/register')
+                        .send({
+                        user: { email: 'John.com' }
+                    })];
+                case 1:
+                    res = _a.sent();
+                    jest_without_globals_1.expect(res.statusCode).toEqual(400);
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+});
+jest_without_globals_1.describe('Get token and expiration date', function () {
+    jest_without_globals_1.it('should fail if no token and expiration date is set in server', function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+        var res;
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, request(app)
+                        .post('/forgot-pw')];
+                case 1:
+                    res = _a.sent();
+                    jest_without_globals_1.expect(res.statusCode).toEqual(404);
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+});
+jest_without_globals_1.describe('Reset password', function () {
+    jest_without_globals_1.it('should fail if token is invalid, expired or unset', function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+        var res;
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, request(app)
+                        .post('/forgot-pw/a89c41adf3b479af510c36e83274bde9f80ed8dd')
+                        .send({
+                        user: { password: 'passwort74' }
+                    })];
+                case 1:
+                    res = _a.sent();
+                    jest_without_globals_1.expect(res.statusCode).toEqual(400);
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+});
 //# sourceMappingURL=api.test.js.map
