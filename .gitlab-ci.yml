@@ -77,6 +77,7 @@ staging:
     - curl -sL https://deb.nodesource.com/setup_12.x | bash -
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_STAGING --api-key=$HEROKU_API_KEY
+  timeout: 1h
   environment:
     name: staging
     url: http://www.staging.jindr.de
@@ -95,6 +96,7 @@ production:
     - curl -sL https://deb.nodesource.com/setup_12.x | bash -
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_PRODUCTION --api-key=$HEROKU_API_KEY
+  timeout: 1h
   environment:
     name: production
     url: http://www.jindr.de
