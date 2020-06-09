@@ -1,68 +1,31 @@
-<ion-header>
-  <ion-toolbar class="toolbar-no-border">
-    <ion-title>Public view</ion-title>
-    <ion-buttons slot="end">
-      <ion-button color="danger" (click)="close()">
-        Close
+<ion-content [scrollEvents]="true" (ionScroll)="handleScroll($event)" class="profile-page">
+  <div class="profile-header">
+    <app-image-shell [src]="user.image"></app-image-shell>
+
+    <ion-fab vertical="bottom" horizontal="end" edge slot="fixed">
+      <ion-button color="white" class="button-custom button-icon button-sm button-brand" (click)="close()">
+        <ion-icon name="arrow-down" slot="icon-only"></ion-icon>
       </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+    </ion-fab>
+  </div>
 
-<ion-content>
+  <div class="profile-info border-bottom">
+    <div class="profile-title">
+      <span class="profile-user-name">
+        {{user.firstName}} {{user.lastName.charAt(0)}}.
+      </span>
+    </div>
+    <span class="profile-user-age">{{(date)}} Years Old</span>
+  </div>
 
-  <ion-card>
-    <ion-grid>
-      <ion-row class="view-enumeration">
-        <ion-col size-lg="6" size-md="6" size-sm="6" size="12">
-          <div>
-            <ion-avatar class="avatar">
-              <app-aspect-ratio [ratio]="{w: 1, h: 1}">
-                <app-image-shell class="user-image" [src]="user?.image"></app-image-shell>
-              </app-aspect-ratio>
-            </ion-avatar>
-          </div>
-        </ion-col>
-        <ion-col size-lg="6" size-md="6" size-sm="6" size="12">
-          <div style="margin-top: 20%">
-            <ion-card-title>{{user.firstName}} {{user.lastName}}</ion-card-title>
-          </div>
-        </ion-col>
+  <div class="profile-intro border-bottom" *ngIf="user.aboutMe">
+    <ion-note>ABOUT ME</ion-note>
+    <p>{{user.aboutMe}}
+    </p>
+  </div>
 
-
-        <ion-item-divider>
-        </ion-item-divider>
-
-        <ion-col size-lg="12" size-md="12" size-sm="12" size="12">
-          <div *ngIf="user.dateofbirth">
-            <ion-col size-lg="6" size-md="6" size-sm="12" size="12">
-              <ion-card-title>Date of Birth</ion-card-title>
-            </ion-col>
-            <ion-col size-lg="6" size-md="6" size-sm="12" size="12">
-              <ion-card-content>{{user.dateofbirth|date:'dd.MM.yyyy'}}</ion-card-content>
-            </ion-col>
-          </div>
-        </ion-col>
-
-        <ion-item-divider>
-        </ion-item-divider>
-
-        <ion-col size-lg="12" size-md="12" size-sm="12" size="12">
-          <div *ngIf="user.description">
-            <ion-col size-lg="6" size-md="6" size-sm="12" size="12">
-              <ion-card-title>Description</ion-card-title>
-            </ion-col>
-            <ion-col size-lg="6" size-md="6" size-sm="12" size="12">
-              <ion-card-content>{{user.description}}</ion-card-content>
-            </ion-col>
-          </div>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </ion-card>
-
+  <div class="profile-intro border-bottom" *ngIf="user.resume">
+    <ion-note>My CV</ion-note>
+    <app-curriculum [inputUser]="user"></app-curriculum>
+  </div>
 </ion-content>
-
-
-
-

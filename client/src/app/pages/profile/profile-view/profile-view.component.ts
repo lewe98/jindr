@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController, NavController, NavParams } from '@ionic/angular';
+import { ModalController, NavParams } from '@ionic/angular';
 import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
-import { ToastService } from '../../../services/Toast/toast.service';
-import { LocationService } from '../../../services/Location/location.service';
 
 @Component({
   selector: 'app-profile-view',
@@ -12,20 +10,31 @@ import { LocationService } from '../../../services/Location/location.service';
 })
 export class ProfileViewComponent implements OnInit {
   user: User = new User();
+  date;
   constructor(
-    private navCtrl: NavController,
     private modalCtrl: ModalController,
-    private authService: AuthService,
-    private toastService: ToastService,
-    private locationService: LocationService,
+    public authService: AuthService,
     private navParams: NavParams
   ) {}
 
   async ngOnInit() {
     Object.assign(this.user, this.navParams.get('user'));
+    if (this.user.dateOfBirth) {
+      this.date = Math.floor(
+        (Date.now() - this.user.dateOfBirth) / 31556952000
+      );
+    }
   }
 
   close() {
     this.modalCtrl.dismiss();
+  }
+
+  handleScroll(event: any) {
+    const scrollTop = event.detail.scrollTop;
+
+    if (scrollTop < 0 && Math.abs(scrollTop) >= 150) {
+      this.close();
+    }
   }
 }

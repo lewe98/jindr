@@ -1,25 +1,26 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, NavParams } from '@ionic/angular';
 
-import { CurriculumComponent } from './curriculum.component';
+import { ProfileResumeComponent } from './profile-resume.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 
-describe('CurriculumComponent', () => {
-  let component: CurriculumComponent;
-  let fixture: ComponentFixture<CurriculumComponent>;
+describe('ProfileResumeComponent', () => {
+  let component: ProfileResumeComponent;
+  let fixture: ComponentFixture<ProfileResumeComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [CurriculumComponent],
+      declarations: [ProfileResumeComponent],
       imports: [
         IonicModule.forRoot(),
         HttpClientTestingModule,
         RouterTestingModule
-      ]
+      ],
+      providers: [{ provide: NavParams }]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CurriculumComponent);
+    fixture = TestBed.createComponent(ProfileResumeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

@@ -4,10 +4,12 @@ import {
   ModalController,
   NavController
 } from '@ionic/angular';
-import { CurriculumComponent } from '../curriculum/curriculum.component';
 import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
 import { ToastService } from '../../../services/Toast/toast.service';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ProfileResumeComponent } from '../profile-resume/profile-resume.component';
 
 @Component({
   selector: 'app-profile-edit',
@@ -15,44 +17,51 @@ import { ToastService } from '../../../services/Toast/toast.service';
   styleUrls: ['./profile-edit.component.scss']
 })
 export class ProfileEditComponent implements OnInit {
-  public description: string;
-  public dateofbirth: number;
-  public firstName: string;
-  public lastName: string;
-
+  editForm: FormGroup;
   user: User = new User();
   constructor(
     private modalCtrl: ModalController,
     private navCtrl: NavController,
     private authService: AuthService,
     private alertCtrl: AlertController,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private router: Router
   ) {}
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
+    this.editForm = new FormGroup({
+      firstName: new FormControl(this.user.firstName, Validators.required),
+      lastName: new FormControl(this.user.lastName, Validators.required),
+      aboutMe: new FormControl(this.user.aboutMe)
+    });
   }
 
-  saveedit() {
-    this.user.description = this.description;
-    this.user.dateofbirth = this.dateofbirth;
-    this.user.firstName = this.firstName;
-    this.user.lastName = this.lastName;
+  selectDOB(event) {
+    this.user.dateOfBirth = new Date(event.detail.value).getTime();
+  }
+
+  save() {
+    this.user.firstName = this.editForm.controls.firstName.value;
+    this.user.lastName = this.editForm.controls.lastName.value;
+    this.user.aboutMe = this.editForm.controls.aboutMe.value;
     this.authService
       .updateUser(this.user)
       .then(() => {
-        this.toastService.presentToast('Profil updated.');
+        this.router.navigate(['pages/profile']);
       })
       .catch((err) => {
         this.toastService.presentWarningToast(err.errors.email, 'Error!');
         this.user = this.authService.getUser();
-        console.log(this.authService.user);
       });
   }
 
   async editCurriculum() {
     const modal = await this.modalCtrl.create({
-      component: CurriculumComponent
+      component: ProfileResumeComponent,
+      componentProps: {
+        inputUser: this.authService.getUser()
+      }
     });
     return await modal.present();
   }

@@ -1,10 +1,37 @@
-<ion-header>
-  <ion-toolbar class="toolbar-no-border">
-    <ion-title>Edit CV</ion-title>
-    <ion-buttons slot="end">
-      <ion-button color="danger" (click)="close()">
-        Cancel
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<ion-list class="items-list" *ngIf="inputUser?.resume.length > 0">
+    <ion-item class="list-item" *ngFor="let item of sortedResume">
+        <ion-row class="resume-row">
+            <ion-col class="general-data-wrapper" size="12">
+                <div class="general-info">
+                    <h3 class="company-name">
+                        <app-text-shell animation="bouncing" [data]="'Company: ' + item.company"></app-text-shell>
+                    </h3>
+                    <h5 class="employment-type">
+                        <app-text-shell animation="bouncing" [data]="item.employmentType"></app-text-shell>
+                    </h5>
+                </div>
+            </ion-col>
+            <ion-col size="12" class="description">
+                <app-text-shell animation="bouncing" [data]="item.description"></app-text-shell>
+            </ion-col>
+            <ion-col size="8" class="date-col">
+                {{item.startDate | date: 'dd.MM.yy'}} - {{item.endDate | date: 'dd.MM.yy'}}
+            </ion-col>
+            <ion-col size="3" class="actions-col" *ngIf="isEdit">
+                <ion-row>
+                    <ion-col size="6" style="margin-right: 10px">
+                        <ion-button class="action-btn" (click)="deleteResume(item)">
+                            <ion-icon class="btn-icon" slot="icon-only"  name="trash-sharp"></ion-icon>
+                        </ion-button>
+                    </ion-col>
+                    <ion-col size="3">
+                        <ion-button class="action-btn" (click)="editResume(item)">
+                            <ion-icon class="btn-icon" slot="icon-only"  name="pencil-sharp"></ion-icon>
+                        </ion-button>
+                    </ion-col>
+                </ion-row>
+
+            </ion-col>
+        </ion-row>
+    </ion-item>
+</ion-list>
