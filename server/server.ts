@@ -479,7 +479,9 @@ app.post('/sendmail', (req: Request, res: Response) => {
   function send() {
     const html =
       '<p>Hey there! \n </p> ' +
-        '<a href=' + RESET_URL + '><p>Click here to reset your password.</a> \n This email was sent to ' +
+      '<a href=' +
+      RESET_URL +
+      '><p>Click here to reset your password.</a> \n This email was sent to ' +
       email +
       '. ' +
       '\n If you do not want to change your password, just ignore this email.</p>';

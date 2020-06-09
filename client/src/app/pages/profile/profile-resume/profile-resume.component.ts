@@ -4,7 +4,7 @@ import { ToastService } from '../../../services/Toast/toast.service';
 import { AuthService } from '../../../services/Auth/auth.service';
 import { User } from '../../../../../interfaces/user';
 import { ResumeEntry } from '../../../../../interfaces/ResumeEntry';
-import { ModalController } from '@ionic/angular';
+import { ModalController, NavParams } from '@ionic/angular';
 
 @Component({
   selector: 'app-profile-resume',
@@ -13,79 +13,69 @@ import { ModalController } from '@ionic/angular';
 })
 export class ProfileResumeComponent implements OnInit {
   @Input() inputUser: User;
-  @Input() resumeIndex: number;
-  myReview = false;
-
-  user = new User();
   resumeEntry: ResumeEntry;
-  startDate: Date;
-  endDate: Date;
-  title: string;
-  description: string;
-  industrysector: string;
-  employmentType: string;
+  isEdit: boolean;
+  index: number;
 
   constructor(
     private databaseController: DatabaseControllerService,
     private toastService: ToastService,
     public authService: AuthService,
-    public modalCtrl: ModalController
-  ) {
-  }
+    public modalCtrl: ModalController,
+    private navParams: NavParams
+  ) {}
 
   close() {
     this.modalCtrl.dismiss();
   }
 
   ngOnInit() {
-    Object.assign(this.user, this.authService.getUser());
-    this.myReview = this.inputUser?._id === this.authService.user?._id;
-    if (this.resumeIndex >= 0) {
-      const tmpResumeEntry = this.inputUser.resume[this.resumeIndex];
-      this.startDate = tmpResumeEntry.startDate;
-      this.endDate = tmpResumeEntry.endDate;
-      this.title = tmpResumeEntry.title;
-      this.description = tmpResumeEntry.description;
-      this.industrysector = tmpResumeEntry.industrysector;
-      this.employmentType = tmpResumeEntry.employmentType;
-    }
-  }
-
-  addResumeEntry() {
-    if (this.myReview) {
-      if (this.title !== '' && this.description !== '' && this.industrysector !== '' && this.employmentType !== '') {
-        if (new Date(this.startDate).getTime() < new Date(this.endDate).getTime()) {
-        this.resumeEntry = new ResumeEntry(
-          new Date(this.startDate), new Date(this.endDate), this.title, this.description, this.industrysector, this.employmentType
-        );
-        if (this.resumeIndex >= 0) {
-          this.user.resume[this.resumeIndex] = this.resumeEntry;
-        } else {
-          this.user.resume.push(this.resumeEntry);
-        }
-
-        this.user.resume.sort((a: ResumeEntry, b: ResumeEntry) => {
-          return new Date(a.startDate).valueOf() - new Date(b.startDate).valueOf();
-        });
-        this.updateUser();
-      } else {
-          this.toastService.presentWarningToast('The start date must be before the end date.', 'Wrong date!');
-        }
-      } else {
-        this.toastService.presentWarningToast('You must fill out every line.', 'Empty field!');
-      }
+    this.index = this.navParams.get('resumeIndex');
+    this.isEdit = this.navParams.get('isEdit');
+    if (this.isEdit) {
+      console.log('hallo');
+      this.resumeEntry = this.inputUser.resume[this.index];
+      this.isEdit = true;
     } else {
-      this.toastService.presentWarningToast('You are not allowed do chance th resume.', 'Authorisation error!');
+      this.resumeEntry = new ResumeEntry();
+      this.isEdit = false;
+    }
+    console.log(this.resumeEntry);
+  }
+
+  save() {
+    if (
+      this.resumeEntry.company &&
+      this.resumeEntry.description &&
+      this.resumeEntry.startDate &&
+      this.resumeEntry.endDate
+    ) {
+      if (this.isEdit) {
+        this.inputUser.resume[this.index] = this.resumeEntry;
+      } else {
+        this.inputUser.resume.push(this.resumeEntry);
+      }
+      this.authService
+        .updateUser(this.inputUser)
+        .then(() => {
+          this.close();
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err.message, 'Error');
+        });
+    } else {
+      this.toastService.presentWarningToast(
+        'Please enter all required information!',
+        'Error!'
+      );
     }
   }
 
-  updateUser() {
-    this.authService.updateUser(this.user).then(() => {
-        Object.assign(this.user, this.authService.getUser());
-      }
-    ).catch((err) => {
-      this.toastService.presentWarningToast(err.message, 'Resume Error');
-    });
-    this.modalCtrl.dismiss();
+  selectStart(event) {
+    this.resumeEntry.startDate = new Date(event.detail.value).getTime();
+  }
+
+  selectEnd(event) {
+    this.resumeEntry.endDate = new Date(event.detail.value).getTime();
   }
 }

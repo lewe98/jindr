@@ -63,7 +63,7 @@ export class LocationService implements OnDestroy {
    */
   watchPosition() {
     this.wait = Geolocation.watchPosition(
-      { enableHighAccuracy: false, maximumAge: 600 * 1000 },
+      { enableHighAccuracy: true, maximumAge: 300 * 1000 },
       (position) => {
         this.ngZone.run(() => {
           this.coordsSubject.next({

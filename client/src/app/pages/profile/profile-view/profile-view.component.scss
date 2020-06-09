@@ -1,15 +1,31 @@
-app-image-shell.user-image {
-  --image-shell-border-radius: 50%;
+@import '../../../../sass/helper.scss';
+
+:host {
+  --border-color-rgb: rgba(var(--ion-color-medium-rgb), 0.1);
+}
+.profile-header {
+  height: 70vh;
+  min-height: 400px;
+  position: relative;
 }
 
-.avatar {
-  width: 120px;
-  height: 120px;
-  display: inline-block
+.profile-info {
+  padding: 16px;
+
+  .profile-title {
+    margin-bottom: 8px;
+  }
+
+  .profile-user-name {
+    color: #585858;
+    font-size: 32px;
+    font-weight: 700;
+  }
 }
 
-.view-enumeration {
-  height: auto;
-  text-align: center;
-
+.profile-intro {
+  padding: 4px 16px;
+  line-height: 1.4em;
+  font-size: 16px;
+  color: var(--ion-color-medium);
 }

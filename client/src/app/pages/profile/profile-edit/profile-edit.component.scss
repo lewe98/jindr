@@ -30,3 +30,12 @@ ion-list {
 ion-button{
  width: 100%;
 }
+
+.list-general {
+  ion-item {
+    ion-label {
+      font-size: smaller;
+      color: var(--ion-color-medium);
+    }
+  }
+}
