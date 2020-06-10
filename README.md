@@ -156,3 +156,8 @@ whether they are in the search radius specified by the user. Since the size of t
 maximum search radius, it will return all jobs that could possibly be in his radius.
 <br> This drastically reduces the amount of jobs that need to be searched on each location change, since it ignores all jobs
 that can't possibly be in his radius.
+
+So in the example of Germany, the algorithm would create a raster of 208 tiles with roughly 50x50km.
+So instead of looking for jobs in entire germany, it would only look up jobs in the same tile and in its at most
+8 surrounding tiles (even less, if the tile is a border tile and has no neighbors in some directions).
+This would reduce the amount of jobs that need to be searched by ~96%.
