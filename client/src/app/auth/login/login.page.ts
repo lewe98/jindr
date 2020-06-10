@@ -85,5 +85,10 @@ export class LoginPage implements OnInit {
     this.error = '';
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    const token = document.location.pathname.replace('/auth/register/', '');
+    if (document.location.href.includes('/auth/register/')){
+      this.authService.verifyRegistration(token);
+    }
+  }
 }
