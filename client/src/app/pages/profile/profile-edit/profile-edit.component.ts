@@ -40,7 +40,9 @@ export class ProfileEditComponent implements OnInit {
   selectDOB(event) {
     this.user.dateOfBirth = new Date(event.detail.value).getTime();
   }
-
+/**
+ * Save the changed user data.
+ * */
   save() {
     this.user.firstName = this.editForm.controls.firstName.value;
     this.user.lastName = this.editForm.controls.lastName.value;
@@ -48,6 +50,7 @@ export class ProfileEditComponent implements OnInit {
     this.authService
       .updateUser(this.user)
       .then(() => {
+        this.toastService.presentToast('Profil updated.');
         this.router.navigate(['pages/profile']);
       })
       .catch((err) => {
@@ -55,7 +58,9 @@ export class ProfileEditComponent implements OnInit {
         this.user = this.authService.getUser();
       });
   }
-
+/**
+ * Calls the Curriculum-Component.
+ * */
   async editCurriculum() {
     const modal = await this.modalCtrl.create({
       component: ProfileResumeComponent,
