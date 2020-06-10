@@ -64,6 +64,7 @@ const userSchema = mongoose.Schema({
     }
 });
 
+
 userSchema.pre('findOneAndUpdate', function(next) {
     this.options.runValidators = true;
     next();
