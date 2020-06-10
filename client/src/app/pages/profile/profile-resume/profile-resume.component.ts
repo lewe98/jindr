@@ -30,8 +30,7 @@ export class ProfileResumeComponent implements OnInit {
     private toastService: ToastService,
     public authService: AuthService,
     public modalCtrl: ModalController
-  ) {
-  }
+  ) {}
 
   close() {
     this.modalCtrl.dismiss();
@@ -60,29 +59,52 @@ export class ProfileResumeComponent implements OnInit {
    */
   addResumeEntry() {
     if (this.myReview) {
-      if (this.title !== '' && this.description !== '' && this.industrysector !== '' && this.employmentType !== '') {
-        if (new Date(this.startDate).getTime() < new Date(this.endDate).getTime()) {
-        this.resumeEntry = new ResumeEntry(
-          new Date(this.startDate), new Date(this.endDate), this.title, this.description, this.industrysector, this.employmentType
-        );
-        if (this.resumeIndex >= 0) {
-          this.user.resume[this.resumeIndex] = this.resumeEntry;
-        } else {
-          this.user.resume.push(this.resumeEntry);
-        }
+      if (
+        this.title !== '' &&
+        this.description !== '' &&
+        this.industrysector !== '' &&
+        this.employmentType !== ''
+      ) {
+        if (
+          new Date(this.startDate).getTime() < new Date(this.endDate).getTime()
+        ) {
+          this.resumeEntry = new ResumeEntry(
+            new Date(this.startDate),
+            new Date(this.endDate),
+            this.title,
+            this.description,
+            this.industrysector,
+            this.employmentType
+          );
+          if (this.resumeIndex >= 0) {
+            this.user.resume[this.resumeIndex] = this.resumeEntry;
+          } else {
+            this.user.resume.push(this.resumeEntry);
+          }
 
-        this.user.resume.sort((a: ResumeEntry, b: ResumeEntry) => {
-          return new Date(b.startDate).valueOf() - new Date(a.startDate).valueOf();
-        });
-        this.updateUser();
-      } else {
-          this.toastService.presentWarningToast('The start date must be before the end date.', 'Wrong date!');
+          this.user.resume.sort((a: ResumeEntry, b: ResumeEntry) => {
+            return (
+              new Date(b.startDate).valueOf() - new Date(a.startDate).valueOf()
+            );
+          });
+          this.updateUser();
+        } else {
+          this.toastService.presentWarningToast(
+            'The start date must be before the end date.',
+            'Wrong date!'
+          );
         }
       } else {
-        this.toastService.presentWarningToast('You must fill out every line.', 'Empty field!');
+        this.toastService.presentWarningToast(
+          'You must fill out every line.',
+          'Empty field!'
+        );
       }
     } else {
-      this.toastService.presentWarningToast('You are not allowed do chance th resume.', 'Authorisation error!');
+      this.toastService.presentWarningToast(
+        'You are not allowed do chance th resume.',
+        'Authorisation error!'
+      );
     }
   }
 
@@ -92,12 +114,14 @@ export class ProfileResumeComponent implements OnInit {
    * @error it presents a alert, that the user could not be updated.
    */
   updateUser() {
-    this.authService.updateUser(this.user).then(() => {
+    this.authService
+      .updateUser(this.user)
+      .then(() => {
         Object.assign(this.user, this.authService.getUser());
-      }
-    ).catch((err) => {
-      this.toastService.presentWarningToast(err.message, 'Resume Error');
-    });
+      })
+      .catch((err) => {
+        this.toastService.presentWarningToast(err.message, 'Resume Error');
+      });
     this.modalCtrl.dismiss();
   }
 }

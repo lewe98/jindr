@@ -24,7 +24,6 @@ describe('ProfileEditComponent', () => {
     fixture.detectChanges();
   }));
 
-
   it('should create', () => {
     expect(component).toBeTruthy();
   });
