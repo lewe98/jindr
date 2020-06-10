@@ -97,29 +97,29 @@ const errorFormatter = (e) => {
 };
 
 /**
- * @api {post} /register Registers a new User
+ * @api {post} /register Starts registration of a new user
  * @apiName RegisterUser
  * @apiGroup User
  *
  * @apiDescription Pass user in request body with all required fields
- * Method runs Mongoose Validators and writes User to Database
+ * Method runs Mongoose Validators and checks if users email is already stored in database
  *
  * @apiParam {String} user An object with firstName, lastName, email and password
  *
- * @apiSuccess {String} message  SuccessMessage if all required fields passed and user is registered
+ message SuccessMessage if mail has been sent successfully
  * @apiSuccessExample Success-Response:
- *     HTTP/1.1 201 Created
+ *     HTTP/1.1 200 Ok
  *     {
- *       "message": "Successfully registered",
+ *       "message": "Mail has been sent. Check your inbox.",
  *     }
  *
- * @apiError UserNotRegistered If one of the required fields is missing or does not match the criteria
+ * @apiError ErrorMessage if mail failed to sent
+ * @apiError ErrorMessage if email provided by user already exists
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {
- *       "message: "Something went wrong",
- *       "errors": an Array of Errors
+ *       "message: "Could not send mail!"
  *     }
  */
 app.post('/register', (req: Request, res: Response) => {
@@ -167,6 +167,29 @@ app.post('/register', (req: Request, res: Response) => {
   });
 });
 
+/**
+ * @api {get} /register/:token Verifies the registration of a new user
+ * @apiName RegisterUser
+ * @apiGroup User
+ *
+ * @apiDescription Validates stored user object
+ * Method runs Mongoose Validators and sets verification status to true
+ *
+ * @apiSuccess {String} message SuccessMessage if registration was verified successfully
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 Created
+ *     {
+ *       "message": "Successfully registered.",
+ *     }
+ *
+ * @apiError ErrorMessage if registration link is invalid or has expired
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Bad Request
+ *     {
+ *       "message: "Registration link is invalid or has expired."
+ *     }
+ */
 app.get('/register/:token', (req: Request, res: Response) => {
   User.findOne({
     token: req.params.token,
@@ -199,7 +222,7 @@ app.get('/register/:token', (req: Request, res: Response) => {
  *
  * @apiDescription Pass email, password and device ID compares stored password and entered password as hash
  * if they match, the device ID will be stored in the Database for future authentication and it will
- * return the User
+ * return the User. Checks if user is verified.
  *
  * @apiParam {String} deviceID A truly unique ID from the users device
  * @apiParam {String} password the Password of the user

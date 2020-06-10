@@ -35,15 +35,15 @@ export class AuthService {
   }
 
   /**
-   * Method to register a user
+   * Method to start the registration of a new user
    * @param firstName of the user
    * @param lastName of the user
    * @param email of the user
    * @param password of the user
-   * Creates a user by sending all the information to the server to store the user in the database
+   * Sends all the user information to the server
    * status message is reported by ToastService
-   * resolves if successfully registered and created a new user
-   * rejects if registration failed
+   * resolves if registration mail has been sent successfully
+   * rejects if an error occurred
    */
   async register(firstName: string, lastName: string, email: string, password: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
@@ -73,11 +73,11 @@ export class AuthService {
   }
 
   /**
-   * Method to register a user
+   * Method to verify registration of the user
    * @param token registration token
-   * Creates a user by verifying the registration token to store the user in the database
+   * Verifies registration
    * status message is reported by ToastService
-   * resolves if successfully registered and created a new user
+   * resolves if successfully registered
    * rejects if registration failed
    */
   async verifyRegistration(token: string): Promise<any> {
