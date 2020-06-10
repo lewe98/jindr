@@ -5,7 +5,11 @@ const request = require('supertest');
 import {describe, it, expect, beforeAll, afterAll} from 'jest-without-globals'
 const dbHandler = require('./database-handler');
 const User = require('../models/user');
+const Job = require('../models/job');
 
+const southWest = {lat: 47.344777, lng: 5.888672}; // coordinates for southWestern point of a rectangle containing germany
+const northEast = {lat: 54.41893, lng: 14.888671}; // coordinates for northEastern point of a rectangle containing germany
+const maxRadius = 50; // Max search radius users can set in the app
 const EMAIL_ONE = 'email1@test.de';
 const EMAIL_TWO = 'email2@test.de';
 const DEVICE_ID = 'iphone123pwa';
@@ -17,7 +21,10 @@ let LOGGED_IN_USER;
 /**
  * Connect to a new in-memory database before running any tests.
  */
-beforeAll(async () => await dbHandler.connect());
+beforeAll(async () => {
+  await dbHandler.connect();
+  server.rasterizeMap(maxRadius, southWest, northEast);
+});
 
 /**
  * Clear all test data after every test.
@@ -239,3 +246,37 @@ describe('Test Get User', () => {
         expect(res.body.message).toBe('User not found');
     });
 });
+
+
+describe('test create job', () => {
+  it('should fail if user is outside of supported area', async () => {
+    const res = await request(app)
+      .post('/create-job')
+      .send({
+        coords: {
+          lat: 49.94484531666043,
+          lng: 5.048706257591307
+        }
+      });
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.message).toBe('Your country is currently not supported.');
+  });
+  it('should create if all required fields are filled', async () => {
+    const res = await request(app)
+      .post('/create-job')
+      .send({
+        job: {
+          title: 'Test Job',
+          description: 'Test Description',
+          creator: LOGGED_IN_USER._id
+        },
+        coords: {
+          lat: 51.3260435992175,
+          lng: 9.72345094553722
+        }
+      });
+    expect(res.statusCode).toEqual(201);
+    expect(res.body.message).toBe('Successfully created job');
+    expect(res.body.data.tile).toEqual(122);
+  });
+})
