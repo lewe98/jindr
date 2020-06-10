@@ -45,6 +45,7 @@ export class LocationService implements OnDestroy {
     this.presentLoader();
     try {
       const coordinates = await Geolocation.getCurrentPosition();
+      console.log(coordinates);
       this.currentPosition = {
         lat: coordinates.coords.latitude,
         lng: coordinates.coords.longitude
@@ -63,9 +64,10 @@ export class LocationService implements OnDestroy {
    */
   watchPosition() {
     this.wait = Geolocation.watchPosition(
-      { enableHighAccuracy: true, maximumAge: 300 * 1000 },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 3000 },
       (position) => {
         this.ngZone.run(() => {
+          console.log(position);
           this.coordsSubject.next({
             lat: position?.coords.latitude,
             lng: position?.coords.longitude
@@ -96,6 +98,9 @@ export class LocationService implements OnDestroy {
 
   async geocodeLatLng() {
     const coords = await this.getCurrentPosition();
+    if (!coords) {
+      return;
+    }
     this.geocoder.geocode({ location: coords }, (results, status) => {
       if (status === 'OK') {
         if (results[0]) {
@@ -109,6 +114,7 @@ export class LocationService implements OnDestroy {
           this.location = 'Unknown';
         }
       } else {
+        console.log(status);
         this.toastService.presentWarningToast(
           status,
           'Geocoder failed due to: '

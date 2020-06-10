@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import { AuthService } from './services/Auth/auth.service';
 import { Router } from '@angular/router';
 import { Plugins } from '@capacitor/core';
+import { IonRouterOutlet } from '@ionic/angular';
+import { RouterService } from './services/Router/router.service';
 const { SplashScreen } = Plugins;
 
 @Component({
@@ -9,8 +11,13 @@ const { SplashScreen } = Plugins;
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss']
 })
-export class AppComponent {
-  constructor(private authService: AuthService, private router: Router) {
+export class AppComponent implements AfterViewInit {
+  @ViewChild(IonRouterOutlet, { static: false }) routerOutlet: IonRouterOutlet;
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private routerService: RouterService
+  ) {
     this.initializeApp();
   }
 
@@ -23,5 +30,9 @@ export class AppComponent {
     if (await this.authService.checkLogin()) {
       this.router.navigate(['pages']);
     }
+  }
+
+  ngAfterViewInit(): void {
+    this.routerService.init(this.routerOutlet);
   }
 }
