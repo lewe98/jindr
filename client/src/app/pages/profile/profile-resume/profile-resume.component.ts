@@ -72,7 +72,7 @@ export class ProfileResumeComponent implements OnInit {
         }
 
         this.user.resume.sort((a: ResumeEntry, b: ResumeEntry) => {
-          return new Date(a.startDate).valueOf() - new Date(b.startDate).valueOf();
+          return new Date(b.startDate).valueOf() - new Date(a.startDate).valueOf();
         });
         this.updateUser();
       } else {
