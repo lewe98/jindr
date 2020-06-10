@@ -18,8 +18,8 @@ export class ProfileResumeComponent implements OnInit {
 
   user = new User();
   resumeEntry: ResumeEntry;
-  startDate: Date;
-  endDate: Date;
+  startDate = new Date();
+  endDate = new Date();
   title: string;
   description: string;
   industrysector: string;
@@ -48,9 +48,16 @@ export class ProfileResumeComponent implements OnInit {
       this.description = tmpResumeEntry.description;
       this.industrysector = tmpResumeEntry.industrysector;
       this.employmentType = tmpResumeEntry.employmentType;
+      console.log(this.endDate);
     }
   }
 
+  /**
+   * The Method adds a resumeEntry to this.user and calls the Method updateUser().
+   * first the checks if it
+   * @success it closes the Modal
+   * @error it presents a alert, that the user could not be updated.
+   */
   addResumeEntry() {
     if (this.myReview) {
       if (this.title !== '' && this.description !== '' && this.industrysector !== '' && this.employmentType !== '') {
@@ -79,6 +86,11 @@ export class ProfileResumeComponent implements OnInit {
     }
   }
 
+  /**
+   * Method is updating the user.
+   * @success it closes the Modal
+   * @error it presents a alert, that the user could not be updated.
+   */
   updateUser() {
     this.authService.updateUser(this.user).then(() => {
         Object.assign(this.user, this.authService.getUser());

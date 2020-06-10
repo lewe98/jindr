@@ -4,10 +4,12 @@ import { IonicModule } from '@ionic/angular';
 import { CurriculumComponent } from './curriculum.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import {Component} from '@angular/core';
+import { User } from '../../../../../interfaces/user';
 
 describe('CurriculumComponent', () => {
-  let component: CurriculumComponent;
-  let fixture: ComponentFixture<CurriculumComponent>;
+  let component: TestCurriculumComponent;
+  let fixture: ComponentFixture<TestCurriculumComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -15,7 +17,7 @@ describe('CurriculumComponent', () => {
       imports: [IonicModule.forRoot(), HttpClientTestingModule, RouterTestingModule]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CurriculumComponent);
+    fixture = TestBed.createComponent(TestCurriculumComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
@@ -23,4 +25,12 @@ describe('CurriculumComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  @Component({
+    selector: 'app-curriculum',
+    template: '<app-curriculum [inputUser]="this.user" [myView]="true"></app-curriculum>'
+  })
+  class TestCurriculumComponent {
+    user = new User();
+  }
 });

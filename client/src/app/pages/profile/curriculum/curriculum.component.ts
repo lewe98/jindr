@@ -13,8 +13,9 @@ import { ToastService } from '../../../services/Toast/toast.service';
 })
 export class CurriculumComponent implements OnInit {
   @Input() myView: boolean;
-  @Input() inputUser: User;
-  private user: User = new User();
+  @Input() inputUser?: User;
+  user: User = new User();
+  private allowChange: boolean;
 
   constructor(public modalCtrl: ModalController,
               public alertController: AlertController,
@@ -24,6 +25,10 @@ export class CurriculumComponent implements OnInit {
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
+    if (this.inputUser._id === this.user?._id){
+      this.allowChange = true;
+      Object.assign(this.inputUser, this.authService.getUser());
+    }
   }
 
   getResumeEntryDate(startDate: Date, endDate: Date): string {
@@ -32,7 +37,13 @@ export class CurriculumComponent implements OnInit {
 
   getResumeEntryTime(startDate: Date, endDate: Date): string {
     const timeTmp = new Date(endDate).getTime() - new Date(startDate).getTime();
-    return String((timeTmp / 2678400000).toFixed()) + ' Months';
+    const timeNumber = timeTmp / 2678400000;
+    if (timeNumber.toFixed() === '1'){
+      return timeNumber.toFixed() + ' Month';
+    } else if ((timeNumber / 12) >= 1){
+      return (timeNumber / 12).toFixed() + ' Years, ' + (12 - timeNumber % 12).toFixed() + ' Months';
+    }
+    return timeNumber.toFixed() + ' Months';
   }
 
   async newResume() {
@@ -49,20 +60,25 @@ export class CurriculumComponent implements OnInit {
 
   // async editResume(resumeEntry: ResumeEntry)
   async editResume(resumeEntry: ResumeEntry) {
-    const resumeIndex = this.inputUser.resume.indexOf(resumeEntry);
-    const modal = await this.modalCtrl.create({
-      component: ProfileResumeComponent,
-      componentProps: {
-        inputUser: this.inputUser,
-        resumeIndex
-      }
+    if (this.allowChange) {
+      const resumeIndex = this.user.resume.indexOf(resumeEntry);
+      const modal = await this.modalCtrl.create({
+        component: ProfileResumeComponent,
+        componentProps: {
+          inputUser: this.user,
+          resumeIndex
+        }
 
-    });
-    return await modal.present();
+      });
+      Object.assign(this.inputUser, this.authService.getUser());
+      return await modal.present();
+    } else {
+      this.toastService.presentWarningToast('You are not allowed to change other resume entry.', 'Authorisation error!');
+    }
   }
 
   async deleteResume(resumIndex: number) {
-    if (this.user._id === this.inputUser._id) {
+    if (this.allowChange) {
       const alert = await this.alertController.create({
         cssClass: '',
         header: 'Delete Resume entry!',
