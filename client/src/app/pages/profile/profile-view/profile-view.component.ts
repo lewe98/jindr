@@ -29,12 +29,4 @@ export class ProfileViewComponent implements OnInit {
   close() {
     this.modalCtrl.dismiss();
   }
-
-  handleScroll(event: any) {
-    const scrollTop = event.detail.scrollTop;
-
-    if (scrollTop < 0 && Math.abs(scrollTop) >= 150) {
-      this.close();
-    }
-  }
 }

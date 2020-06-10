@@ -6,10 +6,11 @@ const bcrypt = require('bcrypt');
 const SALT_WORK_FACTOR = 10;
 
 const resumeSchema = mongoose.Schema({
-    startDate: {type: Number },
-    endDate: {type: Number },
-    company: {type: String },
+    startDate: {type: Date },
+    endDate: {type: Date },
+    title: {type: String },
     description: {type: String },
+    industrysector: {type: String },
     employmentType: {type: String },
 })
 
@@ -49,6 +50,10 @@ const userSchema = mongoose.Schema({
         type: String,
         trim: true
     },
+    dateofbirth: {
+        type: Date,
+        trim: true
+    },
     resetPasswordToken: {
         type: String
     },
@@ -58,12 +63,8 @@ const userSchema = mongoose.Schema({
     resume: {
         type: [resumeSchema],
         default: []
-    },
-    dateOfBirth: {
-        type: Date
     }
 });
-
 
 userSchema.pre('findOneAndUpdate', function(next) {
     this.options.runValidators = true;

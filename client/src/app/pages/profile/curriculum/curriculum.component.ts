@@ -1,10 +1,4 @@
-import {
-  Component,
-  Input,
-  OnChanges,
-  OnInit,
-  SimpleChanges
-} from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { User } from '../../../../../interfaces/user';
 import { ProfileResumeComponent } from '../profile-resume/profile-resume.component';
@@ -17,78 +11,107 @@ import { ToastService } from '../../../services/Toast/toast.service';
   templateUrl: './curriculum.component.html',
   styleUrls: ['./curriculum.component.scss']
 })
-export class CurriculumComponent implements OnInit, OnChanges {
-  @Input() inputUser: User;
-  isEdit: boolean;
-  sortedResume: ResumeEntry[];
+export class CurriculumComponent implements OnInit {
+  @Input() myView: boolean;
+  @Input() inputUser?: User;
+  user: User = new User();
+  private allowChange: boolean;
 
-  constructor(
-    public modalCtrl: ModalController,
-    public authService: AuthService,
-    public toastService: ToastService,
-    private alertController: AlertController
-  ) {}
-
-  ngOnChanges(changes: SimpleChanges) {
-    const tempUser = changes.inputUser.currentValue;
-    this.sortResume(tempUser);
-  }
-
-  sortResume(user: User) {
-    this.sortedResume = user?.resume.sort((n1, n2) => {
-      if (n1.startDate < n2.startDate) {
-        return 1;
-      }
-      if (n1.startDate > n2.startDate) {
-        return -1;
-      }
-      return 0;
-    });
+  constructor(public modalCtrl: ModalController,
+              public alertController: AlertController,
+              public authService: AuthService,
+              public toastService: ToastService) {
   }
 
   ngOnInit() {
-    this.isEdit = this.inputUser?._id === this.authService.user?._id;
-    this.sortResume(this.inputUser);
+    Object.assign(this.user, this.authService.getUser());
+    if (this.inputUser._id === this.user?._id){
+      this.allowChange = true;
+      Object.assign(this.inputUser, this.authService.getUser());
+    }
   }
 
-  async editResume(resumeEntry: ResumeEntry) {
-    const resumeIndex = this.inputUser.resume.indexOf(resumeEntry);
+  getResumeEntryDate(startDate: Date, endDate: Date): string {
+    return new Date(startDate).toLocaleDateString() + ' - ' + new Date(endDate).toLocaleDateString();
+  }
+
+  getResumeEntryTime(startDate: Date, endDate: Date): string {
+    const timeTmp = new Date(endDate).getTime() - new Date(startDate).getTime();
+    const timeNumber = timeTmp / 2678400000;
+    if (timeNumber.toFixed() === '1'){
+      return timeNumber.toFixed() + ' Month';
+    } else if ((timeNumber / 12) >= 1){
+      return (timeNumber / 12).toFixed() + ' Years, ' + (12 - timeNumber % 12).toFixed() + ' Months';
+    }
+    return timeNumber.toFixed() + ' Months';
+  }
+
+  async newResume() {
     const modal = await this.modalCtrl.create({
       component: ProfileResumeComponent,
       componentProps: {
         inputUser: this.inputUser,
-        resumeIndex,
-        isEdit: true
+        resumeIndex: -1
       }
+
     });
     return await modal.present();
   }
 
-  async deleteResume(entry: ResumeEntry) {
-    const alert = await this.alertController.create({
-      header: 'Confirm!',
-      message: 'Are you sure you want to <strong>delete</strong> this entry?',
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          cssClass: 'secondary'
-        },
-        {
-          text: 'Okay',
-          handler: () => {
-            this.inputUser.resume.splice(
-              this.inputUser.resume.indexOf(entry),
-              1
-            );
-            this.authService.updateUser(this.inputUser).catch((err) => {
-              this.toastService.presentWarningToast(err, 'Error!');
-            });
-          }
+  // async editResume(resumeEntry: ResumeEntry)
+  async editResume(resumeEntry: ResumeEntry) {
+    if (this.allowChange) {
+      const resumeIndex = this.user.resume.indexOf(resumeEntry);
+      const modal = await this.modalCtrl.create({
+        component: ProfileResumeComponent,
+        componentProps: {
+          inputUser: this.user,
+          resumeIndex
         }
-      ]
-    });
 
-    await alert.present();
+      });
+      Object.assign(this.inputUser, this.authService.getUser());
+      return await modal.present();
+    } else {
+      this.toastService.presentWarningToast('You are not allowed to change other resume entry.', 'Authorisation error!');
+    }
+  }
+
+  async deleteResume(resumIndex: number) {
+    if (this.allowChange) {
+      const alert = await this.alertController.create({
+        cssClass: '',
+        header: 'Delete Resume entry!',
+        message: 'Are you sure you want to <strong>delete</strong> the entry?',
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            cssClass: 'secondary',
+            handler: (blah) => {
+            }
+          }, {
+            text: 'Okay',
+            handler: () => {
+              this.user.resume.splice(resumIndex, 1);
+              this.authService.updateUser(this.user).then(() => {
+                  Object.assign(this.inputUser, this.authService.getUser());
+                  this.toastService.presentWarningToast('Your resume entry has bin deleted.', 'success!');
+                }
+              ).catch((err) => {
+                this.toastService.presentWarningToast(err.message, 'Could not delete review entry!');
+              });
+            }
+          }
+        ]
+      });
+      await alert.present();
+    } else {
+      await this.toastService.presentWarningToast('You only can delete your own resume entry.', 'Can not delete!');
+    }
+  }
+
+  close() {
+    this.modalCtrl.dismiss();
   }
 }
