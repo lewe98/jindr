@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   CameraDirection,
   CameraResultType,
@@ -7,7 +7,7 @@ import {
 } from '@capacitor/core';
 import { DatabaseControllerService } from '../DatabaseController/database-controller.service';
 import { ToastService } from '../Toast/toast.service';
-import {Platform} from "@ionic/angular";
+import { Platform } from '@ionic/angular';
 
 const { Camera } = Plugins;
 @Injectable({

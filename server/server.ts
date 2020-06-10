@@ -1,7 +1,6 @@
-import {Coords, Tile} from "./models/tile";
-
+import { Coords, Tile } from './models/tile';
 require('dotenv').config();
-import {Request, Response} from 'express';
+import { Request, Response } from 'express';
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -23,7 +22,7 @@ const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
 const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 AWS.config.update({
   accessKeyId: AWS_ACCESS_KEY_ID,
-  secretAccessKey: AWS_SECRET_ACCESS_KEY,
+  secretAccessKey: AWS_SECRET_ACCESS_KEY
 });
 const s3 = new AWS.S3();
 // eslint-disable-next-line
@@ -47,8 +46,8 @@ app.use(
  * VARIABLES
  */
 let germanTiles: Tile[] = [];
-const southWest = {lat: 47.344777, lng: 5.888672}; // coordinates for southWestern point of a rectangle containing germany
-const northEast = {lat: 54.41893, lng: 14.888671}; // coordinates for northEastern point of a rectangle containing germany
+const southWest = { lat: 47.344777, lng: 5.888672 }; // coordinates for southWestern point of a rectangle containing germany
+const northEast = { lat: 54.41893, lng: 14.888671 }; // coordinates for northEastern point of a rectangle containing germany
 const SALT_WORK_FACTOR = 10;
 const maxRadius = 50; // Max search radius users can set in the app
 /**
@@ -396,20 +395,23 @@ app.get('/user/:userID', (req: Request, res: Response) => {
  *       "data": url
  *     }
  */
+/* istanbul ignore next */
 app.post('/upload-image', (req: Request, res: Response) => {
   const name = req.body.name;
   const file = req.body.file;
-  uploadFile(file, name).then((result) => {
-    res.status(201).send({
-      message: 'Image saved',
-      data: result
+  uploadFile(file, name)
+    .then((result) => {
+      res.status(201).send({
+        message: 'Image saved',
+        data: result
+      });
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: 'Upload failed',
+        errors: err
+      });
     });
-  }).catch(err => {
-    res.status(500).send({
-      message: 'Upload failed',
-      errors: err
-    });
-  });
 });
 
 app.post('/create-job', (req: Request, res: Response) => {
@@ -441,11 +443,12 @@ function prepareUser(user) {
  * @param file the file as base64 string
  * @param name the image name in the bucket. Should be UNIQUE! e.g. use Timestamp
  */
+/* istanbul ignore next */
 function uploadFile(file, name): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     let params;
     const base64Image = file.split(';base64,').pop();
-    fs.writeFile('image.png', base64Image, {encoding: 'base64'}, () => {
+    fs.writeFile('image.png', base64Image, { encoding: 'base64' }, () => {
       const fileContent = fs.readFileSync('image.png');
       params = {
         Bucket: 'jindr-images',
@@ -454,7 +457,7 @@ function uploadFile(file, name): Promise<string> {
         ContentType: 'image/jpeg',
         ACL: 'public-read'
       };
-      s3.upload(params,  (error, data) => {
+      s3.upload(params, (error, data) => {
         if (error) {
           reject(error);
         } else {
@@ -473,14 +476,19 @@ function uploadFile(file, name): Promise<string> {
  * @return returns the index of the tile, returns null if user is not in rasterized area
  */
 function findTile(tiles: Tile[], coords: Coords): number {
-  tiles.forEach(tile => {
+  let index = null;
+  tiles.forEach((tile) => {
     if (coords.lat >= tile.southWest.lat && coords.lat <= tile.northEast.lat) {
-      if (coords.lng >= tile.southWest.lng && coords.lng <= tile.northEast.lng) {
-        return tile.index;
+      if (
+        coords.lng >= tile.southWest.lng &&
+        coords.lng <= tile.northEast.lng
+      ) {
+        index = tile.index;
+        return;
       }
     }
   });
-  return null;
+  return index;
 }
 
 /**
@@ -497,20 +505,32 @@ function findTile(tiles: Tile[], coords: Coords): number {
  * The function then rasterize the specified area, starting at the southWest coordinates and create a Tile for each rectangle
  * Each Tile has an index (southWest = 0), southWest and northEast coordinates, and an array of indexes of neighboring tiles
  */
-function rasterizeMap(radius: number, southWest: Coords, northEast: Coords): Tile[] {
+function rasterizeMap(
+  radius: number,
+  southWest: Coords,
+  northEast: Coords
+): Tile[] {
   const longitudeDistance = 71;
-  const xTiles = Math.round(((northEast.lng - southWest.lng) * longitudeDistance) / radius);
+  const xTiles = Math.round(
+    ((northEast.lng - southWest.lng) * longitudeDistance) / radius
+  );
   const yTiles = Math.round(((northEast.lat - southWest.lat) * 111) / radius);
   const array: Tile[] = [];
   const tileWidth = (northEast.lng - southWest.lng) / xTiles;
   const tileHeight = (northEast.lat - southWest.lat) / yTiles;
   let i = 0;
-  for (let y = 0; y < yTiles; y++) {
-    for (let x = 0; x < xTiles; x++) {
-      let tile = new Tile();
+  for (let y = 0; y < yTiles; y++) {  // eslint-disable-line
+    for (let x = 0; x < xTiles; x++) {  // eslint-disable-line
+      const tile = new Tile();
       tile.index = i;
-      tile.northEast = {lat: southWest.lat + (tileHeight * (y + 1)), lng: southWest.lng + (tileWidth * (x + 1))};
-      tile.southWest = {lat: southWest.lat + (tileHeight * y), lng: southWest.lng + (tileWidth * x)};
+      tile.northEast = {
+        lat: southWest.lat + tileHeight * (y + 1),
+        lng: southWest.lng + tileWidth * (x + 1)
+      };
+      tile.southWest = {
+        lat: southWest.lat + tileHeight * y,
+        lng: southWest.lng + tileWidth * x
+      };
       tile.neighbours = getBoundingAreas(i, xTiles, yTiles);
       array.push(tile);
       i++;
@@ -538,17 +558,19 @@ function getBoundingAreas(pos, xTiles, yTiles): number[] {
     hasRightRow = true;
     bounds.push(pos + 1);
   }
-  if (pos - xTiles >= 0) { // hasBottomRow?
+  if (pos - xTiles >= 0) {
+    // hasBottomRow?
     bounds.push(pos - xTiles);
-    if (hasLeftRow) bounds.push(pos - xTiles - 1);
-    if (hasRightRow) bounds.push(pos - xTiles + 1);
+    if (hasLeftRow) bounds.push(pos - xTiles - 1); // eslint-disable-line
+    if (hasRightRow) bounds.push(pos - xTiles + 1); // eslint-disable-line
   }
-  if (pos + xTiles <= (xTiles * yTiles) - 1) { // hasTopRow?
+  if (pos + xTiles <= xTiles * yTiles - 1) {
+    // hasTopRow?
     bounds.push(pos + xTiles);
-    if (hasLeftRow) bounds.push(pos + xTiles - 1);
-    if (hasRightRow) bounds.push(pos + xTiles + 1);
+    if (hasLeftRow) bounds.push(pos + xTiles - 1); // eslint-disable-line
+    if (hasRightRow) bounds.push(pos + xTiles + 1); // eslint-disable-line
   }
- return bounds;
+  return bounds;
 }
 
 /**
@@ -562,12 +584,12 @@ function getBoundingAreas(pos, xTiles, yTiles): number[] {
  */
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2): number {
   const R = 6371; // Radius of the earth in km
-  const dLat = this.deg2rad(lat2 - lat1);
-  const dLon = this.deg2rad(lon2 - lon1);
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
   const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.deg2rad(lat1)) *
-      Math.cos(this.deg2rad(lat2)) *
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) *
+      Math.cos(deg2rad(lat2)) *
       Math.sin(dLon / 2) *
       Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -584,6 +606,11 @@ function deg2rad(deg) {
  * routes don't need to be added
  *
  */
-module.exports = { app: app, prepareUser: prepareUser,
-  rasterizeMap: rasterizeMap, getDistanceFromLatLonInKm: getDistanceFromLatLonInKm,
-  getBoundingAreas: getBoundingAreas, findTile: findTile };
+module.exports = {
+  app: app,
+  prepareUser: prepareUser,
+  rasterizeMap: rasterizeMap,
+  getDistanceFromLatLonInKm: getDistanceFromLatLonInKm,
+  getBoundingAreas: getBoundingAreas,
+  findTile: findTile
+};

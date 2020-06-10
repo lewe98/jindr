@@ -17,7 +17,7 @@ describe('ProfileMeComponent', () => {
       getUser: 'getUser'
     });
     spyOn(navigator.geolocation, 'getCurrentPosition').and.callFake(
-        // tslint:disable-next-line
+      // tslint:disable-next-line
       function () {
         const position = { coords: { latitude: 32.8569, longitude: -96.9628 } };
         arguments[0](position);
