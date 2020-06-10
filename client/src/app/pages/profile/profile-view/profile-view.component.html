@@ -1,31 +1,46 @@
-<ion-content [scrollEvents]="true" (ionScroll)="handleScroll($event)" class="profile-page">
-  <div class="profile-header">
-    <app-image-shell [src]="user.image"></app-image-shell>
-
-    <ion-fab vertical="bottom" horizontal="end" edge slot="fixed">
-      <ion-button color="white" class="button-custom button-icon button-sm button-brand" (click)="close()">
-        <ion-icon name="arrow-down" slot="icon-only"></ion-icon>
+<ion-header>
+  <ion-toolbar class="toolbar-no-border">
+    <ion-title>Public view</ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="danger" (click)="close()">
+        Close
       </ion-button>
-    </ion-fab>
-  </div>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 
-  <div class="profile-info border-bottom">
-    <div class="profile-title">
-      <span class="profile-user-name">
-        {{user.firstName}} {{user.lastName.charAt(0)}}.
-      </span>
-    </div>
-    <span class="profile-user-age">{{(date)}} Years Old</span>
-  </div>
+<ion-content class="view-enumeration">
+  <ion-card>
 
-  <div class="profile-intro border-bottom" *ngIf="user.aboutMe">
-    <ion-note>ABOUT ME</ion-note>
-    <p>{{user.aboutMe}}
-    </p>
-  </div>
+    <ion-avatar style="margin-top: 1rem; width: 200px; height: 200px" class="avatar">
+      <app-aspect-ratio  [ratio]="{w:1 ,h:1}">
+        <app-image-shell class="user-image" [src]="user?.image"></app-image-shell>
+      </app-aspect-ratio>
+    </ion-avatar>
 
-  <div class="profile-intro border-bottom" *ngIf="user.resume">
-    <ion-note>My CV</ion-note>
+
+    <ion-card-title style="margin-bottom: 2rem">{{user.firstName}} {{user.lastName.charAt(0)}}.</ion-card-title>
+
+  </ion-card>
+
+  <ion-card *ngIf="date">
+    <ion-card-header>
+      <ion-card-subtitle>Years Old</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>{{date}}</ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="user.aboutMe">
+    <ion-card-header>
+      <ion-card-subtitle>Description</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>{{user.aboutMe}}</ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="user.resume">
+    <ion-card-header>
+      <ion-card-subtitle>My CV</ion-card-subtitle>
+    </ion-card-header>
     <app-curriculum [inputUser]="user"></app-curriculum>
-  </div>
+  </ion-card>
 </ion-content>
