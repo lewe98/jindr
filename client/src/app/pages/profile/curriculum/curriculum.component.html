@@ -1,0 +1,29 @@
+
+<ion-list>
+    <!-- Following resumeEntryContainer running for ech resumeEntry of the inputUser -->
+    <ng-container *ngFor="let resumeEntry of inputUser?.resume; index as entryIndex;">
+        <ion-item>
+            <ion-grid style="width: 100%">
+                <ion-row>
+                    <ion-col size="12">
+                            <p class="head">{{resumeEntry.title}}</p>
+                            <p class="sub-head">{{resumeEntry.employmentType}}, {{resumeEntry.industrysector}}</p>
+                            <p class="text">{{resumeEntry.description}}</p>
+
+                            <ion-chip>
+                                <ion-label class="dates">{{resumeEntry.startDate | date: 'dd.MM.yy'}}
+                                - {{resumeEntry.endDate | date: 'dd.MM.yy'}}</ion-label>
+                            </ion-chip>
+                            <ion-chip color="medium">
+                                <ion-label class="dates">{{getResumeEntryTime(resumeEntry.startDate, resumeEntry.endDate)}}</ion-label>
+                            </ion-chip>
+                    </ion-col>
+                    <ion-col size="8" offset="4" [hidden]="!myView">
+                        <ion-button style="margin-right: 5%" class="action-btn" color="warning" (click)="editResume(resumeEntry)">edit</ion-button>
+                        <ion-button class="action-btn" color="danger" (click)="deleteResume(entryIndex)">delete</ion-button>
+                    </ion-col>
+                </ion-row>
+            </ion-grid>
+        </ion-item>
+    </ng-container>
+</ion-list>

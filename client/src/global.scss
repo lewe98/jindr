@@ -24,3 +24,29 @@
 @import "~@ionic/angular/css/text-alignment.css";
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
+
+/* App */
+@import './sass/variables.override.scss';
+@import './sass/scrollHorizontal.scss';
+@import './sass/helper.scss';
+@import './sass/app.scss';
+
+ion-icon {
+  &[class*="custom-"] {
+    mask-size: contain;
+    mask-position: 50% 50%;
+    mask-repeat: no-repeat;
+    background: currentColor;
+    width: 1em;
+    height: 1em;
+  }
+
+  &[class*="custom-swipe"] {
+    mask-image: url(./assets/custom-icons/custom-swipe.svg);
+  }
+
+}
+
+ion-picker {
+  touch-action: none;
+}

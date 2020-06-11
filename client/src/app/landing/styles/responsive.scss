@@ -1,0 +1,101 @@
+ion-content {
+  --overflow: hidden;
+}
+
+// iphone 4
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 480px)
+and (-webkit-min-device-pixel-ratio: 2)
+and (device-aspect-ratio: 2/3)
+{
+  .section-buttons {
+    margin-top: 0;
+  }
+
+  .button-landing {
+    font-size: 12px;
+  }
+}
+
+// iphone 5
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 568px)
+and (-webkit-min-device-pixel-ratio: 2)
+and (device-aspect-ratio: 40 / 71)
+{
+  .button-landing {
+    font-size: 12px;
+  }
+}
+
+// ipad pro
+@media only screen
+and (min-device-width : 1024px)
+and (max-device-width : 1366px)
+and (-webkit-min-device-pixel-ratio: 1.5)
+{
+  .slider {
+    max-width: 800px;
+    margin: 30px auto;
+    width: 70%;
+  }
+
+  .slide-text{
+   font-size: 34px;
+  }
+
+  .button-landing {
+    font-size: 30px;
+    padding: 10px;
+    height: 70px;
+  }
+
+  .section-buttons {
+    max-width: 700px;
+    width: 70%;
+  }
+}
+
+@media screen and (min-width:1370px){
+  .slider {
+    max-width: 800px;
+    margin: 30px auto;
+    width: 70%;
+  }
+
+  .slide-text{
+    font-size: 34px;
+  }
+
+  .button-landing {
+    font-size: 30px;
+    padding: 10px;
+    height: 70px;
+  }
+
+  .section-buttons {
+    max-width: 700px;
+    width: 70%;
+  }
+}
+
+@media (min-aspect-ratio: 16/9) {
+  .slider {
+    max-width: 500px;
+    margin: 30px auto;
+    width: 20%;
+  }
+  .slide-text{
+    font-size: 18px;
+  }
+  .button-landing {
+    font-size: 18px;
+  }
+
+  .section-buttons {
+    max-width: 500px;
+    width: 30%;
+  }
+}

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="375" height="812" viewBox="0 0 375 812">
+  <defs>
+    <style>
+      .cls-1 {
+        clip-path: url(#clip-Background);
+      }
+
+      .cls-2 {
+        fill: #fff;
+      }
+
+      .cls-3, .cls-4, .cls-5 {
+        fill: #f7f7f7;
+      }
+
+      .cls-3 {
+        font-size: 17px;
+      }
+
+      .cls-3, .cls-4 {
+        letter-spacing: -0.024em;
+      }
+
+      .cls-4 {
+        font-size: 23px;
+      }
+    </style>
+    <clipPath id="clip-Background">
+      <rect width="375" height="812"/>
+    </clipPath>
+  </defs>
+  <g id="Background" class="cls-1">
+    <rect class="cls-5" width="375" height="812"/>
+    <circle id="Ellipse_3" data-name="Ellipse 3" class="cls-2" cx="97" cy="97" r="97" transform="translate(293 481)"/>
+    <circle id="Ellipse_4" data-name="Ellipse 4" class="cls-2" cx="155.5" cy="155.5" r="155.5" transform="translate(-132 574)"/>
+    <text id="Login" class="cls-3" transform="translate(188 584)"><tspan x="-21.057" y="0">Login</tspan></text>
+    <circle id="Ellipse_2" data-name="Ellipse 2" class="cls-2" cx="50" cy="50" r="50" transform="translate(243 780)"/>
+    <text id="Login-2" data-name="Login" class="cls-4" transform="translate(243 365)"><tspan x="-28.488" y="0">Login</tspan></text>
+  </g>
+</svg>

@@ -1,0 +1,26 @@
+
+:host {
+  --page-margin: var(--app-broad-margin);
+  --page-background: var(--app-background-shade);
+}
+
+.legal-content {
+  --background: var(--page-background);
+  --padding-start: var(--page-margin);
+  --padding-end: var(--page-margin);
+  --padding-top: var(--page-margin);
+  --padding-bottom: var(--page-margin);
+
+  .legal-title {
+    color: var(--ion-color-secondary);
+    margin: var(--page-margin) 0 calc(var(--page-margin) / 2);
+  }
+
+  .legal-text {
+    color: var(--ion-color-medium);
+    margin: calc(var(--page-margin) / 2) 0px var(--page-margin);
+    font-size: 14px;
+    line-height: 20px;
+    text-align: justify;
+  }
+}

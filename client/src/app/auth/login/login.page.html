@@ -1,0 +1,42 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="landing"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen  [ngClass]="!checkPlatform() ? 'let-overflow' : ''">
+  <form [formGroup]="loginForm">
+  <object class="logo" data="./assets/images/logo.svg" type="image/svg+xml">
+  </object>
+  <div class="section-inputs ion-padding">
+    <h3>Welcome back!</h3>
+    <ion-input (ionChange)="clearErr()" formControlName="email" clearInput autocapitalize="off" type="email" inputmode="email" required placeholder="Email..." class="input"></ion-input>
+    <div class="error-container ion-margin-bottom">
+      <ng-container *ngFor="let validation of validationMessages.email">
+        <div class="error-message" *ngIf="loginForm.get('email').hasError(validation.type) && (loginForm.get('email').dirty || loginForm.get('email').touched)">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <span>{{ validation.message }}</span>
+        </div>
+      </ng-container>
+    </div>
+    <ion-input (ionChange)="clearErr()" formControlName="password" type="password" placeholder="Password..." class="input"></ion-input>
+    <div class="error-container">
+      <div class="error-message">
+        <span *ngIf="error">{{ error }}</span>
+      </div>
+      <ng-container *ngFor="let validation of validationMessages.password">
+        <div class="error-message" *ngIf="loginForm.get('password').hasError(validation.type) && (loginForm.get('password').dirty || loginForm.get('password').touched)">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <span>{{ validation.message }}</span>
+        </div>
+      </ng-container>
+    </div>
+    <a class="forgot-password" (click)="resetPwService.presentEmailPrompt()">Forgot Password?</a>
+  </div>
+  <div class="section-buttons ion-padding">
+    <app-jindr-button [disabled]="!loginForm.valid" class="login-btn" [text]="'Login'" (click)="loginForm.valid ? submit() : ''"></app-jindr-button>
+  </div>
+  </form>
+</ion-content>

@@ -1,0 +1,70 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="toolbar-custom toolbar-no-border profile-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="pages"></ion-back-button>
+    </ion-buttons>
+    <ion-buttons class="to-chat" slot="end">
+      <ion-icon name="chatbubbles-sharp" slot="icon-only"></ion-icon>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content force-overscroll="false" class="me-page bg-muted">
+  <div class="vertical-layout">
+    <div class="section-upper">
+      <div class="me-header">
+        <ion-avatar class="avatar">
+          <app-aspect-ratio [ratio]="{w: 1, h: 1}">
+            <app-image-shell class="user-image" animation="spinner" [src]="user.image"></app-image-shell>
+          </app-aspect-ratio>
+          <ion-button class="change-image-btn" (click)="editPicture()">
+            <ion-icon class="btn-icon" slot="icon-only" name="camera"></ion-icon>
+          </ion-button>
+        </ion-avatar>
+        <div class="me-title">
+          {{user.firstName}} {{user.lastName}}
+        </div>
+        <div class="me-loc">
+          <ion-icon name="location-sharp"></ion-icon>
+          {{location}}
+        </div>
+      </div>
+
+      <ion-row class="ion-justify-content-center ion-align-items-center">
+        <ion-col size="auto">
+          <ion-row class="me-button-group">
+            <ion-col class="ion-text-center">
+              <ion-button color="white" class="button-custom button-icon" (click)="viewSettings()">
+                <ion-icon name="settings-sharp" slot="icon-only"></ion-icon>
+              </ion-button>
+              <div class="button-label">SETTINGS</div>
+            </ion-col>
+            <ion-col class="ion-text-center m-t">
+              <div class="button-stack">
+                <ion-button color="white" class="button-custom button-lg button-icon" (click)="viewProfile()">
+                  <ion-icon name="person-sharp" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+              <div class="button-label">VIEW</div>
+            </ion-col>
+            <ion-col class="ion-text-center">
+              <ion-button color="white" class="button-custom button-icon" [routerLink]="['edit']">
+                <ion-icon name="pencil-sharp" slot="icon-only"></ion-icon>
+              </ion-button>
+              <div class="button-label">EDIT</div>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+      </ion-row>
+
+
+    </div>
+
+    <div class="section-lower has-oval">
+      <div class="ion-text-center jind-btn">
+        <app-jindr-button [text]="'Job Applications'"></app-jindr-button>
+        <app-jindr-button [text]="'My Job Offers'"></app-jindr-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

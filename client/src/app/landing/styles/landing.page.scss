@@ -1,0 +1,47 @@
+.landing-page {
+  --color: #fff;
+}
+
+.bg-gradient {
+  --background: linear-gradient(to top right, var(--color-jindr-stop1) 0%, var(--color-jindr-stop3) 100%);
+}
+
+.slider {
+  max-width: 400px;
+  margin: 30px auto;
+  width: 70%;
+}
+
+.section-buttons {
+  max-width: 500px;
+  width: 70%;
+  flex: 0 0 auto;
+  text-align: center;
+  margin: 20px auto;
+}
+
+.slide-text{
+  position: absolute;
+  color: white;
+  bottom: 30px;
+}
+
+.image {
+  width: 100%;
+}
+
+:host::ng-deep .content-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 45px;
+}
+
+.bottom-row {
+  justify-content: center;
+}
+
+.button-clear {
+  max-width: 400px;
+  margin: 6px auto;
+}

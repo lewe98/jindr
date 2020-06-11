@@ -1,0 +1,57 @@
+<ion-header class="ion-no-border">
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="landing"></ion-back-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen class="ion-padding" [scrollEvents]="true">
+    <form [formGroup]="resetForm">
+        <object class="logo" data="./assets/images/logo.svg" type="image/svg+xml">
+        </object>
+
+        <div class="section-inputs ion-padding">
+            <h3 class="headline">Reset Password</h3>
+
+            <ion-input (ionChange)="clearErr()" formControlName="password" type="password" placeholder="Password..."
+                       class="input"></ion-input>
+
+            <div class="error-container">
+                <div class="error-message">
+                    <span *ngIf="error">{{ error }}</span>
+                </div>
+                <ng-container *ngFor="let validation of validationMessages.password">
+                    <div class="error-message"
+                         *ngIf="resetForm.get('password').hasError(validation.type) && (resetForm.get('password').dirty || resetForm.get('password').touched)">
+                        <ion-icon name="information-circle-outline"></ion-icon>
+                        <span>{{ validation.message }}</span>
+                    </div>
+                </ng-container>
+            </div>
+
+            <ion-input (ionChange)="clearErr()" formControlName="confirmPassword" type="password"
+                       placeholder="Confirm Password..." class="input"></ion-input>
+
+            <div class="error-container">
+                <div class="error-message">
+                    <span *ngIf="error">{{ error }}</span>
+                </div>
+                <ng-container *ngFor="let validation of validationMessages.password">
+                    <div class="error-message"
+                         *ngIf="resetForm.get('confirmPassword').hasError(validation.type) && (resetForm.get('confirmPassword').dirty || resetForm.get('confirmPassword').touched)">
+                        <ion-icon name="information-circle-outline"></ion-icon>
+                        <span>{{ validation.message }}</span>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+
+
+        <div class="section-buttons ion-padding">
+            <app-jindr-button [disabled]="!resetForm.valid" class="login-btn" [text]="'Submit'"
+                              (click)="resetForm.valid ? submit() : ''"></app-jindr-button>
+        </div>
+
+    </form>
+</ion-content>
