@@ -8,6 +8,7 @@
 </ion-header>
 
 <ion-content class="settings-page bg-muted">
+
   <form [formGroup]="editForm">
   <ion-list class="list-custom list-general">
     <ion-list-header>
@@ -31,10 +32,10 @@
       <ion-label>ABOUT ME</ion-label>
     </ion-list-header>
     <ion-item lines="none">
-      <ion-textarea maxlength="400" formControlName="aboutMe" rows="3"></ion-textarea>
+      <ion-textarea maxlength="400" rows="3" auto-grow="true" type="text" spellcheck="true" autocapitalize="on" formControlName="aboutMe"></ion-textarea>
     </ion-item>
     <ion-item lines="none" *ngIf="editForm.controls.aboutMe.value">
-      <ion-note slot="end" style="font-size: smaller">
+      <ion-note slot="end">
         {{ 400 - editForm.controls.aboutMe.value.length }}
       </ion-note>
     </ion-item>
@@ -52,9 +53,7 @@
       </ion-row>
     </ion-list-header>
     <ion-item>
-      <ion-label>
-        <app-curriculum [inputUser]="user" [myView]="true"></app-curriculum>
-      </ion-label>
+        <app-curriculum style="width: 100%" [myView]="true" [inputUser]="user"></app-curriculum>
     </ion-item>
   </ion-list>
 

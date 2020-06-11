@@ -11,8 +11,12 @@ describe('ProfileResumeComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ProfileResumeComponent ],
-      imports: [IonicModule.forRoot(), HttpClientTestingModule, RouterTestingModule],
+      declarations: [ProfileResumeComponent],
+      imports: [
+        IonicModule.forRoot(),
+        HttpClientTestingModule,
+        RouterTestingModule
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfileResumeComponent);

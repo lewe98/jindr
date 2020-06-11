@@ -46,12 +46,12 @@ const userSchema = mongoose.Schema({
         type: Boolean,
         default: true
     },
-    description: {
+    aboutMe: {
         type: String,
         trim: true
     },
-    dateofbirth: {
-        type: Date,
+    dateOfBirth: {
+        type: Number,
         trim: true
     },
     token: {

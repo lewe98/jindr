@@ -17,31 +17,33 @@ export class CurriculumComponent implements OnInit {
   user: User = new User();
   private allowChange: boolean;
 
-  constructor(public modalCtrl: ModalController,
-              public alertController: AlertController,
-              public authService: AuthService,
-              public toastService: ToastService) {
-  }
+  constructor(
+    public modalCtrl: ModalController,
+    public alertController: AlertController,
+    public authService: AuthService,
+    public toastService: ToastService
+  ) {}
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
-    if (this.inputUser._id === this.user?._id){
+    if (this.inputUser._id === this.user?._id) {
       this.allowChange = true;
       Object.assign(this.inputUser, this.authService.getUser());
     }
   }
 
-  getResumeEntryDate(startDate: Date, endDate: Date): string {
-    return new Date(startDate).toLocaleDateString() + ' - ' + new Date(endDate).toLocaleDateString();
-  }
-
   getResumeEntryTime(startDate: Date, endDate: Date): string {
     const timeTmp = new Date(endDate).getTime() - new Date(startDate).getTime();
     const timeNumber = timeTmp / 2678400000;
-    if (timeNumber.toFixed() === '1'){
+    if (timeNumber.toFixed() === '1') {
       return timeNumber.toFixed() + ' Month';
-    } else if ((timeNumber / 12) >= 1){
-      return (timeNumber / 12).toFixed() + ' Years, ' + (12 - timeNumber % 12).toFixed() + ' Months';
+    } else if (timeNumber / 12 >= 1) {
+      return (
+        (timeNumber / 12).toFixed() +
+        ' Years, ' +
+        (12 - (timeNumber % 12)).toFixed() +
+        ' Months'
+      );
     }
     return timeNumber.toFixed() + ' Months';
   }
@@ -53,7 +55,6 @@ export class CurriculumComponent implements OnInit {
         inputUser: this.inputUser,
         resumeIndex: -1
       }
-
     });
     return await modal.present();
   }
@@ -68,12 +69,14 @@ export class CurriculumComponent implements OnInit {
           inputUser: this.user,
           resumeIndex
         }
-
       });
       Object.assign(this.inputUser, this.authService.getUser());
       return await modal.present();
     } else {
-      this.toastService.presentWarningToast('You are not allowed to change other resume entry.', 'Authorisation error!');
+      this.toastService.presentWarningToast(
+        'You are not allowed to change other resume entry.',
+        'Authorisation error!'
+      );
     }
   }
 
@@ -88,26 +91,37 @@ export class CurriculumComponent implements OnInit {
             text: 'Cancel',
             role: 'cancel',
             cssClass: 'secondary',
-            handler: (blah) => {
-            }
-          }, {
+            handler: (blah) => {}
+          },
+          {
             text: 'Okay',
             handler: () => {
               this.user.resume.splice(resumIndex, 1);
-              this.authService.updateUser(this.user).then(() => {
+              this.authService
+                .updateUser(this.user)
+                .then(() => {
                   Object.assign(this.inputUser, this.authService.getUser());
-                  this.toastService.presentWarningToast('Your resume entry has bin deleted.', 'success!');
-                }
-              ).catch((err) => {
-                this.toastService.presentWarningToast(err.message, 'Could not delete review entry!');
-              });
+                  this.toastService.presentWarningToast(
+                    'Your resume entry has bin deleted.',
+                    'success!'
+                  );
+                })
+                .catch((err) => {
+                  this.toastService.presentWarningToast(
+                    err.message,
+                    'Could not delete review entry!'
+                  );
+                });
             }
           }
         ]
       });
       await alert.present();
     } else {
-      await this.toastService.presentWarningToast('You only can delete your own resume entry.', 'Can not delete!');
+      await this.toastService.presentWarningToast(
+        'You only can delete your own resume entry.',
+        'Can not delete!'
+      );
     }
   }
 

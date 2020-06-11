@@ -1,6 +1,5 @@
 <ion-header>
   <ion-toolbar class="toolbar-no-border">
-    <ion-title>Public view</ion-title>
     <ion-buttons slot="end">
       <ion-button color="danger" (click)="close()">
         Close
@@ -19,20 +18,13 @@
     </ion-avatar>
 
 
-    <ion-card-title style="margin-bottom: 2rem">{{user.firstName}} {{user.lastName.charAt(0)}}.</ion-card-title>
-
-  </ion-card>
-
-  <ion-card *ngIf="date">
-    <ion-card-header>
-      <ion-card-subtitle>Years Old</ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>{{date}}</ion-card-content>
+    <ion-card-title>{{user.firstName}} {{user.lastName.charAt(0)}}.</ion-card-title>
+    <p>{{date}} years old</p>
   </ion-card>
 
   <ion-card *ngIf="user.aboutMe">
     <ion-card-header>
-      <ion-card-subtitle>Description</ion-card-subtitle>
+      <ion-card-subtitle>About ME</ion-card-subtitle>
     </ion-card-header>
     <ion-card-content>{{user.aboutMe}}</ion-card-content>
   </ion-card>
