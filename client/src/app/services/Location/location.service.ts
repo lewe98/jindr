@@ -90,12 +90,17 @@ export class LocationService implements OnDestroy {
 
   async createLoader() {
     this.loadingElement = await this.loadingController.create({
-      message: 'Trying to get your current location...'
+      message: 'Trying to get your current location...',
+      duration: 2000
     });
   }
 
   async geocodeLatLng() {
     const coords = await this.getCurrentPosition();
+    if (!coords) {
+      this.location = 'Unknown';
+      return;
+    }
     this.geocoder.geocode({ location: coords }, (results, status) => {
       if (status === 'OK') {
         if (results[0]) {
