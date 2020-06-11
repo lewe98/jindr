@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from "@angular/core";
 import {
   AlertController,
   ModalController,
@@ -19,6 +19,7 @@ import { ProfileResumeComponent } from '../profile-resume/profile-resume.compone
 export class ProfileEditComponent implements OnInit {
   editForm: FormGroup;
   user: User = new User();
+  date: Date;
   constructor(
     private modalCtrl: ModalController,
     private navCtrl: NavController,
@@ -38,13 +39,16 @@ export class ProfileEditComponent implements OnInit {
   }
 
   selectDOB(event) {
-    this.user.dateOfBirth = new Date(event.detail.value).getTime();
+    this.date = event.detail.value;
+
   }
   /* Save the changed user data.*/
   save() {
+    this.user.dateOfBirth = new Date(this.date).getTime();
     this.user.firstName = this.editForm.controls.firstName.value;
     this.user.lastName = this.editForm.controls.lastName.value;
     this.user.aboutMe = this.editForm.controls.aboutMe.value;
+    console.log(this.user);
     this.authService
       .updateUser(this.user)
       .then(() => {

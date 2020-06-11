@@ -50,8 +50,8 @@ const userSchema = mongoose.Schema({
         type: String,
         trim: true
     },
-    dateofbirth: {
-        type: Date,
+    dateOfBirth: {
+        type: Number,
         trim: true
     },
     resetPasswordToken: {

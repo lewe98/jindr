@@ -1,40 +1,26 @@
-<ion-fab vertical="top" horizontal="center" slot="fixed" [hidden]="!myView">
-    <ion-fab-button (click)="newResume()">
-        <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-</ion-fab>
+
 <ion-list>
     <!-- Following resumeEntryContainer running for ech resumeEntry of the inputUser -->
     <ng-container *ngFor="let resumeEntry of inputUser?.resume; index as entryIndex;">
         <ion-item>
-            <ion-grid>
+            <ion-grid style="width: 100%">
                 <ion-row>
-                    <ion-col size="9">
-                        <ion-label>
-                            <h2>{{resumeEntry.title}}</h2>
-                            <h3>{{resumeEntry.description}}</h3>
-                            <p>{{resumeEntry.employmentType}}, {{resumeEntry.industrysector}}</p>
+                    <ion-col size="12">
+                            <p class="head">{{resumeEntry.title}}</p>
+                            <p class="sub-head">{{resumeEntry.employmentType}}, {{resumeEntry.industrysector}}</p>
+                            <p class="text">{{resumeEntry.description}}</p>
+
                             <ion-chip>
-                                <ion-label>{{getResumeEntryDate(resumeEntry.startDate, resumeEntry.endDate)}}</ion-label>
+                                <ion-label class="dates">{{resumeEntry.startDate | date: 'dd.MM.yy'}}
+                                - {{resumeEntry.endDate | date: 'dd.MM.yy'}}</ion-label>
                             </ion-chip>
                             <ion-chip color="medium">
-                                <ion-label>{{getResumeEntryTime(resumeEntry.startDate, resumeEntry.endDate)}}</ion-label>
+                                <ion-label class="dates">{{getResumeEntryTime(resumeEntry.startDate, resumeEntry.endDate)}}</ion-label>
                             </ion-chip>
-                        </ion-label>
                     </ion-col>
-                    <ion-col size="3" [hidden]="!myView">
-                        <ion-grid>
-                            <ion-row>
-                                <ion-col>
-                                    <ion-button color="warning" (click)="editResume(resumeEntry)">edit</ion-button>
-                                </ion-col>
-                            </ion-row>
-                            <ion-row>
-                                <ion-col>
-                                    <ion-button color="danger" (click)="deleteResume(entryIndex)">delete</ion-button>
-                                </ion-col>
-                            </ion-row>
-                        </ion-grid>
+                    <ion-col size="8" offset="4" [hidden]="!myView">
+                        <ion-button style="margin-right: 5%" class="action-btn" color="warning" (click)="editResume(resumeEntry)">edit</ion-button>
+                        <ion-button class="action-btn" color="danger" (click)="deleteResume(entryIndex)">delete</ion-button>
                     </ion-col>
                 </ion-row>
             </ion-grid>

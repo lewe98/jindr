@@ -1,6 +1,6 @@
 <ion-header>
     <ion-toolbar class="toolbar-no-border">
-        <ion-title>Edit CV of {{inputUser?.firstName}}</ion-title>
+        <ion-title>Edit CV</ion-title>
         <ion-buttons slot="end">
             <ion-button color="danger" (click)="close()">
                 Cancel
@@ -11,20 +11,40 @@
 
 <!-- Inputs of resume -->
 <ion-content fullscreen>
-    <ion-list>
-        <ion-item>
-            <ion-input placeholder="Title" [(ngModel)]="title"></ion-input>
+    <ion-list class="list-custom list-general">
+        <ion-list-header>
+            <ion-label>General</ion-label>
+        </ion-list-header>
+        <ion-item lines="none">
+            <ion-label>Title</ion-label>
+            <ion-input [(ngModel)]="title"  slot="end"></ion-input>
         </ion-item>
-        <ion-item>
-            <ion-input placeholder="description" [(ngModel)]="description"></ion-input>
+        <ion-item lines="none">
+            <ion-label>Industry Sector</ion-label>
+            <ion-input [(ngModel)]="industrysector"  slot="end"></ion-input>
         </ion-item>
-        <ion-item>
-            <ion-input placeholder="industrysector" [(ngModel)]="industrysector"></ion-input>
+        <ion-item lines="none">
+            <ion-label>Employment Type</ion-label>
+            <ion-input [(ngModel)]="employmentType" slot="end"></ion-input>
         </ion-item>
-        <ion-item>
-            <ion-input placeholder="employmentType" [(ngModel)]="employmentType"></ion-input>
+    </ion-list>
+    <ion-list class="list-custom">
+        <ion-list-header>
+            <ion-label>Description</ion-label>
+        </ion-list-header>
+        <ion-item lines="none">
+            <ion-textarea style="padding: 5px 5px 0 5px" [(ngModel)]="description" maxlength="400" rows="3" auto-grow="true" type="text" spellcheck="true" autocapitalize="on"></ion-textarea>
         </ion-item>
-        <ion-item-divider></ion-item-divider>
+        <ion-item lines="none" *ngIf="description">
+            <ion-note slot="end">
+                {{ 400 - description.length }}
+            </ion-note>
+        </ion-item>
+    </ion-list>
+    <ion-list class="list-custom">
+        <ion-list-header>
+            <ion-label>Time frame</ion-label>
+        </ion-list-header>
         <ion-item>
             <ion-label>Start Date</ion-label>
             <ion-datetime placeholder="Select Date" [(ngModel)]="startDate"></ion-datetime>

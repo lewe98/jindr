@@ -47,7 +47,6 @@ export class ProfileResumeComponent implements OnInit {
       this.description = tmpResumeEntry.description;
       this.industrysector = tmpResumeEntry.industrysector;
       this.employmentType = tmpResumeEntry.employmentType;
-      console.log(this.endDate);
     }
   }
 
@@ -102,7 +101,7 @@ export class ProfileResumeComponent implements OnInit {
       }
     } else {
       this.toastService.presentWarningToast(
-        'You are not allowed do chance th resume.',
+        'You are not allowed do change the resume.',
         'Authorisation error!'
       );
     }
@@ -118,10 +117,11 @@ export class ProfileResumeComponent implements OnInit {
       .updateUser(this.user)
       .then(() => {
         Object.assign(this.user, this.authService.getUser());
+        this.modalCtrl.dismiss();
       })
       .catch((err) => {
         this.toastService.presentWarningToast(err.message, 'Resume Error');
       });
-    this.modalCtrl.dismiss();
+
   }
 }

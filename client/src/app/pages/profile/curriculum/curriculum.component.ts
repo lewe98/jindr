@@ -32,14 +32,6 @@ export class CurriculumComponent implements OnInit {
     }
   }
 
-  getResumeEntryDate(startDate: Date, endDate: Date): string {
-    return (
-      new Date(startDate).toLocaleDateString() +
-      ' - ' +
-      new Date(endDate).toLocaleDateString()
-    );
-  }
-
   getResumeEntryTime(startDate: Date, endDate: Date): string {
     const timeTmp = new Date(endDate).getTime() - new Date(startDate).getTime();
     const timeNumber = timeTmp / 2678400000;
