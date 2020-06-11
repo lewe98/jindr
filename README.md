@@ -28,6 +28,7 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 * [Prerequisites](#prerequisites)
 * [Folder Structure](#folder-structure)
 * [Pipelines and Deploy](#pipelines-and-deploy)
+* [Matching](#matching)
 
 ## Tools
 Tool | Usage
@@ -116,3 +117,47 @@ and name it after the functionality you are going to implement.
 8. Commit and push and wait for pipelines to finish
 9. Once everything is tested and works, make merge request to ``staging``
 
+## Matching
+If a User moves to another location or changes his search criteria, the server
+must search for jobs to present to the user. To reduce the amount of jobs that need to
+be searched on each request, the map will be rasterized. For now, this is only implemented for
+Germany, but it's somewhat scalable. 
+![Raster explanation](./doku-files/map_raster_doku.png)
+This is a simplified Version of a rasterized map of Germany.
+<br> The Method ``rasterizeMap`` in ``server.ts`` will
+take 2 Points specified by coordinates and a radius to rasterize the map
+as shown in the image above.
+The Points need to be the south-western and north-eastern point
+of a rectangle around the area that needs to be rasterized. The Radius
+will be the length of the sides of each tile. The radius should be the same as
+the maximal search radius the user can choose in the app.
+<br>
+The method will then calculate the length of each side of the
+outer rectangle and calculate how many tiles of the size of the radius can be build.
+<br>
+It will return an array of Tiles. Each Tile will look like this:
+
+      public index: number;
+      public neighbours: number[];
+      public southWest: Coords;
+      public northEast: Coords;
+
+The Tile in the south-western corner will have Index 0, the Tile in the north-
+eastern corner will have the index ``tiles.length - 1``.
+The array ``neighbours`` will store the indexes of each tile next to it.
+
+The Idea behind this is, that jobs don't move in position, once they are created. So if
+a job is created, the coordinates of its position will be sent to the server. The server will look up the
+correct tile and save its index in the job. 
+<br> When a User looks for jobs, his coordinates will be sent to the server, the server will
+look up in which tile the user is currently in and will get
+all jobs from this tile and all neighboring tiles from the database and check
+whether they are in the search radius specified by the user. Since the size of the tiles is the
+maximum search radius, it will return all jobs that could possibly be in his radius.
+<br> This drastically reduces the amount of jobs that need to be searched on each location change, since it ignores all jobs
+that can't possibly be in his radius.
+
+So in the example of Germany, the algorithm would create a raster of 208 tiles with roughly 50x50km.
+So instead of looking for jobs in entire germany, it would only look up jobs in the same tile and in its at most
+8 surrounding tiles (even less, if the tile is a border tile and has no neighbors in some directions).
+This would reduce the amount of jobs that need to be searched by ~96%.

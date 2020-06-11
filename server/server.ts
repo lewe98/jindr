@@ -1,3 +1,4 @@
+import { Coords, Tile } from './models/tile';
 require('dotenv').config();
 import { Request, Response } from 'express';
 
@@ -9,13 +10,13 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const sslRedirect = require('heroku-ssl-redirect');
 const history = require('connect-history-api-fallback');
-const SALT_WORK_FACTOR = 10;
 const fs = require('fs');
 const AWS = require('aws-sdk');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
 const User = require('./models/user');
+const Job = require('./models/job');
 
 const MONGODB_URI: string = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.MONGODB_NAME;
@@ -45,6 +46,14 @@ app.use(
 );
 
 /**
+ * VARIABLES
+ */
+let germanTiles: Tile[] = [];
+const southWest = { lat: 47.344777, lng: 5.888672 }; // coordinates for southWestern point of a rectangle containing germany
+const northEast = { lat: 54.41893, lng: 14.888671 }; // coordinates for northEastern point of a rectangle containing germany
+const SALT_WORK_FACTOR = 10;
+const maxRadius = 50; // Max search radius users can set in the app
+/**
  * Only starts server if Environment is not test,
  * This is required for Jest Memory Database Tests
  */
@@ -56,6 +65,7 @@ if (process.env.NODE_ENV.trim() !== 'test') {
       // eslint-disable-next-line
       console.log('Server connected at: ' + app.get('port'));
       await dbConnect();
+      rasterizeMap(maxRadius, southWest, northEast);
     })();
   });
 }
@@ -159,8 +169,10 @@ app.post('/register', (req: Request, res: Response) => {
           message: 'Mail has been sent. Check your inbox.'
         });
       } catch (e) {
+        console.log(e);
         res.status(500).send({
-          message: 'Could not send mail.'
+          message: 'Could not send mail.',
+          errors: e
         });
       }
     }
@@ -469,6 +481,7 @@ app.get('/user/:userID', (req: Request, res: Response) => {
  *       "data": url
  *     }
  */
+/* istanbul ignore next */
 app.post('/upload-image', (req: Request, res: Response) => {
   const name = req.body.name;
   const file = req.body.file;
@@ -628,6 +641,59 @@ app.post('/forgot-pw/:token', (req: Request, res: Response) => {
 });
 
 /**
+ * @api {post} /create-job creates a new job
+ * @apiName CreateJob
+ * @apiGroup Job
+ *
+ * @apiDescription Pass a job and coordinates of its location, the route will specify in
+ * which tile of the map the job is located and save its index
+ *
+ * @apiParam {String} job an object with the job
+ * @apiParam {String} coords and object with coords like this: {lat: xx.xxxx, lng: xx.xxxx}
+ *
+ * @apiSuccess {String} message  SuccessMessage job is created
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 Created
+ *     {
+ *       "message": "Successfully created job",
+ *     }
+ *
+ * @apiError JobNotCreated if job is located outside of supported area or database request failed
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "message: "Your country is currently not supported."
+ *     }
+ */
+app.post('/create-job', (req: Request, res: Response) => {
+  const coords = req.body.coords;
+  const tile = findTile(germanTiles, coords);
+  if (!tile) {
+    res.status(400).send({
+      message: 'Your country is currently not supported.'
+    });
+    return;
+  }
+  const job = new Job();
+  Object.assign(job, req.body.job);
+  job.tile = tile;
+  job.save((err, obj) => {
+    if (err) {
+      res.status(400).send({
+        message: 'Something went wrong',
+        errors: errorFormatter(err.message)
+      });
+    } else {
+      res.status(201).send({
+        message: 'Successfully created job',
+        data: obj
+      });
+    }
+  });
+});
+
+/**
  * Prepares user to be sent to client
  * Removes password and deviceID
  * @param user to be prepared
@@ -645,6 +711,7 @@ function prepareUser(user) {
  * @param file the file as base64 string
  * @param name the image name in the bucket. Should be UNIQUE! e.g. use Timestamp
  */
+/* istanbul ignore next */
 function uploadFile(file, name): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     let params;
@@ -703,9 +770,151 @@ function sendMail(userMail: string, template: string, subject: string) {
 }
 
 /**
+ * Method to find the tile of the map, the user is currently in
+ * @param tiles an array of all tiles
+ * @param coords the users current coordinates
+ * @return returns the index of the tile, returns null if user is not in rasterized area
+ */
+function findTile(tiles: Tile[], coords: Coords): number {
+  if (!coords) {
+    return null;
+  }
+  let index = null;
+  tiles.forEach((tile) => {
+    if (coords.lat >= tile.southWest.lat && coords.lat <= tile.northEast.lat) {
+      if (
+        coords.lng >= tile.southWest.lng &&
+        coords.lng <= tile.northEast.lng
+      ) {
+        index = tile.index;
+        return;
+      }
+    }
+  });
+  return index;
+}
+
+/**
+ * Method to rasterize the the map into equal rectangles
+ * @param radius the approx. size of each tile. This value should equal the maximum search radius specified in the client
+ * @param southWest coordinates of the southWestern point of the area to rasterize
+ * @param northEast coordinates of the northEastern point of the area to rasterize
+ * @return an array of Tiles
+ * southWest and northEast are coordinates of points that build a rectangle around the required area (for now only germany)
+ * The rectangle must contain all areas of germany, so by the shape of germany, they will lay outside
+ * longitudeDistance is the distance in KM between longitudes. Germany is at around 50 degree and thus the distance is around 71KM
+ * xTiles and yTiles is the calculated number of equal tiles on x and y axis the area can be divided in by the specified radius
+ * tileWidth and tileHeight is the actual size of each tile. This will be roughly the radius.
+ * The function then rasterize the specified area, starting at the southWest coordinates and create a Tile for each rectangle
+ * Each Tile has an index (southWest = 0), southWest and northEast coordinates, and an array of indexes of neighboring tiles
+ */
+function rasterizeMap(
+  radius: number,
+  southWest: Coords,
+  northEast: Coords
+): Tile[] {
+  const longitudeDistance = 71;
+  const xTiles = Math.round(
+    ((northEast.lng - southWest.lng) * longitudeDistance) / radius
+  );
+  const yTiles = Math.round(((northEast.lat - southWest.lat) * 111) / radius);
+  const array: Tile[] = [];
+  const tileWidth = (northEast.lng - southWest.lng) / xTiles;
+  const tileHeight = (northEast.lat - southWest.lat) / yTiles;
+  let i = 0;
+  for (let y = 0; y < yTiles; y++) {  // eslint-disable-line
+    for (let x = 0; x < xTiles; x++) {  // eslint-disable-line
+      const tile = new Tile();
+      tile.index = i;
+      tile.northEast = {
+        lat: southWest.lat + tileHeight * (y + 1),
+        lng: southWest.lng + tileWidth * (x + 1)
+      };
+      tile.southWest = {
+        lat: southWest.lat + tileHeight * y,
+        lng: southWest.lng + tileWidth * x
+      };
+      tile.neighbours = getBoundingAreas(i, xTiles, yTiles);
+      array.push(tile);
+      i++;
+    }
+  }
+  germanTiles = array;
+  return array;
+}
+
+/**
+ * Method to return the indexes of all neighboring tiles
+ * @param pos the index of the current tile
+ * @param xTiles the number of tiles on the x axis
+ * @param yTiles the number of tiles on the y axis
+ * @return an array of indexes
+ */
+function getBoundingAreas(pos, xTiles, yTiles): number[] {
+  const bounds = [];
+  let hasLeftRow = false;
+  let hasRightRow = false;
+  if (pos > 0 && !(pos % xTiles === 0)) {
+    hasLeftRow = true;
+    bounds.push(pos - 1);
+  }
+  if (!((pos + 1) % xTiles === 0)) {
+    hasRightRow = true;
+    bounds.push(pos + 1);
+  }
+  if (pos - xTiles >= 0) {
+    // hasBottomRow?
+    bounds.push(pos - xTiles);
+    if (hasLeftRow) bounds.push(pos - xTiles - 1); // eslint-disable-line
+    if (hasRightRow) bounds.push(pos - xTiles + 1); // eslint-disable-line
+  }
+  if (pos + xTiles <= xTiles * yTiles - 1) {
+    // hasTopRow?
+    bounds.push(pos + xTiles);
+    if (hasLeftRow) bounds.push(pos + xTiles - 1); // eslint-disable-line
+    if (hasRightRow) bounds.push(pos + xTiles + 1); // eslint-disable-line
+  }
+  return bounds;
+}
+
+/**
+ * calculates the distance between two coordinates with haversine formula
+ * This Calculation is not perfectly accurate, but enough for this use case
+ * @param lat1 origin latitude
+ * @param lon1 origin longitude
+ * @param lat2 destiantion latitue
+ * @param lon2 destination longitude
+ * @return calculated distance
+ */
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2): number {
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) *
+    Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in km
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI / 180);
+}
+
+/**
  * Exports for testing
  * add every method like this: {app: app, method1: method1, method2: method2}
  * routes don't need to be added
  *
  */
-module.exports = { app: app, prepareUser: prepareUser };
+module.exports = {
+  app: app,
+  prepareUser: prepareUser,
+  rasterizeMap: rasterizeMap,
+  getDistanceFromLatLonInKm: getDistanceFromLatLonInKm,
+  getBoundingAreas: getBoundingAreas,
+  findTile: findTile
+};
