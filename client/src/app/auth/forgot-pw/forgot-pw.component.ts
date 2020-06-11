@@ -11,6 +11,7 @@ import { ToastService } from '../../services/Toast/toast.service';
 })
 export class ForgotPwComponent implements OnInit {
   resetForm: FormGroup;
+  token = document.location.pathname.replace('/auth/forgot-pw/', '');
   error;
   validationMessages = {
     password: [
@@ -46,9 +47,7 @@ export class ForgotPwComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.authService.get();
-  }
+  ngOnInit(): void {}
 
   /**
    * Method to submit the new password
@@ -68,7 +67,7 @@ export class ForgotPwComponent implements OnInit {
       );
     } else {
       this.authService
-        .resetPassword(this.resetForm.controls.password.value)
+        .resetPassword(this.resetForm.controls.password.value, this.token)
         .then(() => {
           // this.toastService.presentToast('Password changed.');
           this.router.navigate(['auth/login']).then(() => {

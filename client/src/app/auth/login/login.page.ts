@@ -60,6 +60,13 @@ export class LoginPage implements OnInit {
     );
   }
 
+  /**
+   * Method to log in
+   * param: email user's email
+   * param: password user's password
+   * resolves if user was logged in successfully
+   * rejects if an error occurred
+   */
   async submit() {
     await this.toastService.presentLoading('Please wait...');
     this.authService
@@ -85,5 +92,10 @@ export class LoginPage implements OnInit {
     this.error = '';
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    const token = document.location.pathname.replace('/auth/register/', '');
+    if (document.location.href.includes('/auth/register/')){
+      this.authService.verifyRegistration(token);
+    }
+  }
 }

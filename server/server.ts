@@ -16,8 +16,6 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
 const User = require('./models/user');
-let token: string;
-let expirationDate: number;
 
 const MONGODB_URI: string = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.MONGODB_NAME;
@@ -99,43 +97,119 @@ const errorFormatter = (e) => {
 };
 
 /**
- * @api {post} /register Registers a new User
+ * @api {post} /register Starts registration of a new user
  * @apiName RegisterUser
  * @apiGroup User
  *
  * @apiDescription Pass user in request body with all required fields
- * Method runs Mongoose Validators and writes User to Database
+ * Method runs Mongoose Validators and checks if users email is already stored in database
  *
  * @apiParam {String} user An object with firstName, lastName, email and password
  *
- * @apiSuccess {String} message  SuccessMessage if all required fields passed and user is registered
+ message SuccessMessage if mail has been sent successfully
  * @apiSuccessExample Success-Response:
- *     HTTP/1.1 201 Created
+ *     HTTP/1.1 200 Ok
  *     {
- *       "message": "Successfully registered",
+ *       "message": "Mail has been sent. Check your inbox.",
  *     }
  *
- * @apiError UserNotRegistered If one of the required fields is missing or does not match the criteria
+ * @apiError ErrorMessage if mail failed to sent
+ * @apiError ErrorMessage if email provided by user already exists
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {
- *       "message: "Something went wrong",
- *       "errors": an Array of Errors
+ *       "message: "Could not send mail!"
  *     }
  */
 app.post('/register', (req: Request, res: Response) => {
   let user = new User();
   user = Object.assign(user, req.body.user);
-  user.save((err) => {
+
+  const token = crypto.randomBytes(20).toString('hex');
+  const expirationDate = new Date().setHours(new Date().getHours() + 24);
+
+  const REGISTER_URL: string = req.body.BASE_URL + '/auth/register/' + token;
+  const subject = 'jindr - Register now!';
+  const html =
+    '<p>Hey there! \n </p><a href=' +
+    REGISTER_URL +
+    '>Click here to register!</a><p>This link expires in 24 hours. This email was sent to ' +
+    user.email +
+    '. If you do not want to register, just ignore this email.</p>';
+
+  user.save(async (err) => {
     if (err) {
       res.status(400).send({
         message: 'Something went wrong',
-        errors: errorFormatter(err.message)
+        errors: err.message
       });
     } else {
+      await User.findOneAndUpdate(
+        { email: user.email },
+        {
+          token: token,
+          tokenExpires: expirationDate
+        }
+      );
+
+      try {
+        await sendMail(user.email, html, subject);
+        res.status(201).send({
+          message: 'Mail has been sent. Check your inbox.'
+        });
+      } catch (e) {
+        res.status(500).send({
+          message: 'Could not send mail.'
+        });
+      }
+    }
+  });
+});
+
+/**
+ * @api {get} /register/:token Verifies the registration of a new user
+ * @apiName RegisterUser
+ * @apiGroup User
+ *
+ * @apiDescription Validates stored user object
+ * Method runs Mongoose Validators and sets verification status to true
+ *
+ * @apiSuccess {String} message SuccessMessage if registration was verified successfully
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 Created
+ *     {
+ *       "message": "Successfully registered.",
+ *     }
+ *
+ * @apiError ErrorMessage if registration link is invalid or has expired
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Bad Request
+ *     {
+ *       "message: "Registration link is invalid or has expired."
+ *     }
+ */
+app.get('/register/:token', (req: Request, res: Response) => {
+  User.findOne({
+    token: req.params.token,
+    tokenExpires: { $gt: Date.now() }
+  }).exec(async (err) => {
+    if (err) {
+      res.status(500).send({
+        message: 'Registration link is invalid or has expired.'
+      });
+    } else {
+      await User.findOneAndUpdate(
+        { token: req.params.token },
+        {
+          isVerified: true,
+          token: null,
+          tokenExpires: null
+        }
+      );
       res.status(201).send({
-        message: 'Successfully registered'
+        message: 'Successfully registered.'
       });
     }
   });
@@ -148,7 +222,7 @@ app.post('/register', (req: Request, res: Response) => {
  *
  * @apiDescription Pass email, password and device ID compares stored password and entered password as hash
  * if they match, the device ID will be stored in the Database for future authentication and it will
- * return the User
+ * return the User. Checks if user is verified.
  *
  * @apiParam {String} deviceID A truly unique ID from the users device
  * @apiParam {String} password the Password of the user
@@ -167,7 +241,7 @@ app.post('/login', (req: Request, res: Response) => {
   const password: string = req.body.password;
   const deviceID: string = req.body.deviceID;
   const opts = { new: true };
-  User.findOne({ email: email })
+  User.findOne({ email: email, isVerified: true })
     .select('+password')
     .exec(async (err, user) => {
       if (err) {
@@ -187,7 +261,7 @@ app.post('/login', (req: Request, res: Response) => {
           });
         } else {
           res.status(400).send({
-            message: 'Wrong password'
+            message: 'Wrong password or registration incomplete.'
           });
         }
       }
@@ -443,12 +517,20 @@ app.post('/upload-image', (req: Request, res: Response) => {
  *       "errors": 'No account with that email address exists.'
  *     }
  */
+
 app.post('/sendmail', (req: Request, res: Response) => {
   const email: string = req.body.user.email;
-  token = crypto.randomBytes(20).toString('hex');
-  expirationDate = new Date().setHours(new Date().getHours() + 1);
+  const token = crypto.randomBytes(20).toString('hex');
+  const expirationDate = new Date().setHours(new Date().getHours() + 1);
   const BASE_URL: string = req.body.user.BASE_URL;
   const RESET_URL: string = BASE_URL + '/auth/forgot-pw/' + token;
+  const subject = 'jindr - Reset password';
+  const html =
+    '<p>Hey there! \n </p><a href=' +
+    RESET_URL +
+    '>Click here to reset your password.</a><p>This email was sent to ' +
+    email +
+    '. If you do not want to change your password, just ignore this email.</p>';
 
   User.findOne({ email: email })
     .select('+password')
@@ -462,103 +544,25 @@ app.post('/sendmail', (req: Request, res: Response) => {
           await User.findOneAndUpdate(
             { email: user.email },
             {
-              resetPasswordToken: token,
-              resetPasswordExpires: expirationDate
+              token: token,
+              tokenExpires: expirationDate
             }
           );
-          await send();
+          try {
+            await sendMail(email, html, subject);
+            res.status(201).send({
+              message: 'Mail has been sent. Check your inbox.'
+            });
+          } catch (e) {
+            res.status(500).send({
+              message: 'Could not send mail.'
+            });
+          }
         } else {
           res.status(400).send({
             message: 'No account with that email address exists.'
           });
         }
-      }
-    });
-
-  // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-  function send() {
-    const html =
-      '<p>Hey there! \n </p> ' +
-      '<a href=' +
-      RESET_URL +
-      '><p>Click here to reset your password.</a> \n This email was sent to ' +
-      email +
-      '. ' +
-      '\n If you do not want to change your password, just ignore this email.</p>';
-
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.web.de',
-      port: 587,
-      secure: false,
-      auth: {
-        user: 'app.jindr@web.de',
-        pass: 'JindrPW1!'
-      }
-    });
-
-    const mailOptions = {
-      from: 'jindr Support app.jindr@web.de',
-      to: email,
-      subject: 'jindr - Reset password',
-      html: html
-    };
-
-    transporter.sendMail(mailOptions, (err) => {
-      if (err) {
-        res.status(400).send({
-          message: 'Could not send mail!',
-          errors: err.toString()
-        });
-      } else {
-        res.status(201).send({
-          message: 'Mail has been sent. Check your inbox.'
-        });
-      }
-    });
-  }
-});
-
-/**
- * @api {get} /forgot-pw returns the token and the date of expiration
- * @apiName ForgotPassword
- *
- * @apiDescription when entering the password reset site, the token and the expiration date are sent to the client,
- * to authenticate the user
- *
- * @apiParam {String} token random token to authenticate the user
- * @apiParam {Date} expirationDate timestamp when the reset link expires
- *
- * @apiSuccess {String} message Success Message if user is still logged in.
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 201 OK
- *     {
- *       "token": token
- *       "exp": expirationDate
- *     }
- *
- * @apiError TokenError Token is invalid or has expired.
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "message: 'Password reset token is invalid or has expired.'
- *     }
- */
-app.get('/forgot-pw', (req: Request, res: Response) => {
-  User.findOne({
-    resetPasswordToken: token,
-    resetPasswordExpires: { $gt: Date.now() }
-  })
-    .select('+password')
-    .exec(async (err, user) => {
-      if (!user) {
-        res.status(400).send({
-          message: 'Password reset token is invalid or has expired.'
-        });
-      } else {
-        res.status(201).send({
-          token: token,
-          exp: expirationDate
-        });
       }
     });
 });
@@ -589,8 +593,8 @@ app.get('/forgot-pw', (req: Request, res: Response) => {
  */
 app.post('/forgot-pw/:token', (req: Request, res: Response) => {
   User.findOne({
-    resetPasswordToken: req.params.token,
-    resetPasswordExpires: { $gt: Date.now() }
+    token: req.params.token,
+    tokenExpires: { $gt: Date.now() }
   })
     .select('+password')
     .exec(async (err, user) => {
@@ -601,19 +605,16 @@ app.post('/forgot-pw/:token', (req: Request, res: Response) => {
       } else {
         if (user) {
           await User.findOneAndUpdate(
-            { resetPasswordToken: req.params.token },
+            { token: req.params.token },
             {
               password: bcrypt.hashSync(
                 req.body.user.password,
                 SALT_WORK_FACTOR
               ),
-              resetPasswordExpires: null,
-              resetPasswordToken: null
+              tokenExpires: null,
+              token: null
             }
           );
-          token = undefined;
-          expirationDate = undefined;
-
           res.status(201).send({
             message: 'New password has been set.'
           });
@@ -668,6 +669,39 @@ function uploadFile(file, name): Promise<string> {
     });
   });
 }
+
+/**
+ * Method to send a verification mail to user's email address
+ * @param userMail user's email address
+ * @param template displayed content of the mail
+ * @param subject subject of the mail
+ */
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+function sendMail(userMail: string, template: string, subject: string) {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.web.de',
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'app.jindr@web.de',
+      pass: 'JindrPW1!'
+    }
+  });
+
+  const mailOptions = {
+    from: 'jindr Support app.jindr@web.de',
+    to: userMail,
+    subject: subject,
+    html: template
+  };
+
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (error, info) => {
+      error ? reject(error) : resolve(info);
+    });
+  });
+}
+
 /**
  * Exports for testing
  * add every method like this: {app: app, method1: method1, method2: method2}

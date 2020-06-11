@@ -80,6 +80,24 @@ describe('Register new User', () => {
             })
         expect(res.statusCode).toEqual(400)
     });
+    it("should verify user", async () => {
+        const u = await request(app)
+          .get("/user/" + USER_ONE._id)
+          .send();
+
+        const res = await request(app)
+          .get("/register/" + u.body.data.token)
+          .send();
+
+        const newU = await request(app)
+          .get("/user/" + USER_ONE._id)
+          .send();
+
+        USER_ONE = newU.body.data;
+
+        expect(res.statusCode).toEqual(201);
+        expect(USER_ONE.isVerified).toEqual(true);
+    });
 });
 
 describe('Login User', () => {
@@ -240,8 +258,8 @@ describe('Test Get User', () => {
     });
 });
 
-describe('Send mail', () => {
-    it('should send a mail', async () => {
+describe('Send reset mail', () => {
+    it('should send a mail with link to reset passsword', async () => {
         const res = await request(app)
             .post('/sendmail')
             .send({
@@ -251,7 +269,7 @@ describe('Send mail', () => {
     });
     it('should fail if email is invalid', async () => {
         const res = await request(app)
-            .post('/register')
+            .post('/sendmail')
             .send({
                 user: {email: 'John.com'}
             })
@@ -259,21 +277,19 @@ describe('Send mail', () => {
     });
 });
 
-describe('Get token and expiration date', () => {
-    it('should fail if no token and expiration date is set in server', async () => {
-        const res = await request(app)
-            .post('/forgot-pw')
-        expect(res.statusCode).toEqual(404)
-    });
-});
-
 describe('Reset password', () => {
-    it('should fail if token is invalid, expired or unset', async () => {
+    it('should set new password', async () => {
+
+        const u = await request(app)
+          .get("/user/" + USER_ONE._id)
+          .send();
+
         const res = await request(app)
-            .post('/forgot-pw/a89c41adf3b479af510c36e83274bde9f80ed8dd')
-            .send({
-                user: {password: 'passwort74'}
-            })
-        expect(res.statusCode).toEqual(400)
+          .post('/forgot-pw/' + u.body.data.token)
+          .send({
+              user: {password: 'passwort74'}
+          })
+
+        expect(res.statusCode).toEqual(201)
     });
 });
