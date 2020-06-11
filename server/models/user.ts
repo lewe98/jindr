@@ -5,6 +5,15 @@ const mongooseUniqueValidator = require('mongoose-unique-validator');
 const bcrypt = require('bcrypt');
 const SALT_WORK_FACTOR = 10;
 
+const resumeSchema = mongoose.Schema({
+    startDate: {type: Date },
+    endDate: {type: Date },
+    title: {type: String },
+    description: {type: String },
+    industrysector: {type: String },
+    employmentType: {type: String },
+})
+
 const userSchema = mongoose.Schema({
     firstName: {type: String, required: [true, 'First Name is required.'], trim: true},
     lastName: {type: String, required: [true, 'Last Name is required.'], trim: true},
@@ -27,7 +36,7 @@ const userSchema = mongoose.Schema({
     },
     distance: {
         type: Number,
-        default: 5
+        default: 10
     },
     image: {
         type: String,
@@ -36,6 +45,28 @@ const userSchema = mongoose.Schema({
     allowNotifications: {
         type: Boolean,
         default: true
+    },
+    aboutMe: {
+        type: String,
+        trim: true
+    },
+    dateOfBirth: {
+        type: Number,
+        trim: true
+    },
+    token: {
+        type: String
+    },
+    tokenExpires: {
+        type: Date
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    resume: {
+        type: [resumeSchema],
+        default: []
     }
 });
 

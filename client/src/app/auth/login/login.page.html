@@ -33,7 +33,7 @@
         </div>
       </ng-container>
     </div>
-    <a class="forgot-password" [routerLink]="['/auth/forgot-pw']">Forgot Password?</a>
+    <a class="forgot-password" (click)="resetPwService.presentEmailPrompt()">Forgot Password?</a>
   </div>
   <div class="section-buttons ion-padding">
     <app-jindr-button [disabled]="!loginForm.valid" class="login-btn" [text]="'Login'" (click)="loginForm.valid ? submit() : ''"></app-jindr-button>

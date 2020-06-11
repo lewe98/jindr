@@ -12,6 +12,8 @@ const sslRedirect = require('heroku-ssl-redirect');
 const history = require('connect-history-api-fallback');
 const fs = require('fs');
 const AWS = require('aws-sdk');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const User = require('./models/user');
 const Job = require('./models/job');
@@ -105,43 +107,119 @@ const errorFormatter = (e) => {
 };
 
 /**
- * @api {post} /register Registers a new User
+ * @api {post} /register Starts registration of a new user
  * @apiName RegisterUser
  * @apiGroup User
  *
  * @apiDescription Pass user in request body with all required fields
- * Method runs Mongoose Validators and writes User to Database
+ * Method runs Mongoose Validators and checks if users email is already stored in database
  *
  * @apiParam {String} user An object with firstName, lastName, email and password
  *
- * @apiSuccess {String} message  SuccessMessage if all required fields passed and user is registered
+ message SuccessMessage if mail has been sent successfully
  * @apiSuccessExample Success-Response:
- *     HTTP/1.1 201 Created
+ *     HTTP/1.1 200 Ok
  *     {
- *       "message": "Successfully registered",
+ *       "message": "Mail has been sent. Check your inbox.",
  *     }
  *
- * @apiError UserNotRegistered If one of the required fields is missing or does not match the criteria
+ * @apiError ErrorMessage if mail failed to sent
+ * @apiError ErrorMessage if email provided by user already exists
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {
- *       "message: "Something went wrong",
- *       "errors": an Array of Errors
+ *       "message: "Could not send mail!"
  *     }
  */
 app.post('/register', (req: Request, res: Response) => {
   let user = new User();
   user = Object.assign(user, req.body.user);
-  user.save((err) => {
+
+  const token = crypto.randomBytes(20).toString('hex');
+  const expirationDate = new Date().setHours(new Date().getHours() + 24);
+
+  const REGISTER_URL: string = req.body.BASE_URL + '/auth/register/' + token;
+  const subject = 'jindr - Register now!';
+  const html =
+    '<p>Hey there! \n </p><a href=' +
+    REGISTER_URL +
+    '>Click here to register!</a><p>This link expires in 24 hours. This email was sent to ' +
+    user.email +
+    '. If you do not want to register, just ignore this email.</p>';
+
+  user.save(async (err) => {
     if (err) {
       res.status(400).send({
         message: 'Something went wrong',
-        errors: errorFormatter(err.message)
+        errors: err.message
       });
     } else {
+      await User.findOneAndUpdate(
+        { email: user.email },
+        {
+          token: token,
+          tokenExpires: expirationDate
+        }
+      );
+
+      try {
+        await sendMail(user.email, html, subject);
+        res.status(201).send({
+          message: 'Mail has been sent. Check your inbox.'
+        });
+      } catch (e) {
+        res.status(500).send({
+          message: 'Could not send mail.'
+        });
+      }
+    }
+  });
+});
+
+/**
+ * @api {get} /register/:token Verifies the registration of a new user
+ * @apiName RegisterUser
+ * @apiGroup User
+ *
+ * @apiDescription Validates stored user object
+ * Method runs Mongoose Validators and sets verification status to true
+ *
+ * @apiSuccess {String} message SuccessMessage if registration was verified successfully
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 Created
+ *     {
+ *       "message": "Successfully registered.",
+ *     }
+ *
+ * @apiError ErrorMessage if registration link is invalid or has expired
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Bad Request
+ *     {
+ *       "message: "Registration link is invalid or has expired."
+ *     }
+ */
+app.get('/register/:token', (req: Request, res: Response) => {
+  User.findOne({
+    token: req.params.token,
+    tokenExpires: { $gt: Date.now() }
+  }).exec(async (err) => {
+    if (err) {
+      res.status(500).send({
+        message: 'Registration link is invalid or has expired.'
+      });
+    } else {
+      await User.findOneAndUpdate(
+        { token: req.params.token },
+        {
+          isVerified: true,
+          token: null,
+          tokenExpires: null
+        }
+      );
       res.status(201).send({
-        message: 'Successfully registered'
+        message: 'Successfully registered.'
       });
     }
   });
@@ -154,7 +232,7 @@ app.post('/register', (req: Request, res: Response) => {
  *
  * @apiDescription Pass email, password and device ID compares stored password and entered password as hash
  * if they match, the device ID will be stored in the Database for future authentication and it will
- * return the User
+ * return the User. Checks if user is verified.
  *
  * @apiParam {String} deviceID A truly unique ID from the users device
  * @apiParam {String} password the Password of the user
@@ -173,7 +251,7 @@ app.post('/login', (req: Request, res: Response) => {
   const password: string = req.body.password;
   const deviceID: string = req.body.deviceID;
   const opts = { new: true };
-  User.findOne({ email: email })
+  User.findOne({ email: email, isVerified: true })
     .select('+password')
     .exec(async (err, user) => {
       if (err) {
@@ -193,7 +271,7 @@ app.post('/login', (req: Request, res: Response) => {
           });
         } else {
           res.status(400).send({
-            message: 'Wrong password'
+            message: 'Wrong password or registration incomplete.'
           });
         }
       }
@@ -231,7 +309,7 @@ app.get('/login/:deviceID', async (req: Request, res: Response) => {
         if (user) {
           res.status(200).send({
             message: 'User still logged in',
-            data: user
+            data: prepareUser(user)
           });
         } else {
           res.status(401).send({
@@ -323,10 +401,15 @@ app.put('/update-user', async (req: Request, res: Response) => {
       }
     } else {
       try {
-        doc = await User.findOneAndUpdate({ _id: req.body.user._id }, data, {
-          new: true,
-          context: 'query'
-        });
+        doc = await User.findOneAndUpdate(
+          { _id: req.body.user._id },
+          { $set: data },
+          {
+            new: true,
+            context: 'query',
+            setDefaultsOnInsert: true
+          }
+        );
         res.status(200).send({
           message: 'Updated User',
           data: prepareUser(doc)
@@ -416,57 +499,145 @@ app.post('/upload-image', (req: Request, res: Response) => {
 });
 
 /**
- * @api {post} /create-job creates a new job
- * @apiName CreateJob
- * @apiGroup Job
+ * @api {post} /sendmail sends mail containing a link to reset password
+ * @apiName SendMail
  *
- * @apiDescription Pass a job and coordinates of its location, the route will specify in
- * which tile of the map the job is located and save its index
+ * @apiDescription Pass mail in request body.
+ * The configured mail client sends a mail to the users mailing address that includes a link, to reset the user's password.
  *
- * @apiParam {String} job an object with the job
- * @apiParam {String} coords and object with coords like this: {lat: xx.xxxx, lng: xx.xxxx}
+ * @apiParam {String} mail User's mailing address
+ * @apiParam {String} BASE_URL the Location object's URL's origin
+ * @apiParam {String} RESET_URL Addition of the required route to BASE_URL
+ * @apiParam {String} token random token to authenticate the user
+ * @apiParam {Date} expirationDate timestamp when the reset link expires
  *
- * @apiSuccess {String} message  SuccessMessage job is created
+ * @apiSuccess {String} message Notification that the mail has been sent successfully.
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 201 Created
  *     {
- *       "message": "Successfully created job",
+ *       message: 'Mail has been sent. Check your inbox.'
  *     }
  *
- * @apiError JobNotCreated if job is located outside of supported area or database request failed
+ * @apiError InvalidInput Method fails if user transmits an invalid mailing address.
+ * @apiError MailingError Mail could not be sent because of issues of mailing provider (smtp.web.de).
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {
- *       "message: "Your country is currently not supported."
+ *       "message: 'Could not send mail!',
+ *       "errors": 'No account with that email address exists.'
  *     }
  */
-app.post('/create-job', (req: Request, res: Response) => {
-  const coords = req.body.coords;
-  const tile = findTile(germanTiles, coords);
-  if (!tile) {
-    res.status(400).send({
-      message: 'Your country is currently not supported.'
+
+app.post('/sendmail', (req: Request, res: Response) => {
+  const email: string = req.body.user.email;
+  const token = crypto.randomBytes(20).toString('hex');
+  const expirationDate = new Date().setHours(new Date().getHours() + 1);
+  const BASE_URL: string = req.body.user.BASE_URL;
+  const RESET_URL: string = BASE_URL + '/auth/forgot-pw/' + token;
+  const subject = 'jindr - Reset password';
+  const html =
+    '<p>Hey there! \n </p><a href=' +
+    RESET_URL +
+    '>Click here to reset your password.</a><p>This email was sent to ' +
+    email +
+    '. If you do not want to change your password, just ignore this email.</p>';
+
+  User.findOne({ email: email })
+    .select('+password')
+    .exec(async (err, user) => {
+      if (err) {
+        res.status(500).send({
+          message: 'Error: ' + err
+        });
+      } else {
+        if (user) {
+          await User.findOneAndUpdate(
+            { email: user.email },
+            {
+              token: token,
+              tokenExpires: expirationDate
+            }
+          );
+          try {
+            await sendMail(email, html, subject);
+            res.status(201).send({
+              message: 'Mail has been sent. Check your inbox.'
+            });
+          } catch (e) {
+            res.status(500).send({
+              message: 'Could not send mail.'
+            });
+          }
+        } else {
+          res.status(400).send({
+            message: 'No account with that email address exists.'
+          });
+        }
+      }
     });
-    return;
-  }
-  const job = new Job();
-  Object.assign(job, req.body.job);
-  job.tile = tile;
-  job.save((err, obj) => {
-    if (err) {
-      res.status(400).send({
-        message: 'Something went wrong',
-        errors: errorFormatter(err.message)
-      });
-    } else {
-      res.status(201).send({
-        message: 'Successfully created job',
-        data: obj
-      });
-    }
-  });
 });
+
+/**
+ * @api {post} /forgot-pw/:token route to reset the users password
+ * @apiName ForgotPassword
+ *
+ * @apiDescription checks if token is valid and not expired yet.
+ *
+ * @apiParam {String} token random token to authenticate the user
+ * @apiParam {String} password user's new password, that is immediately encrypted
+ *
+ * @apiSuccess {String} message Success Message if user is still logged in.
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       "message": 'New password has been set.'
+ *     }
+ *
+ * @apiError MailError Email is invalid.
+ * @apiError TokenError Token is invalid or has expired.
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "message: 'Password reset token is invalid or has expired.'
+ *     }
+ */
+app.post('/forgot-pw/:token', (req: Request, res: Response) => {
+  User.findOne({
+    token: req.params.token,
+    tokenExpires: { $gt: Date.now() }
+  })
+    .select('+password')
+    .exec(async (err, user) => {
+      if (err) {
+        res.status(400).send({
+          message: 'Password reset token is invalid or has expired.'
+        });
+      } else {
+        if (user) {
+          await User.findOneAndUpdate(
+            { token: req.params.token },
+            {
+              password: bcrypt.hashSync(
+                req.body.user.password,
+                SALT_WORK_FACTOR
+              ),
+              tokenExpires: null,
+              token: null
+            }
+          );
+          res.status(201).send({
+            message: 'New password has been set.'
+          });
+        } else {
+          res.status(400).send({
+            message: 'No account with that email address exists.'
+          });
+        }
+      }
+    });
+});
+
 /**
  * Prepares user to be sent to client
  * Removes password and deviceID
@@ -507,6 +678,38 @@ function uploadFile(file, name): Promise<string> {
           return data.Location;
         }
       });
+    });
+  });
+}
+
+/**
+ * Method to send a verification mail to user's email address
+ * @param userMail user's email address
+ * @param template displayed content of the mail
+ * @param subject subject of the mail
+ */
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+function sendMail(userMail: string, template: string, subject: string) {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.web.de',
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'app.jindr@web.de',
+      pass: 'JindrPW1!'
+    }
+  });
+
+  const mailOptions = {
+    from: 'jindr Support app.jindr@web.de',
+    to: userMail,
+    subject: subject,
+    html: template
+  };
+
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (error, info) => {
+      error ? reject(error) : resolve(info);
     });
   });
 }
@@ -635,9 +838,9 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2): number {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(deg2rad(lat1)) *
-      Math.cos(deg2rad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in km
 }

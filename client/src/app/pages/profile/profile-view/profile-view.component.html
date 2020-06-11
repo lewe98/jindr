@@ -1,6 +1,5 @@
 <ion-header>
   <ion-toolbar class="toolbar-no-border">
-    <ion-title>Profile</ion-title>
     <ion-buttons slot="end">
       <ion-button color="danger" (click)="close()">
         Close
@@ -8,3 +7,32 @@
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
+
+<ion-content class="view-enumeration">
+  <ion-card>
+
+    <ion-avatar style="margin-top: 1rem; width: 200px; height: 200px" class="avatar">
+      <app-aspect-ratio  [ratio]="{w:1 ,h:1}">
+        <app-image-shell class="user-image" [src]="user?.image"></app-image-shell>
+      </app-aspect-ratio>
+    </ion-avatar>
+
+
+    <ion-card-title>{{user.firstName}} {{user.lastName.charAt(0)}}.</ion-card-title>
+    <p>{{date}} years old</p>
+  </ion-card>
+
+  <ion-card *ngIf="user.aboutMe">
+    <ion-card-header>
+      <ion-card-subtitle>About ME</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>{{user.aboutMe}}</ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="user.resume">
+    <ion-card-header>
+      <ion-card-subtitle>My CV</ion-card-subtitle>
+    </ion-card-header>
+    <app-curriculum [inputUser]="user"></app-curriculum>
+  </ion-card>
+</ion-content>

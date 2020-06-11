@@ -9,7 +9,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="settings-page bg-muted">
+<ion-content [scrollEvents]="true" (ionScroll)="handleScroll($event)" class="settings-page bg-muted">
   <ion-list class="list-custom">
     <ion-list-header>
       <ion-label>ACCOUNT SETTINGS</ion-label>
@@ -43,7 +43,7 @@
       </ion-note>
     </ion-item>
     <ion-item>
-      <ion-range min="2" max="160" [(ngModel)]="user.distance" color="primary"></ion-range>
+      <ion-range min="2" max="50" [(ngModel)]="user.distance" color="primary"></ion-range>
     </ion-item>
   </ion-list>
 

@@ -87,6 +87,24 @@ describe('Register new User', () => {
             })
         expect(res.statusCode).toEqual(400)
     });
+    it("should verify user", async () => {
+        const u = await request(app)
+          .get("/user/" + USER_ONE._id)
+          .send();
+
+        const res = await request(app)
+          .get("/register/" + u.body.data.token)
+          .send();
+
+        const newU = await request(app)
+          .get("/user/" + USER_ONE._id)
+          .send();
+
+        USER_ONE = newU.body.data;
+
+        expect(res.statusCode).toEqual(201);
+        expect(USER_ONE.isVerified).toEqual(true);
+    });
 });
 
 describe('Login User', () => {
@@ -247,6 +265,41 @@ describe('Test Get User', () => {
     });
 });
 
+describe('Send reset mail', () => {
+    it('should send a mail with link to reset passsword', async () => {
+        const res = await request(app)
+            .post('/sendmail')
+            .send({
+                user: {email: EMAIL_ONE}
+            })
+        expect(res.statusCode).toEqual(201);
+    });
+    it('should fail if email is invalid', async () => {
+        const res = await request(app)
+            .post('/sendmail')
+            .send({
+                user: {email: 'John.com'}
+            })
+        expect(res.statusCode).toEqual(400)
+    });
+});
+
+describe('Reset password', () => {
+    it('should set new password', async () => {
+
+        const u = await request(app)
+          .get("/user/" + USER_ONE._id)
+          .send();
+
+        const res = await request(app)
+          .post('/forgot-pw/' + u.body.data.token)
+          .send({
+              user: {password: 'passwort74'}
+          })
+
+        expect(res.statusCode).toEqual(201)
+    });
+});
 
 describe('test create job', () => {
   it('should fail if user is outside of supported area', async () => {

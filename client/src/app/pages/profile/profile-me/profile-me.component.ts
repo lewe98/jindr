@@ -32,7 +32,8 @@ export class ProfileMeComponent implements OnInit {
 
   async viewProfile() {
     const modal = await this.modalCtrl.create({
-      component: ProfileViewComponent
+      component: ProfileViewComponent,
+      componentProps: { user: this.user }
     });
     return await modal.present();
   }
@@ -49,7 +50,7 @@ export class ProfileMeComponent implements OnInit {
 
   async editPicture() {
     this.imageService
-      .takePicture('profilePicture')
+      .getImage('profilePicture')
       .then(async (image) => {
         await this.toastService.presentLoading('Save...');
         this.user.image = image;

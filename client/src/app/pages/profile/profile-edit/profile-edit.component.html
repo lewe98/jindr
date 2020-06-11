@@ -1,10 +1,64 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar>
+<ion-header>
+  <ion-toolbar class="toolbar-no-border">
+    <ion-title>Edit Profile</ion-title>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="pages/profile"></ion-back-button>
+      <ion-back-button defaultHref="pages/edit"></ion-back-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content>
-  <ion-button (click)="editCurriculum()">Open Edit Lebenslauf</ion-button>
+
+<ion-content class="settings-page bg-muted">
+
+  <form [formGroup]="editForm">
+  <ion-list class="list-custom list-general">
+    <ion-list-header>
+      <ion-label>GENERAL INFORMATION</ion-label>
+    </ion-list-header>
+    <ion-item lines="none">
+      <ion-label>First Name</ion-label>
+      <ion-input formControlName="firstName" class="right" slot="end"></ion-input>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-label>Last Name</ion-label>
+      <ion-input formControlName="lastName"  slot="end"></ion-input>
+    </ion-item>
+      <ion-item lines="none">
+        <ion-label>Date of Birth</ion-label>
+        <ion-datetime [value]="user.dateOfBirth | date: 'dd.MM.yyyy'" (ionChange)="selectDOB($event)" displayFormat="DD.MM.YYYY" placeholder="Select Date"></ion-datetime>
+      </ion-item>
+  </ion-list>
+  <ion-list class="list-custom">
+    <ion-list-header>
+      <ion-label>ABOUT ME</ion-label>
+    </ion-list-header>
+    <ion-item lines="none">
+      <ion-textarea maxlength="400" rows="3" auto-grow="true" type="text" spellcheck="true" autocapitalize="on" formControlName="aboutMe"></ion-textarea>
+    </ion-item>
+    <ion-item lines="none" *ngIf="editForm.controls.aboutMe.value">
+      <ion-note slot="end">
+        {{ 400 - editForm.controls.aboutMe.value.length }}
+      </ion-note>
+    </ion-item>
+  </ion-list>
+  </form>
+  <ion-list class="list-custom">
+    <ion-list-header>
+      <ion-row style="width: 100%">
+        <ion-col size="8">
+          <ion-label>CURRICULUM VITAE</ion-label>
+        </ion-col>
+        <ion-col size="3">
+          <ion-button (click)="editCurriculum()" style="height: 100%">Add entry</ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-list-header>
+    <ion-item>
+        <app-curriculum style="width: 100%" [myView]="true" [inputUser]="user"></app-curriculum>
+    </ion-item>
+  </ion-list>
+
 </ion-content>
+
+<ion-footer>
+  <ion-button [disabled]="!editForm.valid" type="button" expand="full" fill="solid" color="primary" (click)="save()">Save</ion-button>
+</ion-footer>

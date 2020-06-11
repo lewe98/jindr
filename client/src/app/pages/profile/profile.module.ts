@@ -8,8 +8,9 @@ import { ShellModule } from '../../shell/shell.module';
 import { SharedModule } from '../../shared/shared.module';
 import { ProfileViewComponent } from './profile-view/profile-view.component';
 import { ProfileEditComponent } from './profile-edit/profile-edit.component';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CurriculumComponent } from './curriculum/curriculum.component';
+import { ProfileResumeComponent } from './profile-resume/profile-resume.component';
 
 const profileRoutes: Routes = [
   {
@@ -28,7 +29,8 @@ const profileRoutes: Routes = [
     SettingsComponent,
     ProfileViewComponent,
     ProfileEditComponent,
-    CurriculumComponent
+    CurriculumComponent,
+    ProfileResumeComponent
   ],
   imports: [
     CommonModule,
@@ -36,7 +38,8 @@ const profileRoutes: Routes = [
     IonicModule,
     ShellModule,
     SharedModule,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ]
 })
 export class ProfileModule {}

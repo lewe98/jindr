@@ -51,5 +51,3 @@ Content-Type: application/json
 ###
 GET http://localhost:8080/user/5ed27c926c31d33518cc81c2
 Accept: application/json
-
-###

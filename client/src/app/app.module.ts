@@ -13,6 +13,8 @@ import { HttpRequestInterceptor } from './services/http-interceptor';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
+import { ImageService } from './services/Image/image.service';
+import { NgxImageCompressService } from 'ngx-image-compress';
 
 @NgModule({
   declarations: [AppComponent],
@@ -30,12 +32,14 @@ import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
     StatusBar,
     SplashScreen,
     ScreenOrientation,
+    ImageService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpRequestInterceptor,
       multi: true
     },
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    NgxImageCompressService
   ],
   bootstrap: [AppComponent]
 })
