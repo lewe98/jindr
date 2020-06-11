@@ -52,6 +52,15 @@ export class RegisterPage implements OnInit {
     });
   }
 
+  /**
+   * Method to register
+   * param: email user's email
+   * param: password user's password
+   * param: firstName user's first name
+   * param: lastName user's last name
+   * resolves if user was registered in successfully
+   * rejects if an error occurred
+   */
   async submit() {
     this.authService
       .register(
@@ -84,6 +93,9 @@ export class RegisterPage implements OnInit {
 
   ngOnInit() {}
 
+  /**
+   * Method to display terms
+   */
   async showTermsModal() {
     const modal = await this.modalController.create({
       component: TermsComponent
@@ -91,6 +103,9 @@ export class RegisterPage implements OnInit {
     return await modal.present();
   }
 
+  /**
+   * Method to display privacy policy
+   */
   async showPrivacyModal() {
     const modal = await this.modalController.create({
       component: PrivacyComponent

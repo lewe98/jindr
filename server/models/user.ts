@@ -54,11 +54,15 @@ const userSchema = mongoose.Schema({
         type: Number,
         trim: true
     },
-    resetPasswordToken: {
+    token: {
         type: String
     },
-    resetPasswordExpires: {
+    tokenExpires: {
         type: Date
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
     },
     resume: {
         type: [resumeSchema],
