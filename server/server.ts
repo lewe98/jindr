@@ -169,8 +169,10 @@ app.post('/register', (req: Request, res: Response) => {
           message: 'Mail has been sent. Check your inbox.'
         });
       } catch (e) {
+        console.log(e);
         res.status(500).send({
-          message: 'Could not send mail.'
+          message: 'Could not send mail.',
+          errors: e
         });
       }
     }
@@ -636,6 +638,59 @@ app.post('/forgot-pw/:token', (req: Request, res: Response) => {
         }
       }
     });
+});
+
+/**
+ * @api {post} /create-job creates a new job
+ * @apiName CreateJob
+ * @apiGroup Job
+ *
+ * @apiDescription Pass a job and coordinates of its location, the route will specify in
+ * which tile of the map the job is located and save its index
+ *
+ * @apiParam {String} job an object with the job
+ * @apiParam {String} coords and object with coords like this: {lat: xx.xxxx, lng: xx.xxxx}
+ *
+ * @apiSuccess {String} message  SuccessMessage job is created
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 Created
+ *     {
+ *       "message": "Successfully created job",
+ *     }
+ *
+ * @apiError JobNotCreated if job is located outside of supported area or database request failed
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "message: "Your country is currently not supported."
+ *     }
+ */
+app.post('/create-job', (req: Request, res: Response) => {
+  const coords = req.body.coords;
+  const tile = findTile(germanTiles, coords);
+  if (!tile) {
+    res.status(400).send({
+      message: 'Your country is currently not supported.'
+    });
+    return;
+  }
+  const job = new Job();
+  Object.assign(job, req.body.job);
+  job.tile = tile;
+  job.save((err, obj) => {
+    if (err) {
+      res.status(400).send({
+        message: 'Something went wrong',
+        errors: errorFormatter(err.message)
+      });
+    } else {
+      res.status(201).send({
+        message: 'Successfully created job',
+        data: obj
+      });
+    }
+  });
 });
 
 /**
