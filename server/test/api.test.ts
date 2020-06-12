@@ -3,6 +3,7 @@ const server = require('../server.js');
 const app = server.app;
 const request = require('supertest');
 import {describe, it, expect, beforeAll, afterAll} from 'jest-without-globals'
+const nodemailer = require('nodemailer');
 const dbHandler = require('./database-handler');
 const User = require('../models/user');
 const Job = require('../models/job');
@@ -24,6 +25,17 @@ let LOGGED_IN_USER;
 beforeAll(async () => {
   await dbHandler.connect();
   server.rasterizeMap(maxRadius, southWest, northEast);
+  const transporter = nodemailer.createTransport({
+    host: "smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+      user: "ec342b26b556f3",
+      pass: "38080b1df210ca"
+    },
+    debug: false,
+    logger: false
+  });
+  server.setTransporter(transporter);
 });
 
 /**
@@ -318,18 +330,57 @@ describe('test create job', () => {
     const res = await request(app)
       .post('/create-job')
       .send({
-        job: {
-          title: 'Test Job',
-          description: 'Test Description',
-          creator: LOGGED_IN_USER._id
-        },
         coords: {
           lat: 51.3260435992175,
           lng: 9.72345094553722
+        },
+        job: {
+          title: "erster job",
+          description: "test123",
+          creator: "5ee24164c71c594a94003ea3",
+          location: {
+            lat: 51.3260435992175,
+            lng: 9.72345094553722
+          }
         }
       });
     expect(res.statusCode).toEqual(201);
     expect(res.body.message).toBe('Successfully created job');
     expect(res.body.data.tile).toEqual(122);
   });
-})
+});
+
+describe('test job stack', () => {
+  it('should get all jobs in the radius, if there are less than clientStack size', async () => {
+    for (let i = 0; i < 5; i++) {
+      await request(app)
+        .post('/create-job')
+        .send({
+          coords: {
+            lat: 51.3260435992175,
+            lng: 9.72345094553722
+          },
+          job: {
+            title: "erster job",
+            description: "test123",
+            creator: "5ee24164c71c594a94003ea3",
+            location: {
+              lat: 51.3260435992175,
+              lng: 9.72345094553722
+            }
+          }
+        });
+    }
+    const res = await request(app)
+      .put('/job-stack')
+      .send({
+        "user": USER_ONE,
+        "coords": {
+          "lat": 51.3260435992175,
+          "lng": 9.72345094553722
+        }
+      });
+    expect(res.body.data.length).toEqual(6);
+  });
+
+});

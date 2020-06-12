@@ -17,6 +17,18 @@ const jobSchema = mongoose.Schema({
   },
   tile: {
     type: Number
+  },
+  interestedUsers: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'User',
+    default: []
+  },
+  location: {
+    type: {lat: Number, lng: Number}
+  },
+  isFinished: {
+    type: Boolean,
+    default: false
   }
 });
 
