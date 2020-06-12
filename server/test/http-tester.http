@@ -51,3 +51,38 @@ Content-Type: application/json
 ###
 GET http://localhost:8080/user/5ed27c926c31d33518cc81c2
 Accept: application/json
+
+###
+PUT http://localhost:8080/job-stack
+Content-Type: application/json
+
+{
+  "user": {
+    "_id": "5ee24164c71c594a94003ea3",
+    "distance": 10
+  },
+  "coords": {
+    "lat": 51.3260435992175,
+    "lng": 9.72345094553722
+  }
+}
+
+###
+POST http://localhost:8080/create-job
+Content-Type: application/json
+
+{
+  "coords": {
+    "lat": 51.3260435992175,
+    "lng": 9.72345094553722
+  },
+  "job": {
+    "title": "erster job",
+    "description": "test123",
+    "creator": "5ee24164c71c594a94003ea3",
+    "location": {
+      "lat": 51.3260435992175,
+      "lng": 9.72345094553722
+    }
+  }
+}

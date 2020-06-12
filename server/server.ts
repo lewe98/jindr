@@ -14,9 +14,11 @@ const fs = require('fs');
 const AWS = require('aws-sdk');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const _ = require('lodash');
 
 const User = require('./models/user');
 const Job = require('./models/job');
+const JobStack = require('./models/jobStack');
 
 const MONGODB_URI: string = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.MONGODB_NAME;
@@ -30,6 +32,7 @@ AWS.config.update({
 const s3 = new AWS.S3();
 // eslint-disable-next-line
 let db;
+let transporter;
 
 const app = express();
 app.use(compression());
@@ -86,6 +89,22 @@ async function dbConnect() {
     // eslint-disable-next-line
     console.error('Error connecting to database ...\n' + err);
   }
+  transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: 'noreply.jindr@gmail.com',
+      pass: 'Jindr123$'
+    }
+  });
+  transporter.verify((error) => {
+    if (error) {
+      // eslint-disable-next-line
+      console.log(error);
+    } else {
+      // eslint-disable-next-line
+      console.log('Server is ready to take our messages');
+    }
+  });
 }
 
 /**
@@ -169,7 +188,6 @@ app.post('/register', (req: Request, res: Response) => {
           message: 'Mail has been sent. Check your inbox.'
         });
       } catch (e) {
-        console.log(e);
         res.status(500).send({
           message: 'Could not send mail.',
           errors: e
@@ -640,6 +658,44 @@ app.post('/forgot-pw/:token', (req: Request, res: Response) => {
     });
 });
 
+app.put('/decision', async (req: Request, res: Response) => {
+  const user = await User.findOne({ _id: req.body.user._id });
+  const jobID = req.body.jobID;
+  const coords = req.body.coords;
+  const isLike = req.body.isLike;
+
+  let jobStack = await JobStack.findOne({ userID: user._id });
+  _.remove(jobStack.clientStack, (job) => {
+    job._id = jobID;
+  });
+  jobStack.swipedJobs.push(jobID);
+  await jobStack.save();
+  if (isLike) {
+    await Job.findOneAndUpdate(
+      { _id: jobID },
+      { $push: { interestedUsers: user._id } }
+    );
+  }
+  jobStack = await fillStack(jobStack, user, coords);
+  res.status(200).send({
+    data: jobStack.clientStack
+  });
+});
+
+app.put('/job-stack', async (req: Request, res: Response) => {
+  const user = req.body.user;
+  const coords = req.body.coords;
+  let jobStack = await JobStack.findOne({ userID: user._id });
+  if (!jobStack) {
+    jobStack = new JobStack({ userID: user._id });
+    await jobStack.save();
+  }
+  jobStack = await fillStack(jobStack, user, coords);
+  res.status(200).send({
+    message: 'Successfully requested jobs',
+    data: jobStack.clientStack
+  });
+});
 /**
  * @api {post} /create-job creates a new job
  * @apiName CreateJob
@@ -745,18 +801,8 @@ function uploadFile(file, name): Promise<string> {
  */
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 function sendMail(userMail: string, template: string, subject: string) {
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.web.de',
-    port: 587,
-    secure: false,
-    auth: {
-      user: 'app.jindr@web.de',
-      pass: 'JindrPW1!'
-    }
-  });
-
   const mailOptions = {
-    from: 'jindr Support app.jindr@web.de',
+    from: '"Jindr Support" <noreply.jindr@gmail.com>',
     to: userMail,
     subject: subject,
     html: template
@@ -767,6 +813,130 @@ function sendMail(userMail: string, template: string, subject: string) {
       error ? reject(error) : resolve(info);
     });
   });
+}
+
+/**
+ * Method to get all jobs from a stack of IDs from the database
+ * @param jobStack the entire jobStack
+ * @param serverStack array of Job IDs
+ */
+async function getIntoClientStack(jobStack, serverStack): Promise<any[]> {
+  const jobs = await Job.find().where('_id').in(serverStack).exec();
+  jobStack.clientStack = [...jobStack.clientStack, ...jobs];
+  return jobStack.clientStack;
+}
+async function fillStack(jobStack, user, coords) {
+  if (jobStack.clientStack.length <= 5) {
+    if (jobStack.serverStack.length > 0) {
+      jobStack.clientStack = await getIntoClientStack(
+        jobStack,
+        jobStack.serverStack
+      );
+      jobStack.serverStack = [];
+      const tileIdx = findTile(germanTiles, coords);
+      if (jobStack.backLog.length > 0 && tileIdx === jobStack.tileID) {
+        /*
+          If there are still items in the backlog and user is still in same tile,
+          shuffle the backlog and get up to 10 new jobs into serverStack
+         */
+        jobStack.backLog = _.shuffle(jobStack.backLog);
+        jobStack.serverStack =
+          jobStack.backLog.length >= 10
+            ? jobStack.backLog.splice(0, 10)
+            : jobStack.backLog.splice(0, jobStack.backLog.length);
+        await jobStack.save();
+      } else {
+        jobStack.tileID = tileIdx;
+        /*
+          If there are no more items in the backlog or user has moved tiles, populate the backlog
+          with new items and move 10 into serverStack
+         */
+        populateBacklog(jobStack, true, false, coords, user);
+      }
+      return jobStack;
+    } else {
+      jobStack.tileID = findTile(germanTiles, coords);
+      /*
+      If there are no items in serverStack and no items in the backlog, populate the backlog,
+      move 10 items in serverStack and 10 into clientStack
+       */
+      return await populateBacklog(jobStack, true, true, coords, user);
+    }
+  } else {
+    return jobStack;
+  }
+}
+
+async function populateBacklog(
+  jobStack,
+  syncServer,
+  syncClient,
+  coords,
+  user
+): Promise<any> {
+  if (syncServer && !syncClient) {
+    jobStack.backLog = await getAllMatchingJobs(coords, jobStack, user);
+    jobStack.serverStack =
+      jobStack.backLog.length >= 10
+        ? jobStack.backLog.splice(0, 10)
+        : jobStack.backLog.splice(0, jobStack.backLog.length);
+    jobStack.save();
+  } else if (syncClient) {
+    jobStack.backLog = await getAllMatchingJobs(coords, jobStack, user);
+    const clientTemp =
+      jobStack.backLog.length >= 10
+        ? jobStack.backLog.splice(0, 10)
+        : jobStack.backLog.splice(0, jobStack.backLog.length);
+    jobStack.clientStack = await getIntoClientStack(jobStack, clientTemp);
+    jobStack.serverStack =
+      jobStack.backLog.length >= 10
+        ? jobStack.backLog.splice(0, 10)
+        : jobStack.backLog.splice(0, jobStack.backLog.length);
+    await jobStack.save();
+    return jobStack;
+  }
+}
+
+async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
+  const tile = findTile(germanTiles, coords);
+  const neighbors = germanTiles[tile].neighbours;
+  neighbors.unshift(tile);
+  // .lean() https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/
+  const allJobs = await Job.find({
+    isFinished: false,
+    _id: { $nin: [jobStack.swipedJobs] }
+  })
+    .where('tile')
+    .in(neighbors)
+    .lean()
+    .exec();
+  const foundJobs = [];
+  let i = 0;
+  const tempClient = [];
+  jobStack.clientStack.forEach((job) => {
+    tempClient.push(job._id);
+  });
+  allJobs.forEach((job) => {
+    const dist = getDistanceFromLatLonInKm(
+      coords.lat,
+      coords.lng,
+      job.location.lat,
+      job.location.lng
+    );
+    // && !user.swipedJobs.some(job._id) possible way to check if already swiped
+    if (
+      dist <= user.distance &&
+      !jobStack.serverStack.some((x) => x === job._id) &&
+      !tempClient.some((x) => x === job._id)
+    ) {
+      foundJobs.push(job._id);
+      i++;
+    }
+    if (i >= 35) {
+      return;
+    }
+  });
+  return foundJobs;
 }
 
 /**
@@ -822,8 +992,8 @@ function rasterizeMap(
   const tileWidth = (northEast.lng - southWest.lng) / xTiles;
   const tileHeight = (northEast.lat - southWest.lat) / yTiles;
   let i = 0;
-  for (let y = 0; y < yTiles; y++) {  // eslint-disable-line
-    for (let x = 0; x < xTiles; x++) {  // eslint-disable-line
+  for (let y = 0; y < yTiles; y++) { // eslint-disable-line
+    for (let x = 0; x < xTiles; x++) { // eslint-disable-line
       const tile = new Tile();
       tile.index = i;
       tile.northEast = {
@@ -893,9 +1063,9 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2): number {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(deg2rad(lat1)) *
-    Math.cos(deg2rad(lat2)) *
-    Math.sin(dLon / 2) *
-    Math.sin(dLon / 2);
+      Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in km
 }
@@ -904,6 +1074,9 @@ function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
 
+function setTransporter(transp) {
+  transporter = transp;
+}
 /**
  * Exports for testing
  * add every method like this: {app: app, method1: method1, method2: method2}
@@ -916,5 +1089,6 @@ module.exports = {
   rasterizeMap: rasterizeMap,
   getDistanceFromLatLonInKm: getDistanceFromLatLonInKm,
   getBoundingAreas: getBoundingAreas,
-  findTile: findTile
+  findTile: findTile,
+  setTransporter: setTransporter
 };
