@@ -14,8 +14,6 @@ const { Device } = Plugins;
 })
 export class AuthService {
   user: User;
-  token: string;
-  exp: Date;
   private userSubject = new BehaviorSubject<User>(null);
   user$ = this.userSubject.asObservable();
   constructor(
@@ -37,22 +35,17 @@ export class AuthService {
   }
 
   /**
-   * Method to register a user
+   * Method to start the registration of a new user
    * @param firstName of the user
    * @param lastName of the user
    * @param email of the user
    * @param password of the user
-   * Creates a user by sending all the information to the server to store the user in the database
+   * Sends all the user information to the server
    * status message is reported by ToastService
-   * resolves if successfully registered and created a new user
-   * rejects if registration failed
+   * resolves if registration mail has been sent successfully
+   * rejects if an error occurred
    */
-  async register(
-    firstName: string,
-    lastName: string,
-    email: string,
-    password: string
-  ): Promise<any> {
+  async register(firstName: string, lastName: string, email: string, password: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const data = {
         user: {
@@ -60,7 +53,8 @@ export class AuthService {
           lastName,
           email,
           password
-        }
+        },
+        BASE_URL: document.location.origin
       };
       this.databaseController
         .postRequest('register', JSON.stringify(data))
@@ -70,11 +64,37 @@ export class AuthService {
         })
         .catch((err) => {
           this.toastService.presentWarningToast(
-            err.errors.email,
+            err.errors,
             err.message + ': '
           );
           reject(err);
         });
+    });
+  }
+
+  /**
+   * Method to verify registration of the user
+   * @param token registration token
+   * Verifies registration
+   * status message is reported by ToastService
+   * resolves if successfully registered
+   * rejects if registration failed
+   */
+  async verifyRegistration(token: string): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      this.databaseController
+          .getRequest('register/' + token, '')
+          .then((res) => {
+            this.toastService.presentToast(res.message);
+            this.router.navigate(['login']);
+            resolve();
+          })
+          .catch((err) => {
+            this.toastService.presentWarningToast(
+                err.message, 'Error: '
+            );
+            reject(err);
+          });
     });
   }
 
@@ -196,38 +216,17 @@ export class AuthService {
   }
 
   /**
-   * Method to get token and expiration date
-   * resolves if token and expiration date were sent successfully
-   * rejects if token could not be assigned to a user
-   */
-  async get(): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      this.databaseController
-        .getRequest('forgot-pw', '')
-        .then((res) => {
-          this.token = res.token;
-          this.exp = res.exp;
-          resolve();
-        })
-        .catch((err) => {
-          this.router.navigate(['']);
-          this.toastService.presentWarningToast(err.message, 'Error:');
-          reject(err);
-        });
-    });
-  }
-
-  /**
    * Method to reset a password
    * @param password user's new password
+   * @param token token to verify user
    * resolves if password was changed successfully
    * rejects if email could not be sent
    */
-  async resetPassword(password: string): Promise<any> {
+  async resetPassword(password: string, token: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const data = { user: { password } };
       this.databaseController
-        .postRequest('forgot-pw/' + this.token, JSON.stringify(data))
+        .postRequest('forgot-pw/' + token, JSON.stringify(data))
         .then((res) => {
           this.toastService.presentToast(res.message);
           resolve();

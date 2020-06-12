@@ -45,7 +45,6 @@ export class LocationService implements OnDestroy {
     this.presentLoader();
     try {
       const coordinates = await Geolocation.getCurrentPosition();
-      console.log(coordinates);
       this.currentPosition = {
         lat: coordinates.coords.latitude,
         lng: coordinates.coords.longitude
@@ -64,10 +63,9 @@ export class LocationService implements OnDestroy {
    */
   watchPosition() {
     this.wait = Geolocation.watchPosition(
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 3000 },
+      { enableHighAccuracy: true, maximumAge: 300 * 1000 },
       (position) => {
         this.ngZone.run(() => {
-          console.log(position);
           this.coordsSubject.next({
             lat: position?.coords.latitude,
             lng: position?.coords.longitude
@@ -92,13 +90,15 @@ export class LocationService implements OnDestroy {
 
   async createLoader() {
     this.loadingElement = await this.loadingController.create({
-      message: 'Trying to get your current location...'
+      message: 'Trying to get your current location...',
+      duration: 2000
     });
   }
 
   async geocodeLatLng() {
     const coords = await this.getCurrentPosition();
     if (!coords) {
+      this.location = 'Unknown';
       return;
     }
     this.geocoder.geocode({ location: coords }, (results, status) => {
@@ -114,7 +114,6 @@ export class LocationService implements OnDestroy {
           this.location = 'Unknown';
         }
       } else {
-        console.log(status);
         this.toastService.presentWarningToast(
           status,
           'Geocoder failed due to: '
@@ -143,7 +142,7 @@ export class LocationService implements OnDestroy {
 
   /**
    * calculates the distance between two coordinates
-   * This Calculation is not very accurate, but enough for this use case
+   * This Calculation is not perfectly accurate, but enough for this use case
    * @param lat1 origin latitude
    * @param lon1 origin longitude
    * @param lat2 destiantion latitue

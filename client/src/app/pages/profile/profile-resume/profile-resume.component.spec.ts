@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule, NavParams } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 
 import { ProfileResumeComponent } from './profile-resume.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -16,8 +16,7 @@ describe('ProfileResumeComponent', () => {
         IonicModule.forRoot(),
         HttpClientTestingModule,
         RouterTestingModule
-      ],
-      providers: [{ provide: NavParams }]
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfileResumeComponent);

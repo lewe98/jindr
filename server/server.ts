@@ -1,3 +1,4 @@
+import { Coords, Tile } from './models/tile';
 require('dotenv').config();
 import { Request, Response } from 'express';
 
@@ -9,15 +10,15 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const sslRedirect = require('heroku-ssl-redirect');
 const history = require('connect-history-api-fallback');
-const SALT_WORK_FACTOR = 10;
 const fs = require('fs');
 const AWS = require('aws-sdk');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const _ = require('lodash');
 
 const User = require('./models/user');
-let token: string;
-let expirationDate: number;
+const Job = require('./models/job');
+const JobStack = require('./models/jobStack');
 
 const MONGODB_URI: string = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.MONGODB_NAME;
@@ -31,6 +32,7 @@ AWS.config.update({
 const s3 = new AWS.S3();
 // eslint-disable-next-line
 let db;
+let transporter;
 
 const app = express();
 app.use(compression());
@@ -47,6 +49,14 @@ app.use(
 );
 
 /**
+ * VARIABLES
+ */
+let germanTiles: Tile[] = [];
+const southWest = { lat: 47.344777, lng: 5.888672 }; // coordinates for southWestern point of a rectangle containing germany
+const northEast = { lat: 54.41893, lng: 14.888671 }; // coordinates for northEastern point of a rectangle containing germany
+const SALT_WORK_FACTOR = 10;
+const maxRadius = 50; // Max search radius users can set in the app
+/**
  * Only starts server if Environment is not test,
  * This is required for Jest Memory Database Tests
  */
@@ -58,6 +68,7 @@ if (process.env.NODE_ENV.trim() !== 'test') {
       // eslint-disable-next-line
       console.log('Server connected at: ' + app.get('port'));
       await dbConnect();
+      rasterizeMap(maxRadius, southWest, northEast);
     })();
   });
 }
@@ -78,6 +89,22 @@ async function dbConnect() {
     // eslint-disable-next-line
     console.error('Error connecting to database ...\n' + err);
   }
+  transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: 'noreply.jindr@gmail.com',
+      pass: 'Jindr123$'
+    }
+  });
+  transporter.verify((error) => {
+    if (error) {
+      // eslint-disable-next-line
+      console.log(error);
+    } else {
+      // eslint-disable-next-line
+      console.log('Server is ready to take our messages');
+    }
+  });
 }
 
 /**
@@ -99,43 +126,120 @@ const errorFormatter = (e) => {
 };
 
 /**
- * @api {post} /register Registers a new User
+ * @api {post} /register Starts registration of a new user
  * @apiName RegisterUser
  * @apiGroup User
  *
  * @apiDescription Pass user in request body with all required fields
- * Method runs Mongoose Validators and writes User to Database
+ * Method runs Mongoose Validators and checks if users email is already stored in database
  *
  * @apiParam {String} user An object with firstName, lastName, email and password
  *
- * @apiSuccess {String} message  SuccessMessage if all required fields passed and user is registered
+ message SuccessMessage if mail has been sent successfully
  * @apiSuccessExample Success-Response:
- *     HTTP/1.1 201 Created
+ *     HTTP/1.1 200 Ok
  *     {
- *       "message": "Successfully registered",
+ *       "message": "Mail has been sent. Check your inbox.",
  *     }
  *
- * @apiError UserNotRegistered If one of the required fields is missing or does not match the criteria
+ * @apiError ErrorMessage if mail failed to sent
+ * @apiError ErrorMessage if email provided by user already exists
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {
- *       "message: "Something went wrong",
- *       "errors": an Array of Errors
+ *       "message: "Could not send mail!"
  *     }
  */
 app.post('/register', (req: Request, res: Response) => {
   let user = new User();
   user = Object.assign(user, req.body.user);
-  user.save((err) => {
+
+  const token = crypto.randomBytes(20).toString('hex');
+  const expirationDate = new Date().setHours(new Date().getHours() + 24);
+
+  const REGISTER_URL: string = req.body.BASE_URL + '/auth/register/' + token;
+  const subject = 'jindr - Register now!';
+  const html =
+    '<p>Hey there! \n </p><a href=' +
+    REGISTER_URL +
+    '>Click here to register!</a><p>This link expires in 24 hours. This email was sent to ' +
+    user.email +
+    '. If you do not want to register, just ignore this email.</p>';
+
+  user.save(async (err) => {
     if (err) {
       res.status(400).send({
         message: 'Something went wrong',
-        errors: errorFormatter(err.message)
+        errors: err.message
       });
     } else {
+      await User.findOneAndUpdate(
+        { email: user.email },
+        {
+          token: token,
+          tokenExpires: expirationDate
+        }
+      );
+
+      try {
+        await sendMail(user.email, html, subject);
+        res.status(201).send({
+          message: 'Mail has been sent. Check your inbox.'
+        });
+      } catch (e) {
+        res.status(500).send({
+          message: 'Could not send mail.',
+          errors: e
+        });
+      }
+    }
+  });
+});
+
+/**
+ * @api {get} /register/:token Verifies the registration of a new user
+ * @apiName RegisterUser
+ * @apiGroup User
+ *
+ * @apiDescription Validates stored user object
+ * Method runs Mongoose Validators and sets verification status to true
+ *
+ * @apiSuccess {String} message SuccessMessage if registration was verified successfully
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 Created
+ *     {
+ *       "message": "Successfully registered.",
+ *     }
+ *
+ * @apiError ErrorMessage if registration link is invalid or has expired
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Bad Request
+ *     {
+ *       "message: "Registration link is invalid or has expired."
+ *     }
+ */
+app.get('/register/:token', (req: Request, res: Response) => {
+  User.findOne({
+    token: req.params.token,
+    tokenExpires: { $gt: Date.now() }
+  }).exec(async (err) => {
+    if (err) {
+      res.status(500).send({
+        message: 'Registration link is invalid or has expired.'
+      });
+    } else {
+      await User.findOneAndUpdate(
+        { token: req.params.token },
+        {
+          isVerified: true,
+          token: null,
+          tokenExpires: null
+        }
+      );
       res.status(201).send({
-        message: 'Successfully registered'
+        message: 'Successfully registered.'
       });
     }
   });
@@ -148,7 +252,7 @@ app.post('/register', (req: Request, res: Response) => {
  *
  * @apiDescription Pass email, password and device ID compares stored password and entered password as hash
  * if they match, the device ID will be stored in the Database for future authentication and it will
- * return the User
+ * return the User. Checks if user is verified.
  *
  * @apiParam {String} deviceID A truly unique ID from the users device
  * @apiParam {String} password the Password of the user
@@ -167,7 +271,7 @@ app.post('/login', (req: Request, res: Response) => {
   const password: string = req.body.password;
   const deviceID: string = req.body.deviceID;
   const opts = { new: true };
-  User.findOne({ email: email })
+  User.findOne({ email: email, isVerified: true })
     .select('+password')
     .exec(async (err, user) => {
       if (err) {
@@ -187,7 +291,7 @@ app.post('/login', (req: Request, res: Response) => {
           });
         } else {
           res.status(400).send({
-            message: 'Wrong password'
+            message: 'Wrong password or registration incomplete.'
           });
         }
       }
@@ -395,6 +499,7 @@ app.get('/user/:userID', (req: Request, res: Response) => {
  *       "data": url
  *     }
  */
+/* istanbul ignore next */
 app.post('/upload-image', (req: Request, res: Response) => {
   const name = req.body.name;
   const file = req.body.file;
@@ -443,12 +548,20 @@ app.post('/upload-image', (req: Request, res: Response) => {
  *       "errors": 'No account with that email address exists.'
  *     }
  */
+
 app.post('/sendmail', (req: Request, res: Response) => {
   const email: string = req.body.user.email;
-  token = crypto.randomBytes(20).toString('hex');
-  expirationDate = new Date().setHours(new Date().getHours() + 1);
+  const token = crypto.randomBytes(20).toString('hex');
+  const expirationDate = new Date().setHours(new Date().getHours() + 1);
   const BASE_URL: string = req.body.user.BASE_URL;
   const RESET_URL: string = BASE_URL + '/auth/forgot-pw/' + token;
+  const subject = 'jindr - Reset password';
+  const html =
+    '<p>Hey there! \n </p><a href=' +
+    RESET_URL +
+    '>Click here to reset your password.</a><p>This email was sent to ' +
+    email +
+    '. If you do not want to change your password, just ignore this email.</p>';
 
   User.findOne({ email: email })
     .select('+password')
@@ -462,103 +575,25 @@ app.post('/sendmail', (req: Request, res: Response) => {
           await User.findOneAndUpdate(
             { email: user.email },
             {
-              resetPasswordToken: token,
-              resetPasswordExpires: expirationDate
+              token: token,
+              tokenExpires: expirationDate
             }
           );
-          await send();
+          try {
+            await sendMail(email, html, subject);
+            res.status(201).send({
+              message: 'Mail has been sent. Check your inbox.'
+            });
+          } catch (e) {
+            res.status(500).send({
+              message: 'Could not send mail.'
+            });
+          }
         } else {
           res.status(400).send({
             message: 'No account with that email address exists.'
           });
         }
-      }
-    });
-
-  // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-  function send() {
-    const html =
-      '<p>Hey there! \n </p> ' +
-      '<a href=' +
-      RESET_URL +
-      '><p>Click here to reset your password.</a> \n This email was sent to ' +
-      email +
-      '. ' +
-      '\n If you do not want to change your password, just ignore this email.</p>';
-
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.web.de',
-      port: 587,
-      secure: false,
-      auth: {
-        user: 'app.jindr@web.de',
-        pass: 'JindrPW1!'
-      }
-    });
-
-    const mailOptions = {
-      from: 'jindr Support app.jindr@web.de',
-      to: email,
-      subject: 'jindr - Reset password',
-      html: html
-    };
-
-    transporter.sendMail(mailOptions, (err) => {
-      if (err) {
-        res.status(400).send({
-          message: 'Could not send mail!',
-          errors: err.toString()
-        });
-      } else {
-        res.status(201).send({
-          message: 'Mail has been sent. Check your inbox.'
-        });
-      }
-    });
-  }
-});
-
-/**
- * @api {get} /forgot-pw returns the token and the date of expiration
- * @apiName ForgotPassword
- *
- * @apiDescription when entering the password reset site, the token and the expiration date are sent to the client,
- * to authenticate the user
- *
- * @apiParam {String} token random token to authenticate the user
- * @apiParam {Date} expirationDate timestamp when the reset link expires
- *
- * @apiSuccess {String} message Success Message if user is still logged in.
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 201 OK
- *     {
- *       "token": token
- *       "exp": expirationDate
- *     }
- *
- * @apiError TokenError Token is invalid or has expired.
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "message: 'Password reset token is invalid or has expired.'
- *     }
- */
-app.get('/forgot-pw', (req: Request, res: Response) => {
-  User.findOne({
-    resetPasswordToken: token,
-    resetPasswordExpires: { $gt: Date.now() }
-  })
-    .select('+password')
-    .exec(async (err, user) => {
-      if (!user) {
-        res.status(400).send({
-          message: 'Password reset token is invalid or has expired.'
-        });
-      } else {
-        res.status(201).send({
-          token: token,
-          exp: expirationDate
-        });
       }
     });
 });
@@ -589,8 +624,8 @@ app.get('/forgot-pw', (req: Request, res: Response) => {
  */
 app.post('/forgot-pw/:token', (req: Request, res: Response) => {
   User.findOne({
-    resetPasswordToken: req.params.token,
-    resetPasswordExpires: { $gt: Date.now() }
+    token: req.params.token,
+    tokenExpires: { $gt: Date.now() }
   })
     .select('+password')
     .exec(async (err, user) => {
@@ -601,19 +636,16 @@ app.post('/forgot-pw/:token', (req: Request, res: Response) => {
       } else {
         if (user) {
           await User.findOneAndUpdate(
-            { resetPasswordToken: req.params.token },
+            { token: req.params.token },
             {
               password: bcrypt.hashSync(
                 req.body.user.password,
                 SALT_WORK_FACTOR
               ),
-              resetPasswordExpires: null,
-              resetPasswordToken: null
+              tokenExpires: null,
+              token: null
             }
           );
-          token = undefined;
-          expirationDate = undefined;
-
           res.status(201).send({
             message: 'New password has been set.'
           });
@@ -624,6 +656,97 @@ app.post('/forgot-pw/:token', (req: Request, res: Response) => {
         }
       }
     });
+});
+
+app.put('/decision', async (req: Request, res: Response) => {
+  const user = await User.findOne({ _id: req.body.user._id });
+  const jobID = req.body.jobID;
+  const coords = req.body.coords;
+  const isLike = req.body.isLike;
+
+  let jobStack = await JobStack.findOne({ userID: user._id });
+  _.remove(jobStack.clientStack, (job) => {
+    job._id = jobID;
+  });
+  jobStack.swipedJobs.push(jobID);
+  await jobStack.save();
+  if (isLike) {
+    await Job.findOneAndUpdate(
+      { _id: jobID },
+      { $push: { interestedUsers: user._id } }
+    );
+  }
+  jobStack = await fillStack(jobStack, user, coords);
+  res.status(200).send({
+    data: jobStack.clientStack
+  });
+});
+
+app.put('/job-stack', async (req: Request, res: Response) => {
+  const user = req.body.user;
+  const coords = req.body.coords;
+  let jobStack = await JobStack.findOne({ userID: user._id });
+  if (!jobStack) {
+    jobStack = new JobStack({ userID: user._id });
+    await jobStack.save();
+  }
+  jobStack = await fillStack(jobStack, user, coords);
+  res.status(200).send({
+    message: 'Successfully requested jobs',
+    data: jobStack.clientStack
+  });
+});
+/**
+ * @api {post} /create-job creates a new job
+ * @apiName CreateJob
+ * @apiGroup Job
+ *
+ * @apiDescription Pass a job and coordinates of its location, the route will specify in
+ * which tile of the map the job is located and save its index
+ *
+ * @apiParam {String} job an object with the job
+ * @apiParam {String} coords and object with coords like this: {lat: xx.xxxx, lng: xx.xxxx}
+ *
+ * @apiSuccess {String} message  SuccessMessage job is created
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 Created
+ *     {
+ *       "message": "Successfully created job",
+ *     }
+ *
+ * @apiError JobNotCreated if job is located outside of supported area or database request failed
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "message: "Your country is currently not supported."
+ *     }
+ */
+app.post('/create-job', (req: Request, res: Response) => {
+  const coords = req.body.coords;
+  const tile = findTile(germanTiles, coords);
+  if (!tile) {
+    res.status(400).send({
+      message: 'Your country is currently not supported.'
+    });
+    return;
+  }
+  const job = new Job();
+  Object.assign(job, req.body.job);
+  job.tile = tile;
+  job.save((err, obj) => {
+    if (err) {
+      res.status(400).send({
+        message: 'Something went wrong',
+        errors: errorFormatter(err.message)
+      });
+    } else {
+      res.status(201).send({
+        message: 'Successfully created job',
+        data: obj
+      });
+    }
+  });
 });
 
 /**
@@ -644,6 +767,7 @@ function prepareUser(user) {
  * @param file the file as base64 string
  * @param name the image name in the bucket. Should be UNIQUE! e.g. use Timestamp
  */
+/* istanbul ignore next */
 function uploadFile(file, name): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     let params;
@@ -668,10 +792,303 @@ function uploadFile(file, name): Promise<string> {
     });
   });
 }
+
+/**
+ * Method to send a verification mail to user's email address
+ * @param userMail user's email address
+ * @param template displayed content of the mail
+ * @param subject subject of the mail
+ */
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+function sendMail(userMail: string, template: string, subject: string) {
+  const mailOptions = {
+    from: '"Jindr Support" <noreply.jindr@gmail.com>',
+    to: userMail,
+    subject: subject,
+    html: template
+  };
+
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (error, info) => {
+      error ? reject(error) : resolve(info);
+    });
+  });
+}
+
+/**
+ * Method to get all jobs from a stack of IDs from the database
+ * @param jobStack the entire jobStack
+ * @param serverStack array of Job IDs
+ */
+async function getIntoClientStack(jobStack, serverStack): Promise<any[]> {
+  const jobs = await Job.find().where('_id').in(serverStack).exec();
+  jobStack.clientStack = [...jobStack.clientStack, ...jobs];
+  return jobStack.clientStack;
+}
+async function fillStack(jobStack, user, coords) {
+  if (jobStack.clientStack.length <= 5) {
+    if (jobStack.serverStack.length > 0) {
+      jobStack.clientStack = await getIntoClientStack(
+        jobStack,
+        jobStack.serverStack
+      );
+      jobStack.serverStack = [];
+      const tileIdx = findTile(germanTiles, coords);
+      if (jobStack.backLog.length > 0 && tileIdx === jobStack.tileID) {
+        /*
+          If there are still items in the backlog and user is still in same tile,
+          shuffle the backlog and get up to 10 new jobs into serverStack
+         */
+        jobStack.backLog = _.shuffle(jobStack.backLog);
+        jobStack.serverStack =
+          jobStack.backLog.length >= 10
+            ? jobStack.backLog.splice(0, 10)
+            : jobStack.backLog.splice(0, jobStack.backLog.length);
+        await jobStack.save();
+      } else {
+        jobStack.tileID = tileIdx;
+        /*
+          If there are no more items in the backlog or user has moved tiles, populate the backlog
+          with new items and move 10 into serverStack
+         */
+        populateBacklog(jobStack, true, false, coords, user);
+      }
+      return jobStack;
+    } else {
+      jobStack.tileID = findTile(germanTiles, coords);
+      /*
+      If there are no items in serverStack and no items in the backlog, populate the backlog,
+      move 10 items in serverStack and 10 into clientStack
+       */
+      return await populateBacklog(jobStack, true, true, coords, user);
+    }
+  } else {
+    return jobStack;
+  }
+}
+
+async function populateBacklog(
+  jobStack,
+  syncServer,
+  syncClient,
+  coords,
+  user
+): Promise<any> {
+  if (syncServer && !syncClient) {
+    jobStack.backLog = await getAllMatchingJobs(coords, jobStack, user);
+    jobStack.serverStack =
+      jobStack.backLog.length >= 10
+        ? jobStack.backLog.splice(0, 10)
+        : jobStack.backLog.splice(0, jobStack.backLog.length);
+    jobStack.save();
+  } else if (syncClient) {
+    jobStack.backLog = await getAllMatchingJobs(coords, jobStack, user);
+    const clientTemp =
+      jobStack.backLog.length >= 10
+        ? jobStack.backLog.splice(0, 10)
+        : jobStack.backLog.splice(0, jobStack.backLog.length);
+    jobStack.clientStack = await getIntoClientStack(jobStack, clientTemp);
+    jobStack.serverStack =
+      jobStack.backLog.length >= 10
+        ? jobStack.backLog.splice(0, 10)
+        : jobStack.backLog.splice(0, jobStack.backLog.length);
+    await jobStack.save();
+    return jobStack;
+  }
+}
+
+async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
+  const tile = findTile(germanTiles, coords);
+  const neighbors = germanTiles[tile].neighbours;
+  neighbors.unshift(tile);
+  // .lean() https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/
+  const allJobs = await Job.find({
+    isFinished: false,
+    _id: { $nin: [jobStack.swipedJobs] }
+  })
+    .where('tile')
+    .in(neighbors)
+    .lean()
+    .exec();
+  const foundJobs = [];
+  let i = 0;
+  const tempClient = [];
+  jobStack.clientStack.forEach((job) => {
+    tempClient.push(job._id);
+  });
+  allJobs.forEach((job) => {
+    const dist = getDistanceFromLatLonInKm(
+      coords.lat,
+      coords.lng,
+      job.location.lat,
+      job.location.lng
+    );
+    // && !user.swipedJobs.some(job._id) possible way to check if already swiped
+    if (
+      dist <= user.distance &&
+      !jobStack.serverStack.some((x) => x === job._id) &&
+      !tempClient.some((x) => x === job._id)
+    ) {
+      foundJobs.push(job._id);
+      i++;
+    }
+    if (i >= 35) {
+      return;
+    }
+  });
+  return foundJobs;
+}
+
+/**
+ * Method to find the tile of the map, the user is currently in
+ * @param tiles an array of all tiles
+ * @param coords the users current coordinates
+ * @return returns the index of the tile, returns null if user is not in rasterized area
+ */
+function findTile(tiles: Tile[], coords: Coords): number {
+  if (!coords) {
+    return null;
+  }
+  let index = null;
+  tiles.forEach((tile) => {
+    if (coords.lat >= tile.southWest.lat && coords.lat <= tile.northEast.lat) {
+      if (
+        coords.lng >= tile.southWest.lng &&
+        coords.lng <= tile.northEast.lng
+      ) {
+        index = tile.index;
+        return;
+      }
+    }
+  });
+  return index;
+}
+
+/**
+ * Method to rasterize the the map into equal rectangles
+ * @param radius the approx. size of each tile. This value should equal the maximum search radius specified in the client
+ * @param southWest coordinates of the southWestern point of the area to rasterize
+ * @param northEast coordinates of the northEastern point of the area to rasterize
+ * @return an array of Tiles
+ * southWest and northEast are coordinates of points that build a rectangle around the required area (for now only germany)
+ * The rectangle must contain all areas of germany, so by the shape of germany, they will lay outside
+ * longitudeDistance is the distance in KM between longitudes. Germany is at around 50 degree and thus the distance is around 71KM
+ * xTiles and yTiles is the calculated number of equal tiles on x and y axis the area can be divided in by the specified radius
+ * tileWidth and tileHeight is the actual size of each tile. This will be roughly the radius.
+ * The function then rasterize the specified area, starting at the southWest coordinates and create a Tile for each rectangle
+ * Each Tile has an index (southWest = 0), southWest and northEast coordinates, and an array of indexes of neighboring tiles
+ */
+function rasterizeMap(
+  radius: number,
+  southWest: Coords,
+  northEast: Coords
+): Tile[] {
+  const longitudeDistance = 71;
+  const xTiles = Math.round(
+    ((northEast.lng - southWest.lng) * longitudeDistance) / radius
+  );
+  const yTiles = Math.round(((northEast.lat - southWest.lat) * 111) / radius);
+  const array: Tile[] = [];
+  const tileWidth = (northEast.lng - southWest.lng) / xTiles;
+  const tileHeight = (northEast.lat - southWest.lat) / yTiles;
+  let i = 0;
+  for (let y = 0; y < yTiles; y++) { // eslint-disable-line
+    for (let x = 0; x < xTiles; x++) { // eslint-disable-line
+      const tile = new Tile();
+      tile.index = i;
+      tile.northEast = {
+        lat: southWest.lat + tileHeight * (y + 1),
+        lng: southWest.lng + tileWidth * (x + 1)
+      };
+      tile.southWest = {
+        lat: southWest.lat + tileHeight * y,
+        lng: southWest.lng + tileWidth * x
+      };
+      tile.neighbours = getBoundingAreas(i, xTiles, yTiles);
+      array.push(tile);
+      i++;
+    }
+  }
+  germanTiles = array;
+  return array;
+}
+
+/**
+ * Method to return the indexes of all neighboring tiles
+ * @param pos the index of the current tile
+ * @param xTiles the number of tiles on the x axis
+ * @param yTiles the number of tiles on the y axis
+ * @return an array of indexes
+ */
+function getBoundingAreas(pos, xTiles, yTiles): number[] {
+  const bounds = [];
+  let hasLeftRow = false;
+  let hasRightRow = false;
+  if (pos > 0 && !(pos % xTiles === 0)) {
+    hasLeftRow = true;
+    bounds.push(pos - 1);
+  }
+  if (!((pos + 1) % xTiles === 0)) {
+    hasRightRow = true;
+    bounds.push(pos + 1);
+  }
+  if (pos - xTiles >= 0) {
+    // hasBottomRow?
+    bounds.push(pos - xTiles);
+    if (hasLeftRow) bounds.push(pos - xTiles - 1); // eslint-disable-line
+    if (hasRightRow) bounds.push(pos - xTiles + 1); // eslint-disable-line
+  }
+  if (pos + xTiles <= xTiles * yTiles - 1) {
+    // hasTopRow?
+    bounds.push(pos + xTiles);
+    if (hasLeftRow) bounds.push(pos + xTiles - 1); // eslint-disable-line
+    if (hasRightRow) bounds.push(pos + xTiles + 1); // eslint-disable-line
+  }
+  return bounds;
+}
+
+/**
+ * calculates the distance between two coordinates with haversine formula
+ * This Calculation is not perfectly accurate, but enough for this use case
+ * @param lat1 origin latitude
+ * @param lon1 origin longitude
+ * @param lat2 destiantion latitue
+ * @param lon2 destination longitude
+ * @return calculated distance
+ */
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2): number {
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) *
+      Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in km
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI / 180);
+}
+
+function setTransporter(transp) {
+  transporter = transp;
+}
 /**
  * Exports for testing
  * add every method like this: {app: app, method1: method1, method2: method2}
  * routes don't need to be added
  *
  */
-module.exports = { app: app, prepareUser: prepareUser };
+module.exports = {
+  app: app,
+  prepareUser: prepareUser,
+  rasterizeMap: rasterizeMap,
+  getDistanceFromLatLonInKm: getDistanceFromLatLonInKm,
+  getBoundingAreas: getBoundingAreas,
+  findTile: findTile,
+  setTransporter: setTransporter
+};
