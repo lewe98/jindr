@@ -825,6 +825,15 @@ async function getIntoClientStack(jobStack, serverStack): Promise<any[]> {
   jobStack.clientStack = [...jobStack.clientStack, ...jobs];
   return jobStack.clientStack;
 }
+
+/**
+ * Method to fill the different stacks of the jobStack. If there are 5 or less jobs in client stack,
+ * the server Stack will be moved to the clientStack and refilled with jobs from the backlog. Then the
+ * backlog will be filled with new jobs
+ * @param jobStack the jobStack of the user
+ * @param user the requesting user
+ * @param coords coordinates of the users current position
+ */
 async function fillStack(jobStack, user, coords) {
   if (jobStack.clientStack.length <= 5) {
     if (jobStack.serverStack.length > 0) {
@@ -897,8 +906,17 @@ async function populateBacklog(
   }
 }
 
+/**
+ * Method to find all jobs that match certain criteria
+ * Querying all jobs from the database, that are in the selected tiles, have not already been swiped and are not yet finished
+ * Then checks if jobs are already in serverStack or clientStack and checks if jobs are in specified radius
+ * @param coords current Coordinates of the user
+ * @param jobStack the jobStack of the user
+ * @param user the requesting user
+ */
 async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
   const tile = findTile(germanTiles, coords);
+  // get all neighboring tiles and prepend current tile
   const neighbors = germanTiles[tile].neighbours;
   neighbors.unshift(tile);
   // .lean() https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/
@@ -912,6 +930,7 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
     .exec();
   const foundJobs = [];
   let i = 0;
+  // create an array of job IDs that are currently in clientStack for faster lookup with array.some()
   const tempClient = [];
   jobStack.clientStack.forEach((job) => {
     tempClient.push(job._id);
@@ -923,7 +942,7 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
       job.location.lat,
       job.location.lng
     );
-    // && !user.swipedJobs.some(job._id) possible way to check if already swiped
+    // check for distance and if already present in server or client Stack
     if (
       dist <= user.distance &&
       !jobStack.serverStack.some((x) => x === job._id) &&
@@ -932,6 +951,7 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
       foundJobs.push(job._id);
       i++;
     }
+    // only returns first 36 jobs to reduce workload
     if (i >= 35) {
       return;
     }
@@ -1074,6 +1094,10 @@ function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
 
+/**
+ * Method to set nodemailer transporter, only used for testing purposes
+ * @param transp transporter
+ */
 function setTransporter(transp) {
   transporter = transp;
 }
