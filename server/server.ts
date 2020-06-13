@@ -658,30 +658,54 @@ app.post('/forgot-pw/:token', (req: Request, res: Response) => {
     });
 });
 
+// TODO Api Doc
 app.put('/decision', async (req: Request, res: Response) => {
   const user = await User.findOne({ _id: req.body.user._id });
   const jobID = req.body.jobID;
   const coords = req.body.coords;
   const isLike = req.body.isLike;
-
   let jobStack = await JobStack.findOne({ userID: user._id });
   _.remove(jobStack.clientStack, (job) => {
-    job._id = jobID;
+    return job.toString() === jobID.toString();
   });
   jobStack.swipedJobs.push(jobID);
-  await jobStack.save();
   if (isLike) {
+    jobStack.likedJobs.push(jobID);
+    jobStack.markModified('likedJobs');
     await Job.findOneAndUpdate(
       { _id: jobID },
       { $push: { interestedUsers: user._id } }
     );
   }
+  jobStack.markModified('swipedJobs');
+  jobStack.markModified('clientStack');
+  await jobStack.save();
   jobStack = await fillStack(jobStack, user, coords);
   res.status(200).send({
     data: jobStack.clientStack
   });
 });
 
+/**
+ * @api {put} /job-stack fills the job stack with jobs
+ * @apiName JobStack
+ * @apiGroup Job
+ *
+ * @apiDescription pass a user and his current coordinates, and it will create a jobStack if none exists,
+ * or check if jobStack is filled and fill it if necessary and then returns the clientStack
+ *
+ * @apiParam {String} user the requesting user
+ * @apiParam {String} coords current coordinates
+ *
+ * @apiSuccess {String} message a success message
+ * @apiSuccess {String} data  an array of jobs
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 Created
+ *     {
+ *       "message": 'Successfully requested jobs'
+ *       "data": clientStack,
+ *     }
+ */
 app.put('/job-stack', async (req: Request, res: Response) => {
   const user = req.body.user;
   const coords = req.body.coords;
@@ -696,6 +720,32 @@ app.put('/job-stack', async (req: Request, res: Response) => {
     data: jobStack.clientStack
   });
 });
+
+/**
+ * @api {put} /job-array returns an array of jobs
+ * @apiName JobsArray
+ * @apiGroup Job
+ *
+ * @apiDescription Pass an array of job IDs and returns an array of jobs, if they exist in the database
+ *
+ * @apiParam {String} jobIDs an array of job ids
+ *
+ * @apiSuccess {String} data  an array of jobs
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 Created
+ *     {
+ *       "data": [job1, job2],
+ *     }
+ */
+// TODO write test
+app.put('/job-array', async (req: Request, res: Response) => {
+  const jobIDs = req.body.jobIDs;
+  const jobs = await Job.find().where('_id').in(jobIDs).exec();
+  res.status(200).send({
+    data: jobs
+  });
+});
+
 /**
  * @api {post} /create-job creates a new job
  * @apiName CreateJob
@@ -759,6 +809,8 @@ function prepareUser(user) {
   user = user.toObject();
   delete user.password;
   delete user.deviceID;
+  delete user.token;
+  delete user.tokenExpires;
   return user;
 }
 
@@ -816,17 +868,6 @@ function sendMail(userMail: string, template: string, subject: string) {
 }
 
 /**
- * Method to get all jobs from a stack of IDs from the database
- * @param jobStack the entire jobStack
- * @param serverStack array of Job IDs
- */
-async function getIntoClientStack(jobStack, serverStack): Promise<any[]> {
-  const jobs = await Job.find().where('_id').in(serverStack).exec();
-  jobStack.clientStack = [...jobStack.clientStack, ...jobs];
-  return jobStack.clientStack;
-}
-
-/**
  * Method to fill the different stacks of the jobStack. If there are 5 or less jobs in client stack,
  * the server Stack will be moved to the clientStack and refilled with jobs from the backlog. Then the
  * backlog will be filled with new jobs
@@ -837,10 +878,7 @@ async function getIntoClientStack(jobStack, serverStack): Promise<any[]> {
 async function fillStack(jobStack, user, coords) {
   if (jobStack.clientStack.length <= 5) {
     if (jobStack.serverStack.length > 0) {
-      jobStack.clientStack = await getIntoClientStack(
-        jobStack,
-        jobStack.serverStack
-      );
+      jobStack.clientStack = [...jobStack.clientStack, ...jobStack.serverStack];
       jobStack.serverStack = [];
       const tileIdx = findTile(germanTiles, coords);
       if (jobStack.backLog.length > 0 && tileIdx === jobStack.tileID) {
@@ -853,6 +891,9 @@ async function fillStack(jobStack, user, coords) {
           jobStack.backLog.length >= 10
             ? jobStack.backLog.splice(0, 10)
             : jobStack.backLog.splice(0, jobStack.backLog.length);
+        jobStack.markModified('clientStack');
+        jobStack.markModified('serverStack');
+        jobStack.markModified('backlog');
         await jobStack.save();
       } else {
         jobStack.tileID = tileIdx;
@@ -889,6 +930,9 @@ async function populateBacklog(
       jobStack.backLog.length >= 10
         ? jobStack.backLog.splice(0, 10)
         : jobStack.backLog.splice(0, jobStack.backLog.length);
+    jobStack.markModified('clientStack');
+    jobStack.markModified('serverStack');
+    jobStack.markModified('backlog');
     jobStack.save();
   } else if (syncClient) {
     jobStack.backLog = await getAllMatchingJobs(coords, jobStack, user);
@@ -896,11 +940,14 @@ async function populateBacklog(
       jobStack.backLog.length >= 10
         ? jobStack.backLog.splice(0, 10)
         : jobStack.backLog.splice(0, jobStack.backLog.length);
-    jobStack.clientStack = await getIntoClientStack(jobStack, clientTemp);
+    jobStack.clientStack = [...jobStack.clientStack, ...clientTemp];
     jobStack.serverStack =
       jobStack.backLog.length >= 10
         ? jobStack.backLog.splice(0, 10)
         : jobStack.backLog.splice(0, jobStack.backLog.length);
+    jobStack.markModified('clientStack');
+    jobStack.markModified('serverStack');
+    jobStack.markModified('backlog');
     await jobStack.save();
     return jobStack;
   }
@@ -920,21 +967,18 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
   const neighbors = germanTiles[tile].neighbours;
   neighbors.unshift(tile);
   // .lean() https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/
-  const allJobs = await Job.find({
-    isFinished: false,
-    _id: { $nin: [jobStack.swipedJobs] }
-  })
+  const allJobs = await Job.find()
     .where('tile')
     .in(neighbors)
+    .where('_id')
+    .nin(jobStack.swipedJobs)
+    .where('isFinished')
+    .equals(false)
     .lean()
     .exec();
+
   const foundJobs = [];
   let i = 0;
-  // create an array of job IDs that are currently in clientStack for faster lookup with array.some()
-  const tempClient = [];
-  jobStack.clientStack.forEach((job) => {
-    tempClient.push(job._id);
-  });
   allJobs.forEach((job) => {
     const dist = getDistanceFromLatLonInKm(
       coords.lat,
@@ -943,16 +987,17 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
       job.location.lng
     );
     // check for distance and if already present in server or client Stack
+    // check if in lists first, because its cheaper than checking distance
     if (
-      dist <= user.distance &&
-      !jobStack.serverStack.some((x) => x === job._id) &&
-      !tempClient.some((x) => x === job._id)
+      !jobStack.clientStack.some((x) => x.toString() === job._id.toString()) &&
+      !jobStack.serverStack.some((x) => x.toString() === job._id.toString()) &&
+      dist <= user.distance
     ) {
       foundJobs.push(job._id);
       i++;
     }
-    // only returns first 36 jobs to reduce workload
-    if (i >= 35) {
+    // only returns first 45 jobs to reduce workload
+    if (i >= 44) {
       return;
     }
   });
@@ -1094,6 +1139,22 @@ function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
 
+/**
+ * This is only for testing purposes
+ */
+app.get('/jobstack/:userID', async (req: Request, res: Response) => {
+  const userID = req.params.userID;
+  try {
+    const stack = await JobStack.findOne({userID: userID}).exec();
+    res.status(200).send({
+      data: stack
+    });
+  } catch (e) {
+    res.status(500).send({
+      errors: e
+    });
+  }
+});
 /**
  * Method to set nodemailer transporter, only used for testing purposes
  * @param transp transporter
