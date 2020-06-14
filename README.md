@@ -117,6 +117,15 @@ and name it after the functionality you are going to implement.
 8. Commit and push and wait for pipelines to finish
 9. Once everything is tested and works, make merge request to ``staging``
 
+## Emulate on Android
+1. Download [Android Studio](https://developer.android.com/studio/)
+2. localhost (127.0.0.1) is your emulator not your local computer, so to access the node backend, you need to change
+the environment file to point to 10.0.2.2 instead
+2. After making changes in the source code run ``npx cap copy``
+3. Run ``npx cap open android`` to open android studio
+4. Setup a device emulator in ``AVD Manager``
+5. Run ``ionic capacitor run android`` to start in emulator
+
 ## Matching
 If a User moves to another location or changes his search criteria, the server
 must search for jobs to present to the user. To reduce the amount of jobs that need to
@@ -175,3 +184,4 @@ once, to guarantee data integrity in case a job is edited or deleted. If the cli
 serverStack will be moved to the clientStack and new jobs from the backlog will be moved to the Serverstack.
 If the user changes his position or search criteria, the backlog will be updated, but the user will always have
 enough cards to swipe through without having to wait for the search to finish.
+
