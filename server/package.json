@@ -10,7 +10,7 @@
     "prettier-format": "prettier --config .prettierrc server.ts --write",
     "build": "tsc server.ts",
     "ci-test": "NODE_ENV=test && jest --runInBand ./test",
-    "test": "SET NODE_ENV=test && jest --runInBand --coverage ./test",
+    "test": "SET NODE_ENV=test && jest --detectOpenHandles --runInBand --coverage ./test",
     "start": "node server.js"
   },
   "jest": {
