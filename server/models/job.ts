@@ -29,7 +29,11 @@ const jobSchema = mongoose.Schema({
   isFinished: {
     type: Boolean,
     default: false
-  }
+  },
+  image: {
+    type: String,
+    default: './assets/images/job.png'
+  },
 });
 
 module.exports = mongoose.model('Job', jobSchema, 'jobs');

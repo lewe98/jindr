@@ -6,7 +6,6 @@ import {describe, it, expect, beforeAll, afterAll} from 'jest-without-globals'
 const nodemailer = require('nodemailer');
 const dbHandler = require('./database-handler');
 const User = require('../models/user');
-const Job = require('../models/job');
 
 const southWest = {lat: 47.344777, lng: 5.888672}; // coordinates for southWestern point of a rectangle containing germany
 const northEast = {lat: 54.41893, lng: 14.888671}; // coordinates for northEastern point of a rectangle containing germany
@@ -29,11 +28,11 @@ beforeAll(async () => {
   await dbHandler.connect();
   server.rasterizeMap(maxRadius, southWest, northEast);
   const transporter = nodemailer.createTransport({
-    host: "smtp.mailtrap.io",
+    host: "smtp.mailspons.com",
     port: 2525,
     auth: {
-      user: "ec342b26b556f3",
-      pass: "38080b1df210ca"
+      user: "344777f0965d46fe8329",
+      pass: "425c069dc48e4449ac3df08b80405e1a"
     },
     debug: false,
     logger: false
@@ -73,8 +72,9 @@ describe('Register new User', () => {
             .post('/register')
             .send({
                 user: USER_ONE
-            })
+            });
         expect(res.statusCode).toEqual(201);
+
     });
     it('should fail if email exists', async () => {
         const res = await request(app)
@@ -385,7 +385,11 @@ describe('test clientJob stack', () => {
           lng: 9.72345094553722
         }
       });
-    expect(res.body.data.length).toEqual(5);
+    expect(res.body.data.length).toEqual(3);
+      const res2 = await request(app)
+        .get('/jobstack/' + USER_ONE._id)
+        .send();
+      expect(res2.body.data.clientStack.length).toEqual(5);
   });
   it('should not get jobs outside of the specified radius', async () => {
     await request(app)
@@ -405,18 +409,12 @@ describe('test clientJob stack', () => {
           }
         }
       });
-    const res = await request(app)
-      .put('/job-stack')
-      .send({
-        user: USER_ONE,
-        coords: {
-          lat: 51.3260435992175,
-          lng: 9.72345094553722
-        }
-      });
-    JOB_ONE = res.body.data[0];
-    JOB_TWO = res.body.data[1];
-    expect(res.body.data.length).toEqual(5);
+    const res2 = await request(app)
+      .get('/jobstack/' + USER_ONE._id)
+      .send();
+    expect(res2.body.data.clientStack.length).toEqual(5);
+    JOB_ONE = res2.body.data.clientStack[0];
+    JOB_TWO = res2.body.data.clientStack[1];
   });
 });
 
@@ -431,10 +429,11 @@ describe('test like job', () => {
           lat: 51.3260435992175,
           lng: 9.72345094553722
         },
-        isLike: true
+        isLike: true,
+        stackLength: 2
       });
     expect(res.statusCode).toEqual(200);
-    expect(res.body.data.length).toEqual(4);
+    expect(res.body.data.length).toEqual(1);
   });
   it('should be added to liked jobs in jobStack', async () => {
     const res = await request(app)
@@ -449,6 +448,7 @@ describe('test like job', () => {
 
 describe('test dislike job', () => {
   it('should remove job from client stack', async () => {
+    console.log(JOB_TWO);
     const res = await request(app)
       .put('/decision')
       .send({
@@ -458,10 +458,11 @@ describe('test dislike job', () => {
           lat: 51.3260435992175,
           lng: 9.72345094553722
         },
-        isLike: false
+        isLike: false,
+        stackLength: 2
       });
     expect(res.statusCode).toEqual(200);
-    expect(res.body.data.length).toEqual(3);
+    expect(res.body.data.length).toEqual(1);
   });
   it('should not be added to liked jobs in jobStack', async () => {
     const res = await request(app)
@@ -505,7 +506,7 @@ describe('test serverStack', () => {
           lng: 9.72345094553722
         }
       });
-    expect(jobStackTest.body.data.length).toEqual(13);
+    expect(jobStackTest.body.data.length).toEqual(3);
     const res = await request(app)
       .get('/jobstack/' + USER_ONE._id)
       .send();
@@ -540,21 +541,23 @@ describe('test refill clientStack', () => {
   });
 });
 
-describe('test job array', () => {
-  it('should return an array of jobs', async () => {
-    const res = await request(app)
-      .put('/job-array')
+describe('repopulate backlog', () => {
+  it('should look for new jobs in backlog if position changes', async () => {
+    await request(app)
+      .put('/update-backlog')
       .send({
-        jobIDs: [JOBS_TO_LIKE[0], JOBS_TO_LIKE[1]]
+        user: USER_ONE,
+        coords: {
+          lat: 53.3260435992175,
+          lng: 9.92345094553722
+        }
       });
-    expect(res.body.data.length).toEqual(2);
-  });
-  it('should return an empty array if jobs have been deleted', async () => {
     const res = await request(app)
-      .put('/job-array')
-      .send({
-        jobIDs: ['5ee24164c71c594a94003ea3', '5ee24164c71c594a94003ea3']
-      });
-    expect(res.body.data.length).toEqual(0);
-  });
-});
+      .get('/jobstack/' + USER_ONE._id)
+      .send();
+    expect(res.body.data.clientStack.length).toEqual(10);
+    expect(res.body.data.serverStack.length).toEqual(0);
+    expect(res.body.data.backLog.length).toEqual(0);
+  })
+})
+

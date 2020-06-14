@@ -1,19 +1,22 @@
 <div class="swipe-card">
 <div class="image-container">
-  <app-image-shell class="user-image" [src]="data.profile_image_url"></app-image-shell>
+  <app-aspect-ratio [ratio]="{w: 1, h: 1}" style="overflow: visible">
+    <app-image-shell animation="spinner" class="user-image" [src]="data?.image"></app-image-shell>
+  </app-aspect-ratio>
 </div>
   <div class="card-caption">
     <ion-row class="ion-justify-content-center ion-align-items-center">
       <ion-col>
         <div class="card-title">
           <span class="card-user-name">
-            {{data.name}}
+            {{data?.title}}
           </span>
 
         </div>
         <div class="card-user-info">
-          <div><ion-icon name="briefcase-outline"></ion-icon>{{data.job_title}}</div>
-          <div><ion-icon name="location-outline"></ion-icon>71 kilometers away</div>
+          <div *ngIf="distance"><ion-icon name="location-outline"></ion-icon>
+            {{distance}} {{distance === 1 ? 'kilometer' : 'kilometers'}} away</div>
+          <div><ion-icon name="briefcase-outline"></ion-icon>{{data?.description}}</div>
         </div>
       </ion-col>
       <ion-col size="auto" *ngIf="!isPreview">

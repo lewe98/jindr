@@ -1,6 +1,7 @@
 import { Coords, Tile } from './models/tile';
-require('dotenv').config();
 import { Request, Response } from 'express';
+
+require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -658,12 +659,70 @@ app.post('/forgot-pw/:token', (req: Request, res: Response) => {
     });
 });
 
-// TODO Api Doc
+/**
+ * @api {put} /update-backlog updates jobs in the backlog
+ * @apiName UpdateBacklog
+ * @apiGroup Job
+ *
+ * @apiDescription pass a user and his current coordinates, and it will update the backlog and stacks
+ * based on his new position and interests
+ *
+ * @apiParam {String} user the requesting user
+ * @apiParam {String} coords current coordinates
+ *
+ * @apiSuccess {String} message a success message
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "message": 'Backlog updated'
+ *     }
+ */
+app.put('/update-backlog', async (req: Request, res: Response) => {
+  const user = await User.findOne({ _id: req.body.user._id });
+  const coords = req.body.coords;
+  const jobStack = await JobStack.findOne({ userID: user._id });
+  jobStack.backLog = await getAllMatchingJobs(coords, jobStack, user);
+  if (jobStack.clientStack.length >= 10) {
+    jobStack.serverStack =
+      jobStack.backLog.length >= 10
+        ? jobStack.backLog.splice(0, 10)
+        : jobStack.backLog.splice(0, jobStack.backLog.length);
+    jobStack.clientStack.splice(10, jobStack.clientStack.length);
+    jobStack.markModified('clientStack');
+    jobStack.markModified('serverStack');
+  }
+  jobStack.markModified('backlog');
+  await jobStack.save();
+  res.status(200).send({
+    message: 'Backlog updated'
+  });
+});
+
+/**
+ * @api {put} /decision updates jobs in the backlog
+ * @apiName MakeDecision
+ * @apiGroup Job
+ *
+ * @apiDescription pass a user and his current coordinates, an job and the decision (liked or not)
+ * and it will update all required documents and refill the stack and return a new job (if there is any)
+ *
+ * @apiParam {String} user the requesting user
+ * @apiParam {String} coords current coordinates
+ * @apiParam {Boolean} isLike if he liked the job or not
+ * @apiParam {Number} stackLength the amount of jobs he currently has in the app
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": Job
+ *     }
+ */
 app.put('/decision', async (req: Request, res: Response) => {
   const user = await User.findOne({ _id: req.body.user._id });
   const jobID = req.body.jobID;
   const coords = req.body.coords;
   const isLike = req.body.isLike;
+  const stackLength = req.body.stackLength;
   let jobStack = await JobStack.findOne({ userID: user._id });
   _.remove(jobStack.clientStack, (job) => {
     return job.toString() === jobID.toString();
@@ -681,8 +740,14 @@ app.put('/decision', async (req: Request, res: Response) => {
   jobStack.markModified('clientStack');
   await jobStack.save();
   jobStack = await fillStack(jobStack, user, coords);
+  let jobs = [];
+  if (jobStack.clientStack.length > stackLength) {
+    let ids = [];
+    ids.push(jobStack.clientStack[stackLength]);
+    jobs = await getJobArray(ids);
+  }
   res.status(200).send({
-    data: jobStack.clientStack
+    data: jobs
   });
 });
 
@@ -700,7 +765,7 @@ app.put('/decision', async (req: Request, res: Response) => {
  * @apiSuccess {String} message a success message
  * @apiSuccess {String} data  an array of jobs
  * @apiSuccessExample Success-Response:
- *     HTTP/1.1 201 Created
+ *     HTTP/1.1 200 OK
  *     {
  *       "message": 'Successfully requested jobs'
  *       "data": clientStack,
@@ -715,33 +780,21 @@ app.put('/job-stack', async (req: Request, res: Response) => {
     await jobStack.save();
   }
   jobStack = await fillStack(jobStack, user, coords);
+  // since findMany does not preserve order, we need to look them up one by one
+  let jobIDs;
+  let jobs = [];
+  jobIDs =
+    jobStack.clientStack.length > 3
+      ? jobStack.clientStack.splice(0, 3)
+      : jobStack.clientStack.splice(0, jobStack.clientStack.length);
+  if (jobIDs.length > 0) {
+    for (const id of jobIDs) {
+      // TODO check if return length is null and if so, add another id to jobIDs (in case of deleted job)
+      jobs = [...jobs, ...(await getJobArray(id))];
+    }
+  }
   res.status(200).send({
     message: 'Successfully requested jobs',
-    data: jobStack.clientStack
-  });
-});
-
-/**
- * @api {put} /job-array returns an array of jobs
- * @apiName JobsArray
- * @apiGroup Job
- *
- * @apiDescription Pass an array of job IDs and returns an array of jobs, if they exist in the database
- *
- * @apiParam {String} jobIDs an array of job ids
- *
- * @apiSuccess {String} data  an array of jobs
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 201 Created
- *     {
- *       "data": [job1, job2],
- *     }
- */
-// TODO write test
-app.put('/job-array', async (req: Request, res: Response) => {
-  const jobIDs = req.body.jobIDs;
-  const jobs = await Job.find().where('_id').in(jobIDs).exec();
-  res.status(200).send({
     data: jobs
   });
 });
@@ -901,7 +954,7 @@ async function fillStack(jobStack, user, coords) {
           If there are no more items in the backlog or user has moved tiles, populate the backlog
           with new items and move 10 into serverStack
          */
-        populateBacklog(jobStack, true, false, coords, user);
+        populateBacklog(jobStack, false, coords, user);
       }
       return jobStack;
     } else {
@@ -910,21 +963,31 @@ async function fillStack(jobStack, user, coords) {
       If there are no items in serverStack and no items in the backlog, populate the backlog,
       move 10 items in serverStack and 10 into clientStack
        */
-      return await populateBacklog(jobStack, true, true, coords, user);
+      return await populateBacklog(jobStack, true, coords, user);
     }
   } else {
     return jobStack;
   }
 }
 
+/**
+ * Method to populate the backlog and/or refill the clientStack
+ * @param jobStack the users jobstack
+ * @param syncClient boolean if the clientStack needs to be filled
+ * @param coords coordinates of the user
+ * @param user the requesting user
+ */
 async function populateBacklog(
   jobStack,
-  syncServer,
   syncClient,
   coords,
   user
 ): Promise<any> {
-  if (syncServer && !syncClient) {
+  if (!syncClient) {
+    /*
+      ClientStack does not need to be refilled, jobs will be moved from backlog to serverstack and backlog will
+      be refilled. This will happen synchronously, so the user does not have to wait
+     */
     jobStack.backLog = await getAllMatchingJobs(coords, jobStack, user);
     jobStack.serverStack =
       jobStack.backLog.length >= 10
@@ -935,6 +998,10 @@ async function populateBacklog(
     jobStack.markModified('backlog');
     jobStack.save();
   } else if (syncClient) {
+    /**
+     * ClientStack needs to be refilled, backlog will be refilled first. This will happen
+     * asynchronously, so the user will have to wait
+     */
     jobStack.backLog = await getAllMatchingJobs(coords, jobStack, user);
     const clientTemp =
       jobStack.backLog.length >= 10
@@ -978,7 +1045,6 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
     .exec();
 
   const foundJobs = [];
-  let i = 0;
   allJobs.forEach((job) => {
     const dist = getDistanceFromLatLonInKm(
       coords.lat,
@@ -994,11 +1060,6 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
       dist <= user.distance
     ) {
       foundJobs.push(job._id);
-      i++;
-    }
-    // only returns first 45 jobs to reduce workload
-    if (i >= 44) {
-      return;
     }
   });
   return foundJobs;
@@ -1030,6 +1091,18 @@ function findTile(tiles: Tile[], coords: Coords): number {
 }
 
 /**
+ * Method to get jobs from the database from an array of jobIDs
+ * @param jobStack an array of job IDs
+ */
+async function getJobArray(jobStack) {
+  return await Job.find()
+    .where('_id')
+    .in(jobStack)
+    .where('isFinished')
+    .equals(false)
+    .exec();
+}
+/**
  * Method to rasterize the the map into equal rectangles
  * @param radius the approx. size of each tile. This value should equal the maximum search radius specified in the client
  * @param southWest coordinates of the southWestern point of the area to rasterize
@@ -1057,8 +1130,10 @@ function rasterizeMap(
   const tileWidth = (northEast.lng - southWest.lng) / xTiles;
   const tileHeight = (northEast.lat - southWest.lat) / yTiles;
   let i = 0;
-  for (let y = 0; y < yTiles; y++) { // eslint-disable-line
-    for (let x = 0; x < xTiles; x++) { // eslint-disable-line
+  for (let y = 0; y < yTiles; y++) {
+    // eslint-disable-line
+    for (let x = 0; x < xTiles; x++) {
+      // eslint-disable-line
       const tile = new Tile();
       tile.index = i;
       tile.northEast = {
@@ -1145,7 +1220,7 @@ function deg2rad(deg) {
 app.get('/jobstack/:userID', async (req: Request, res: Response) => {
   const userID = req.params.userID;
   try {
-    const stack = await JobStack.findOne({userID: userID}).exec();
+    const stack = await JobStack.findOne({ userID: userID }).exec();
     res.status(200).send({
       data: stack
     });
