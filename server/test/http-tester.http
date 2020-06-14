@@ -77,8 +77,8 @@ Content-Type: application/json
     "lng": 8.6662563
   },
   "job": {
-    "title": "Ein Test Job8",
-    "description": "Bla Bla",
+    "title": "Gartenarbeiten",
+    "description": "adsa d sadas das fasdaf sfasf das fasf asdf asf asf asfae fsa fdasfe asdf asfas fadf ",
     "creator": "5ee24164c71c594a94003ea3",
     "location": {
       "lat": 50.5820767,
