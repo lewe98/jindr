@@ -40,7 +40,6 @@ export class ProfileEditComponent implements OnInit {
 
   selectDOB(event) {
     this.date = event.detail.value;
-
   }
   /* Save the changed user data.*/
   save() {

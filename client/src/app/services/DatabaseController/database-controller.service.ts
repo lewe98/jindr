@@ -86,6 +86,7 @@ export class DatabaseControllerService {
       }
       this.http.put(`${this.apiURL}/${URL}`, data, this.httpOptions).subscribe(
         (res) => {
+          console.log(res);
           resolve(this.convert(res, type));
         },
         (error) => {

@@ -19,7 +19,7 @@
 
 
     <ion-card-title>{{user.firstName}} {{user.lastName.charAt(0)}}.</ion-card-title>
-    <p>{{date}} years old</p>
+    <p *ngIf="date">{{date}} years old</p>
   </ion-card>
 
   <ion-card *ngIf="user.aboutMe">
@@ -29,7 +29,7 @@
     <ion-card-content>{{user.aboutMe}}</ion-card-content>
   </ion-card>
 
-  <ion-card *ngIf="user.resume">
+  <ion-card *ngIf="user.resume.length > 0">
     <ion-card-header>
       <ion-card-subtitle>My CV</ion-card-subtitle>
     </ion-card-header>

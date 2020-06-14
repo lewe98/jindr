@@ -49,9 +49,13 @@ export class LocationService implements OnDestroy {
         lat: coordinates.coords.latitude,
         lng: coordinates.coords.longitude
       };
+      this.coords = {
+        lat: coordinates.coords.latitude,
+        lng: coordinates.coords.longitude
+      };
       return this.currentPosition;
     } catch (e) {
-      this.toastService.presentWarningToast(e, 'Error getting location!');
+      console.log('Error getting location! ' + e);
     } finally {
       this.dismissLoader();
     }
@@ -114,10 +118,7 @@ export class LocationService implements OnDestroy {
           this.location = 'Unknown';
         }
       } else {
-        this.toastService.presentWarningToast(
-          status,
-          'Geocoder failed due to: '
-        );
+        console.log('Geocoder failed due to: ' + status);
       }
     });
   }

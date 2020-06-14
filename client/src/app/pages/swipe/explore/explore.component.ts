@@ -1,5 +1,6 @@
 import {
   Component,
+  OnDestroy,
   OnInit,
   QueryList,
   ViewChild,
@@ -11,24 +12,35 @@ import {
   SwingCardComponent,
   SwingStackComponent
 } from 'angular2-swing';
-import * as _ from 'lodash';
-import USERS from './users.dummy';
 import { RouterService } from '../../../services/Router/router.service';
+import { SwipeService } from '../../../services/Swipe/swipe.service';
+import { Job } from '../../../../../interfaces/job';
+import { Subscription } from 'rxjs';
+import {
+  Coords,
+  LocationService
+} from '../../../services/Location/location.service';
+
 @Component({
   selector: 'app-explore',
   templateUrl: './explore.component.html',
   styleUrls: ['./explore.component.scss']
 })
-export class ExploreComponent implements OnInit {
+export class ExploreComponent implements OnInit, OnDestroy {
   @ViewChild('cardStack', { read: SwingStackComponent, static: false })
   swingStack: SwingStackComponent;
   @ViewChildren('card', { read: SwingCardComponent }) swingCards: QueryList<
     SwingCardComponent
   >;
-  cards: any[];
+  cards: Job[];
   stackConfig: StackConfig;
-  jobStack: any[] = USERS;
-  constructor(private routerService: RouterService) {
+  coordsSub: Subscription;
+  coords: Coords;
+  constructor(
+    private routerService: RouterService,
+    private swipeService: SwipeService,
+    private locationService: LocationService
+  ) {
     this.stackConfig = {
       allowedDirections: [Direction.LEFT, Direction.RIGHT],
       // tslint:disable-next-line
@@ -45,33 +57,41 @@ export class ExploreComponent implements OnInit {
     };
   }
 
+  ngOnDestroy(): void {
+    if (this.coordsSub) {
+      this.coordsSub.unsubscribe();
+    }
+  }
+
+  // disables navigation with swipe, to allow user to swipe through jobs
   ionViewDidEnter() {
     this.routerService.toggleSwipeBack(false);
   }
-
+  // enables navigation with swipe again
   ionViewWillLeave() {
     this.routerService.toggleSwipeBack(true);
   }
 
+  /**
+   * Gets jobs from the server to show to the user
+   */
   ngOnInit() {
+    this.coordsSub = this.locationService.coordsSubscription.subscribe(
+      (sub) => {
+        this.coords = sub;
+      }
+    );
     this.cards = [];
-    this.jobStack = USERS;
-
-    setTimeout(() => {
-      this.addNewCard();
-      this.addNewCard();
-    }, 3000);
+    this.swipeService.getClientStack().then((res) => {
+      this.cards = res;
+    });
   }
 
-  addNewCard() {
-    const differences = _.difference(this.jobStack, this.cards);
-    if (!differences.length) {
-      return;
-    }
-    const randomIndex = Math.floor(Math.random() * differences.length);
-    this.cards.push(differences[randomIndex]);
-  }
-
+  /*
+   * Handles the card animation
+   * Zoom of the bottom card will be disabled if there are no cards left
+   * to prevent error
+   */
   onItemMove(element: any, x: number, y: number, r: number) {
     const nope = element.querySelector('.stamp-nope');
     const like = element.querySelector('.stamp-like');
@@ -85,27 +105,45 @@ export class ExploreComponent implements OnInit {
 
     element.style.transform = `translate3d(0, 0, 0) translate(${x}px, ${y}px) rotate(${r}deg)`;
 
-    // Zoom effect for the card behind the current one
-    const cardBehind = this.swingCards.toArray()[1].getNativeElement();
-    cardBehind.style.transform = `scale(${0.94 + 0.06 * calculatedValue}, ${
-      0.94 + 0.06 * calculatedValue
-    })`;
+    if (this.cards.length > 1) {
+      // Zoom effect for the card behind the current one
+      const cardBehind = this.swingCards.toArray()[1].getNativeElement();
+      cardBehind.style.transform = `scale(${0.94 + 0.06 * calculatedValue}, ${
+        0.94 + 0.06 * calculatedValue
+      })`;
+    }
+  }
+
+  /**
+   * Method to put a decision in place
+   * @param isLike true if job is liked, else false
+   * Will add a new card to the stack and remove the first card
+   */
+  makeDecision(isLike: boolean) {
+    this.swipeService
+      .makeDecision(this.cards[0]._id, isLike, this.cards.length - 1)
+      .then((res) => {
+        if (res[0]) {
+          this.cards.push(res[0]);
+        }
+        this.cards.shift();
+      });
   }
 
   onSwipeLeft() {
-    const cardBehind = this.swingCards.toArray()[1].getNativeElement();
-    cardBehind.style.transform = `scale(1, 1)`;
-
-    this.addNewCard();
-    const removedCard = this.cards.shift();
+    if (this.cards.length > 1) {
+      const cardBehind = this.swingCards.toArray()[1].getNativeElement();
+      cardBehind.style.transform = `scale(1, 1)`;
+    }
+    this.makeDecision(false);
   }
 
   onSwipeRight() {
-    const cardBehind = this.swingCards.toArray()[1].getNativeElement();
-    cardBehind.style.transform = `scale(1, 1)`;
-
-    this.addNewCard();
-    const removedCard = this.cards.shift();
+    if (this.cards.length > 1) {
+      const cardBehind = this.swingCards.toArray()[1].getNativeElement();
+      cardBehind.style.transform = `scale(1, 1)`;
+    }
+    this.makeDecision(true);
   }
 
   onDisliked() {
@@ -116,14 +154,13 @@ export class ExploreComponent implements OnInit {
       .querySelector('.stamp-nope');
     nope.style.opacity = 1;
     // Bring the next card to Front
-    const cardBehind = this.swingCards.toArray()[1].getNativeElement();
-    cardBehind.style.transform = `scale(1, 1)`;
+    if (this.cards.length > 1) {
+      const cardBehind = this.swingCards.toArray()[1].getNativeElement();
+      cardBehind.style.transform = `scale(1, 1)`;
+    }
 
     setTimeout(() => {
-      this.addNewCard();
-      const removedCard = this.cards.shift();
-
-      console.log('disliked: ' + removedCard.name);
+      this.makeDecision(false);
     }, 500);
   }
 
@@ -135,20 +172,19 @@ export class ExploreComponent implements OnInit {
       .querySelector('.stamp-like');
     like.style.opacity = 1;
     // Bring the next card to Front
-    const cardBehind = this.swingCards.toArray()[1].getNativeElement();
-    cardBehind.style.transform = `scale(1, 1)`;
+    if (this.cards.length > 1) {
+      const cardBehind = this.swingCards.toArray()[1].getNativeElement();
+      cardBehind.style.transform = `scale(1, 1)`;
+    }
 
     setTimeout(() => {
-      this.addNewCard();
-      const removedCard = this.cards.shift();
-
-      console.log('liked: ' + removedCard.name);
+      this.makeDecision(true);
     }, 500);
   }
 
   // tslint:disable-next-line
   trackByFn(_index: string, item: any) {
-    return item.id;
+    return item._id;
   }
 
   viewJobDetails(job) {}
