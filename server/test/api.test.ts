@@ -24,7 +24,7 @@ let JOBS_TO_LIKE;
 /**
  * Connect to a new in-memory database before running any tests.
  */
-beforeAll(async () => {
+beforeAll(async (done) => {
   await dbHandler.connect();
   server.rasterizeMap(maxRadius, southWest, northEast);
   const transporter = nodemailer.createTransport({
@@ -38,6 +38,7 @@ beforeAll(async () => {
     logger: false
   });
   server.setTransporter(transporter);
+  done();
 });
 
 /**
@@ -48,8 +49,9 @@ beforeAll(async () => {
 /**
  * Remove and close the db and server.
  */
-afterAll(async () => {
+afterAll(async (done) => {
   await dbHandler.closeDatabase();
+  done();
 });
 
 async function cleanEntries() {
