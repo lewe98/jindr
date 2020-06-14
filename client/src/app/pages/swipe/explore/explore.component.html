@@ -1,0 +1,52 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="toolbar-custom toolbar-no-border profile-toolbar">
+    <ion-title>Find Jobs!</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="pages"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div class="h-full" [hidden]="cards.length > 0">
+    <ion-row class="h-full ion-justify-content-center ion-align-items-center">
+      <app-map class="map"></app-map>
+      <app-ripple-loader class="ripple-effect" [imageUrl]="'assets/images/avatar.jpg'"></app-ripple-loader>
+    </ion-row>
+  </div>
+
+  <div class="cards-container" [hidden]="cards.length === 0">
+    <div class="card-stack" swing-stack #cardStack
+         [stackConfig]="stackConfig"
+         (throwoutleft)="onSwipeLeft()"
+         (throwoutright)="onSwipeRight()">
+      <div class="card-item" swing-card #card [style.zIndex]="-1 * i"
+           *ngFor="let cardItem of cards; trackBy: trackByFn; let i = index">
+        <app-swipe-card
+                [data]="cardItem"
+                (viewInfo)="viewJobDetails(cardItem)"
+                [coords]="coords"
+        ></app-swipe-card>
+
+        <div class="stamp stamp-like">Interested</div>
+        <div class="stamp stamp-nope">Not</div>
+      </div>
+    </div>
+
+    <div class="card-actions">
+      <ion-grid>
+        <ion-row class="ion-justify-content-center ion-align-items-center">
+          <ion-col size="auto">
+            <ion-button color="white" class="button-custom button-icon button-dislike button-lg" (click)="onDisliked()">
+              <ion-icon slot="icon-only" name="close-sharp"></ion-icon>
+            </ion-button>
+          </ion-col>
+          <ion-col size="auto">
+            <ion-button color="white" class="button-custom button-icon button-like button-lg" (click)="onLiked()">
+              <ion-icon slot="icon-only" name="checkmark-sharp"></ion-icon>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+  </div>
+</ion-content>

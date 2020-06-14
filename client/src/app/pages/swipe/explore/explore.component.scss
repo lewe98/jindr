@@ -1,0 +1,124 @@
+@import "../../../../sass/helper.scss";
+.map {
+  width: 100%;
+  height: 100%;
+  opacity: 0.3;
+}
+
+:host::ng-deep {
+  .map_center {
+    visibility: hidden;
+  }
+  .gmnoprint {
+    visibility: hidden;
+  }
+  a {
+    visibility: hidden;
+  }
+}
+
+.ripple-effect {
+  position: absolute;
+}
+
+.explore-bg {
+  --background: linear-gradient(var(--ion-color-white), var(--ion-color-light));
+}
+
+.cards-container {
+  height: 100%;
+  padding: 8px 8px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-stack {
+  height: 100%;
+  position: relative;
+  z-index: 0;
+
+  &.rotate-right {
+    animation: rotateRight 250ms ease-in-out;
+  }
+
+  &.rotate-left {
+    animation: rotateLeft 250ms ease-in-out;
+  }
+
+  .card-item {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--swipe-card-border);
+    overflow: hidden;
+    box-shadow: var(--card-box-shadow);
+
+    .stamp {
+      position: absolute;
+      top: 20px;
+      right: 10px;
+      z-index: 300;
+      font-size: 30px;
+      color: var(--color-button-dislike);
+      border: 3px solid var(--color-button-dislike);
+      border-radius: 4px;
+      padding: 0 4px;
+      letter-spacing: 1px;
+      font-weight: 700;
+      text-transform: uppercase;
+      transform: rotate(15deg);
+      opacity: 0;
+
+      &.stamp-like {
+        right: initial;
+        left: 10px;
+        color: var(--color-button-like);
+        border-color: var(--color-button-like);
+        transform: rotate(-15deg);
+        letter-spacing: 3px;
+      }
+    }
+  }
+}
+
+.card-actions {
+  ion-button {
+    &.button-dislike ion-icon {
+      color: var(--color-button-dislike);
+    }
+    &.button-like ion-icon {
+      color: var(--color-button-like);
+    }
+  }
+}
+
+@media (max-width: 386px) {
+  .button-custom  {
+    &.button-icon {
+      width: 50px;
+      height: 50px;
+
+      &.button-lg {
+        width: 60px;
+        height: 60px;
+
+        ion-icon {
+          font-size: 36px;
+        }
+      }
+    }
+  }
+}
+
+@keyframes rotateRight {
+  from {transform: perspective(1000px) rotateY(4deg)}
+  to {transform: perspective(1000px) rotateY(0deg)}
+}
+
+@keyframes rotateLeft {
+  from {transform: perspective(1000px) rotateY(-4deg)}
+  to {transform: perspective(1000px) rotateY(0deg)}
+}

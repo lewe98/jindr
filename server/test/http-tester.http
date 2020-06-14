@@ -73,16 +73,16 @@ Content-Type: application/json
 
 {
   "coords": {
-    "lat": 51.3260435992175,
-    "lng": 9.72345094553722
+    "lat": 50.5820767,
+    "lng": 8.6662563
   },
   "job": {
-    "title": "erster job",
-    "description": "test123",
+    "title": "Ein Test Job8",
+    "description": "Bla Bla",
     "creator": "5ee24164c71c594a94003ea3",
     "location": {
-      "lat": 51.3260435992175,
-      "lng": 9.72345094553722
+      "lat": 50.5820767,
+      "lng": 8.6662563
     }
   }
 }

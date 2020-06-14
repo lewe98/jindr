@@ -90,8 +90,7 @@ export class CurriculumComponent implements OnInit {
           {
             text: 'Cancel',
             role: 'cancel',
-            cssClass: 'secondary',
-            handler: (blah) => {}
+            cssClass: 'secondary'
           },
           {
             text: 'Okay',
