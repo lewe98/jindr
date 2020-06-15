@@ -73,16 +73,16 @@ Content-Type: application/json
 
 {
   "coords": {
-    "lat": 50.5820767,
-    "lng": 8.6662563
+    "lat": 50.05998611450195,
+    "lng": 8.803301811218262
   },
   "job": {
     "title": "Gartenarbeiten",
     "description": "adsa d sadas das fasdaf sfasf das fasf asdf asf asf asfae fsa fdasfe asdf asfas fadf ",
     "creator": "5ee24164c71c594a94003ea3",
     "location": {
-      "lat": 50.5820767,
-      "lng": 8.6662563
+      "lat": 50.05998611450195,
+      "lng": 8.803301811218262
     }
   }
 }

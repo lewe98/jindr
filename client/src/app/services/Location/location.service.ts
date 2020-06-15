@@ -45,6 +45,7 @@ export class LocationService implements OnDestroy {
     this.presentLoader();
     try {
       const coordinates = await Geolocation.getCurrentPosition();
+      console.log(coordinates);
       this.currentPosition = {
         lat: coordinates.coords.latitude,
         lng: coordinates.coords.longitude

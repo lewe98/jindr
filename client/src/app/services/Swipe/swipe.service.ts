@@ -47,11 +47,11 @@ export class SwipeService implements OnDestroy {
         coords: this.locationService.coords
       });
       this.databaseController.putRequest('job-stack', data, Job).then((res) => {
-         if ( res.data.length < 1 || res.data.length === undefined) {
-           resolve([]);
-         } else {
-           resolve(res.data);
-         }
+        if (res.data.length < 1 || res.data.length === undefined) {
+          resolve([]);
+        } else {
+          resolve(res.data);
+        }
       });
     });
   }

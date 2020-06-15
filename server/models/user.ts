@@ -67,6 +67,9 @@ const userSchema = mongoose.Schema({
     resume: {
         type: [resumeSchema],
         default: []
+    },
+    notificationToken: {
+        type: String
     }
 });
 

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "496081035061",
+    "firebase_url": "https://jindr-1e857.firebaseio.com",
+    "project_id": "jindr-1e857",
+    "storage_bucket": "jindr-1e857.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:496081035061:android:2785e9f633e18bc29b767c",
+        "android_client_info": {
+          "package_name": "com.thm.jindr"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "496081035061-slotg7tfj3f27s6c9lrg263focmn60ee.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYtBraWciBsa75nWkenOjrMjR0sd362FY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "496081035061-slotg7tfj3f27s6c9lrg263focmn60ee.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

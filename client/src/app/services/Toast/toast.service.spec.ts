@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 
 import { ToastService } from './toast.service';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ToastService', () => {
   let service: ToastService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      imports: [RouterTestingModule]
+    });
     service = TestBed.inject(ToastService);
   });
 
