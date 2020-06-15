@@ -350,9 +350,11 @@ describe('test create job', () => {
     const res = await request(app)
       .post('/create-job')
       .send({
-        coords: {
-          lat: 49.94484531666043,
-          lng: 5.048706257591307
+        job: {
+            location: {
+            lat: 49.94484531666043,
+            lng: 5.048706257591307
+          }
         }
       });
     expect(res.statusCode).toEqual(400);
@@ -364,10 +366,6 @@ describe('test create job', () => {
     const res = await request(app)
       .post('/create-job')
       .send({
-        coords: {
-          lat: 51.3260435992175,
-          lng: 9.72345094553722
-        },
         job: {
           title: "erster job",
           description: "test123",
@@ -391,10 +389,6 @@ describe('test clientJob stack', () => {
       await request(app)
         .post('/create-job')
         .send({
-          coords: {
-            lat: 51.3260435992175,
-            lng: 9.72345094553722
-          },
           job: {
             title: "erster job",
             description: "test123",
@@ -426,10 +420,6 @@ describe('test clientJob stack', () => {
     await request(app)
       .post('/create-job')
       .send({
-        coords: {
-          lat: 51.5260435992175,
-          lng: 9.72345094553722
-        },
         job: {
           title: "distance > radius",
           description: "test123",
@@ -517,10 +507,6 @@ describe('test serverStack', () => {
       await request(app)
         .post('/create-job')
         .send({
-          coords: {
-            lat: 51.3260435992175,
-            lng: 9.72345094553722
-          },
           job: {
             title: "job",
             description: "test123",

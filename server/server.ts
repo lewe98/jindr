@@ -826,16 +826,15 @@ app.put('/job-stack', async (req: Request, res: Response) => {
  *     }
  */
 app.post('/create-job', (req: Request, res: Response) => {
-  const coords = req.body.coords;
-  const tile = findTile(germanTiles, coords);
+  const job = new Job();
+  Object.assign(job, req.body.job);
+  const tile = findTile(germanTiles, job.location);
   if (!tile) {
     res.status(400).send({
       message: 'Your country is currently not supported.'
     });
     return;
   }
-  const job = new Job();
-  Object.assign(job, req.body.job);
   job.tile = tile;
   job.save((err, obj) => {
     if (err) {
