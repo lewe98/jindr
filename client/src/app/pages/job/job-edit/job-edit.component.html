@@ -1,0 +1,40 @@
+<ion-header>
+    <ion-toolbar class="toolbar-no-border">
+        <ion-title>Edit Job</ion-title>
+        <ion-buttons slot="end">
+            <ion-button color="danger" (click)="done()">
+                Done
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content [scrollEvents]="true" (ionScroll)="handleScroll($event)" class="settings-page bg-muted">
+    <ion-list class="list-custom">
+        <ion-list-header>
+            <ion-label>EDIT JOB</ion-label>
+        </ion-list-header>
+        <ion-item detail="true" lines="none">
+            <ion-label>Title</ion-label>
+            <ion-note slot="end" color="primary">{{job.title}}</ion-note>
+        </ion-item>
+        <ion-item detail="true" lines="none">
+            <ion-label>Description</ion-label>
+            <ion-note slot="end" color="primary">{{job.description}}</ion-note>
+        </ion-item>
+    </ion-list>
+
+
+    <ion-list class="list-custom">
+        <ion-item lines="none">
+            <ion-label>MARK JOB AS DONE</ion-label>
+            <ion-toggle color="primary" [(ngModel)]="job.isFinished"></ion-toggle>
+        </ion-item>
+        <ion-list-header class="help-block">
+            <ion-label color="medium">
+                Mark this job as done.
+            </ion-label>
+        </ion-list-header>
+    </ion-list>
+
+</ion-content>
