@@ -4,6 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { ProfileEditComponent } from './profile-edit.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('ProfileEditComponent', () => {
   let component: ProfileEditComponent;
@@ -12,6 +13,7 @@ describe('ProfileEditComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ProfileEditComponent],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       imports: [
         IonicModule.forRoot(),
         RouterTestingModule,

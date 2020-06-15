@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { LocationService } from './location.service';
 import { HttpBackend } from '@angular/common/http';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('LocationService', () => {
   let service: LocationService;
@@ -10,6 +11,7 @@ describe('LocationService', () => {
 
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
+      imports: [RouterTestingModule],
       providers: [{ provide: HttpBackend }]
     });
     service = TestBed.inject(LocationService);

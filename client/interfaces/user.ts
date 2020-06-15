@@ -12,4 +12,5 @@ export class User {
   public aboutMe: string;
   public resume: ResumeEntry[];
   public dateOfBirth: number;
+  public notificationToken: string;
 }

@@ -4,6 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { ExploreComponent } from './explore.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('ExploreComponent', () => {
   let component: ExploreComponent;
@@ -12,6 +13,7 @@ describe('ExploreComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ExploreComponent],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       imports: [
         IonicModule.forRoot(),
         RouterTestingModule,

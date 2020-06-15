@@ -16,6 +16,9 @@ const AWS = require('aws-sdk');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const _ = require('lodash');
+const admin = require('firebase-admin');
+const serviceAccount = require('./config/jindr-firebase-push.json');
+const nodemailerConfig = require('./config/nodemailerConfig');
 
 const User = require('./models/user');
 const Job = require('./models/job');
@@ -26,6 +29,7 @@ const MONGODB_NAME = process.env.MONGODB_NAME;
 const ORIGIN_URL = process.env.ORIGIN_URL;
 const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
 const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
+
 AWS.config.update({
   accessKeyId: AWS_ACCESS_KEY_ID,
   secretAccessKey: AWS_SECRET_ACCESS_KEY
@@ -93,8 +97,8 @@ async function dbConnect() {
   transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
-      user: 'noreply.jindr@gmail.com',
-      pass: 'Jindr123$'
+      user: nodemailerConfig.credentials.user,
+      pass: nodemailerConfig.credentials.pass
     }
   });
   transporter.verify((error) => {
@@ -105,6 +109,10 @@ async function dbConnect() {
       // eslint-disable-next-line
       console.log('Server is ready to take our messages');
     }
+  });
+  // initialize push notifications
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
   });
 }
 
@@ -731,10 +739,17 @@ app.put('/decision', async (req: Request, res: Response) => {
   if (isLike) {
     jobStack.likedJobs.push(jobID);
     jobStack.markModified('likedJobs');
-    await Job.findOneAndUpdate(
+    const likedJob = await Job.findOneAndUpdate(
       { _id: jobID },
-      { $push: { interestedUsers: user._id } }
+      { $push: { interestedUsers: user._id } },
+      { new: true }
     );
+    const message =
+      'Someone is interested in your Job ' +
+      likedJob.title +
+      '. Check out now!';
+    // TODO add link once page exists
+    sendPushNotification([likedJob.creator], 'Help offered!', message, '');
   }
   jobStack.markModified('swipedJobs');
   jobStack.markModified('clientStack');
@@ -742,7 +757,7 @@ app.put('/decision', async (req: Request, res: Response) => {
   jobStack = await fillStack(jobStack, user, coords);
   let jobs = [];
   if (jobStack.clientStack.length > stackLength) {
-    let ids = [];
+    const ids = [];
     ids.push(jobStack.clientStack[stackLength]);
     jobs = await getJobArray(ids);
   }
@@ -864,6 +879,40 @@ function prepareUser(user) {
   delete user.token;
   delete user.tokenExpires;
   return user;
+}
+
+/**
+ * Method to send push notifications to users.
+ * @param userIDs an array of users to send the notification to
+ * @param title the title of the notification
+ * @param message the message of the notification
+ * @param link the link of the page to open when tapped on the notification
+ */
+async function sendPushNotification(
+  userIDs: string[],
+  title: string,
+  message: string,
+  link: string
+) {
+  const notificationOptions = {
+    priority: 'high',
+    timeToLive: 60 * 60 * 24
+  };
+  const payload = {
+    notification: {
+      title,
+      message,
+      link
+    }
+  };
+  const users = await User.find().where('_id').in(userIDs).exec();
+  if (users) {
+    users.forEach((user) => {
+      admin
+        .messaging()
+        .sendToDevice(user.notificationToken, payload, notificationOptions);
+    });
+  }
 }
 
 /**
@@ -1029,6 +1078,9 @@ async function populateBacklog(
  */
 async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
   const tile = findTile(germanTiles, coords);
+  if (tile === null) {
+    return [];
+  }
   // get all neighboring tiles and prepend current tile
   const neighbors = germanTiles[tile].neighbours;
   neighbors.unshift(tile);
