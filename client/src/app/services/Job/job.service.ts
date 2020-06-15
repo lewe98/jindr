@@ -1,18 +1,18 @@
-import { Injectable } from "@angular/core";
-import { Coords } from "../Location/location.service";
-import { DatabaseControllerService } from "../DatabaseController/database-controller.service";
-import { ToastService } from "../Toast/toast.service";
+import { Injectable } from '@angular/core';
+import { Coords } from '../Location/location.service';
+import { DatabaseControllerService } from '../DatabaseController/database-controller.service';
+import { ToastService } from '../Toast/toast.service';
 import { Job } from '../../../../interfaces/job';
-import { AuthService } from "../Auth/auth.service";
+import { AuthService } from '../Auth/auth.service';
 
 @Injectable({
-  providedIn: "root"
+  providedIn: 'root'
 })
 export class JobService {
   constructor(
     private databaseController: DatabaseControllerService,
     private toastService: ToastService,
-    private authService: AuthService,
+    private authService: AuthService
   ) {
   }
 
@@ -36,21 +36,22 @@ export class JobService {
           creator: this.authService.getUser()._id,
           location,
           image
-        },
+        }
       };
       this.databaseController
-        .postRequest("create-job", JSON.stringify(data), Job)
+        .postRequest('create-job', JSON.stringify(data), Job)
         .then((res) => {
           this.toastService.presentToast(res.message);
           resolve();
         })
         .catch((err) => {
-          this.toastService.presentWarningToast(err.errors, err.message + ": ");
+          this.toastService.presentWarningToast(err.errors, err.message + ': ');
           reject(err);
         });
     });
   }
 
 
-  editJob() {}
+  editJob() {
+  }
 }
