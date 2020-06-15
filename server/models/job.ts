@@ -15,6 +15,18 @@ const jobSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  date: {
+    type: Date,
+    default: new Date()
+  },
+  time: {
+    type: Number,
+    default: 8
+  },
+  payment: {
+    type: Number,
+    default: 12
+  },
   tile: {
     type: Number
   },

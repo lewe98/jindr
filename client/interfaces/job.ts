@@ -6,6 +6,9 @@ export class Job {
   public title: string;
   public description: string;
   public creator: string;
+  public date: Date;
+  public time: number;
+  public payment: number;
   public tile: number;
   public interestedUsers: string[];
   public location: Coords;
