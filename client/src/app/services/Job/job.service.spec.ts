@@ -39,7 +39,7 @@ describe('JobService', () => {
 
   describe('create-job', () => {
     it('should create a Job', (done) => {
-      service.createJob('Test', 'test123', new Coords(), './img.jpg').then(async () => {
+      service.createJob('Test', 'test123', new Date(2012), 8, 12, new Coords(), './img.jpg').then(async () => {
         expect(databaseSpy.postRequest).toHaveBeenCalledWith(
           'create-job',
           JSON.stringify(
@@ -47,6 +47,9 @@ describe('JobService', () => {
               job: {
                 title: 'Test',
                 description: 'test123',
+                date: new Date(2012),
+                time: 8,
+                payment: 12,
                 creator: authSpy.getUser,
                 location: new Coords(),
                 image: './img.jpg'

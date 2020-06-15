@@ -20,6 +20,9 @@ export class JobService {
    * Method to create a Job
    * @param title of the Job
    * @param description of the Job
+   * @param date of the Job
+   * @param time, how long the Job will take
+   * @param payment you get for a Job
    * @param location in witch coordinates the Job is located
    * @param image is the url of the Job Image
    * Sends all the user information to the server
@@ -27,12 +30,15 @@ export class JobService {
    * resolves if the Job is successfully created in the Database
    * rejects if an error occurred
    */
-  createJob(title: string, description: string, location: Coords, image: string): Promise<any> {
+  createJob(title: string, description: string, date: Date, time: number, payment: number, location: Coords, image: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const data = {
         job: {
           title,
           description,
+          date,
+          time,
+          payment,
           creator: this.authService.getUser()._id,
           location,
           image
