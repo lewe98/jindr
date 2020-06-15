@@ -1,4 +1,9 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Job } from '../../../../../interfaces/job';
+import {
+  Coords,
+  LocationService
+} from '../../../services/Location/location.service';
 
 @Component({
   selector: 'app-swipe-card',
@@ -6,21 +11,24 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./swipe-card.component.scss']
 })
 export class SwipeCardComponent implements OnInit {
-  @Input() data: any = {};
+  @Input() data: Job;
   @Input() isPreview = false;
+  @Input() coords: Coords;
   @Output() viewInfo = new EventEmitter();
+  distance: number;
 
-  profileImages: object[] = [];
-
-  constructor() {}
+  constructor(private locationService: LocationService) {}
 
   ngOnInit() {
-    this.profileImages = [
-      { imageUrl: this.data.profile_image_url },
-      { imageUrl: 'assets/img/people/thanos.png' },
-      { imageUrl: 'assets/img/people/captain.png' },
-      { imageUrl: 'assets/img/people/thor.png' }
-    ];
+    if (this.coords) {
+      this.distance = this.locationService.getDistanceFromLatLonInKm(
+        this.coords.lat,
+        this.coords.lng,
+        this.data.location.lat,
+        this.data.location.lng
+      );
+      this.distance = Math.round(this.distance);
+    }
   }
 
   handleViewInfo() {

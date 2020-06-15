@@ -174,10 +174,10 @@ and (max-device-height : 682px)
     height: $mapWidthAndHeight2!important;
   }
   #map {
-    top: 30%+1!important;
+    top: 30%!important;
     width: $mapWidthAndHeight2!important;
     height: $mapWidthAndHeight2!important;
-    clip-path: circle($mapWidthAndHeight2/2-4 at center)!important;
+    clip-path: circle($mapWidthAndHeight2/2-2 at center)!important;
   }
   .me-button-group, app-jindr-button {
     padding-top: 0;

@@ -122,6 +122,5 @@ export class ProfileResumeComponent implements OnInit {
       .catch((err) => {
         this.toastService.presentWarningToast(err.message, 'Resume Error');
       });
-
   }
 }
