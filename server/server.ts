@@ -852,6 +852,78 @@ app.post('/create-job', (req: Request, res: Response) => {
 });
 
 /**
+ * @api {put} /edit-job/:id edits a job
+ * @apiName EditJob
+ * @apiGroup Job
+ *
+ * @apiDescription Pass a job to update certain values
+ *
+ * @apiParam {Job} job an object with the job
+ * @apiParam {ID} ID of a job passed in the url
+ *
+ * @apiSuccess {String} message SuccessMessage job is updated
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 Created
+ *     {
+ *       "message": "Successfully updated job."
+ *     }
+ *
+ * @apiError JobNotCreated if job is located outside of supported area or database request failed
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "message: "Your country is currently not supported."
+ *     }
+ *
+ * @apiError JobNotUpdated if job could not be found or database request failed
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Bad Request
+ *     {
+ *       "message: "Job could not be found."
+ *     }
+ */
+app.put('/edit-job/:id', (req: Request, res: Response) => {
+  const job = new Job();
+  Object.assign(job, req.body.job);
+
+  const tile = findTile(germanTiles, job.location);
+
+  if (!tile) {
+    res.status(400).send({
+      message: 'Your country is currently not supported.'
+    });
+    return;
+  }
+
+  job.tile = tile;
+
+  // if (mongoose.Types.ObjectId.isValid(job._id)) {}
+  Job.findOne({ _id: req.params.id }).exec(async (err) => {
+    if (err) {
+      res.status(500).send({
+        message: 'Job could not be found.'
+      });
+    } else {
+      await Job.findOneAndUpdate(
+        { _id: job._id },
+        {
+          title: job.title,
+          description: job.description,
+          date: job.date,
+          time: job.time,
+          tile: job.tile,
+          location: job.location,
+          isFinished: job.isFinished
+        }
+      );
+      res.status(200).send({
+        message: 'Successfully updated job.'
+      });
+    }
+  });
+});
+
+/**
  * Prepares user to be sent to client
  * Removes password and deviceID
  * @param user to be prepared

@@ -1,4 +1,3 @@
-
 import { Coords } from '../src/app/services/Location/location.service';
 
 export class Job {
@@ -15,3 +14,4 @@ export class Job {
   public location: Coords;
   public isFinished: boolean;
   public image: string;
+}

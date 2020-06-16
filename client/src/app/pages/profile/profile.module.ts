@@ -21,6 +21,10 @@ const profileRoutes: Routes = [
   {
     path: 'edit',
     component: ProfileEditComponent
+  },
+  {
+    path: 'jobs/edit-job/:id',
+    component: JobEditComponent
   }
 ];
 

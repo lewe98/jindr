@@ -14,6 +14,15 @@ describe('JobService', () => {
   let databaseSpy;
   let authSpy;
 
+  const editedJob = new Job();
+  editedJob._id = 'testID';
+  editedJob.isFinished = true;
+  editedJob.title = 'Test title';
+  editedJob.description = 'Test description';
+  editedJob.date = new Date(2020);
+  editedJob.location = new Coords();
+  editedJob.time = 2;
+
   beforeEach(() => {
     databaseSpy = jasmine.createSpyObj('DatabaseControllerService', {
       postRequest: 'postRequest',
@@ -58,6 +67,17 @@ describe('JobService', () => {
           ),
           Job
         );
+        done();
+      });
+    });
+  });
+
+  describe('edit-job', () => {
+    it('should edit a Job', (done) => {
+      service.editJob(editedJob).then(async () => {
+        expect(databaseSpy.putRequest).toHaveBeenCalledWith(
+          'edit-job/' + editedJob._id,
+          JSON.stringify({ editedJob: { editedJob } }), Job);
         done();
       });
     });

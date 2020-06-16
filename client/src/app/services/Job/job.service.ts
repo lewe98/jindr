@@ -13,9 +13,7 @@ export class JobService {
     private databaseController: DatabaseControllerService,
     private toastService: ToastService,
     private authService: AuthService
-  ) {
-  }
-  job: Job;
+  ) {}
 
   /**
    * Method to create a Job
@@ -59,22 +57,23 @@ export class JobService {
   }
 
   /**
-   * Method to update a job in the database
-   * @param job the job to be updated
-   * @param title the title to be updated
-   * @param description the description to be updated
-   * @param isFinished flag if the job is finished or not
+   * Method to update a job
+   * @param job job to be updated
+   * status message is reported by ToastService
+   * resolves if the job is successfully updated in database
+   * rejects if an error occurred
    */
-  editJob(job: Job, title: String, description: string, isFinished: Boolean): Promise<Job> {
+  editJob(job: Job): Promise<Job> {
     return new Promise<Job>((resolve, reject) => {
-      const data = { job, title: title, description: description, isFinished: isFinished };
+      const data = { job };
       this.databaseController
-        .putRequest("edit-job", JSON.stringify(data), Job)
+        .putRequest('edit-job/' + job._id, JSON.stringify(data), Job)
         .then((res) => {
-          this.job = res.data;
-          resolve(res.data);
+          this.toastService.presentToast(res.message);
+          resolve();
         })
         .catch((err) => {
+          this.toastService.presentWarningToast(err.message, 'An error occurred: ');
           reject(err);
         });
     });
