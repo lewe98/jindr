@@ -1,4 +1,3 @@
-
 const server = require('../server.js');
 const app = server.app;
 const request = require('supertest');
@@ -405,6 +404,71 @@ describe('test get job by _id', () => {
     const res = await request(app)
       .get('/get-job-by-id/test');
     expect(res.statusCode).toEqual(500);
+    done();
+  });
+});
+
+describe('test edit job', () => {
+  it('should edit job', async (done) => {
+    const res = await request(app)
+      .put('/edit-job/' + GET_JOB_ID)
+      .send({
+        job: {
+          title: 'updated title',
+          description: 'updated description',
+          creator: USER_ONE._id,
+          location: {
+            lat: 51.3260435992175,
+            lng: 9.72345094553722
+          },
+          isFinished: true,
+          homepage: 'https://jindr-staging.herokuapp.com/landing',
+          cityName: 'Gießen'
+        }
+      });
+    expect(res.statusCode).toEqual(200);
+    done();
+  });
+
+  it('should fail if location is unsupported', async (done) => {
+    const res = await request(app)
+      .put('/edit-job/' + GET_JOB_ID)
+      .send({
+        job: {
+          title: 'updated title',
+          description: 'updated description',
+          creator: USER_ONE._id,
+          location: {
+            lat: 40.730610,
+            lng: -73.935242
+          },
+          isFinished: true,
+          homepage: 'https://jindr-staging.herokuapp.com/landing',
+          cityName: 'Gießen'
+        }
+      });
+    expect(res.statusCode).toEqual(400);
+    done();
+  });
+
+  it('should fail if job could not be found', async (done) => {
+    const res = await request(app)
+      .put('/edit-job/abc123')
+      .send({
+        job: {
+          title: 'updated title',
+          description: 'updated description',
+          creator: USER_ONE._id,
+          location: {
+            lat: 51.3260435992175,
+            lng: 9.72345094553722
+          },
+          isFinished: true,
+          homepage: 'https://jindr-staging.herokuapp.com/landing',
+          cityName: 'Gießen'
+        }
+      });
+    expect(res.statusCode).toEqual(404);
     done();
   });
 });

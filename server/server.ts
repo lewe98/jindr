@@ -870,14 +870,13 @@ app.post('/create-job', (req: Request, res: Response) => {
  * sends all interests of the interests.json to the client
  */
 app.get('/interests', (req: Request, res: Response) => {
-  let rawdata = fs.readFileSync('./assets/interests.json');
-  let interests = JSON.parse(rawdata);
+  const rawdata = fs.readFileSync('./assets/interests.json');
+  const interests = JSON.parse(rawdata);
 
-    res.status(200).send({
-      message: 'Successfully logged in',
-      data: interests
-    });
-
+  res.status(200).send({
+    message: 'Successfully logged in',
+    data: interests
+  });
 });
 
 /**
@@ -916,6 +915,79 @@ app.get('/get-job-by-id/:_id', async (req: Request, res: Response) => {
       message: 'Error: ' + err
     });
   }
+});
+
+/**
+ * @api {put} /edit-job/:id edits a job
+ * @apiName EditJob
+ * @apiGroup Job
+ *
+ * @apiDescription Pass a job to update certain values
+ *
+ * @apiParam {Job} job an object with the job
+ * @apiParam {ID} ID of a job passed in the url
+ *
+ * @apiSuccess {String} message SuccessMessage job is updated
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 Created
+ *     {
+ *       "message": "Successfully updated job."
+ *     }
+ *
+ * @apiError JobNotCreated if job is located outside of supported area or database request failed
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "message: "Your country is currently not supported."
+ *     }
+ *
+ * @apiError JobNotUpdated if job could not be found or database request failed
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Bad Request
+ *     {
+ *       "message: "Job could not be found."
+ *     }
+ */
+app.put('/edit-job/:id', (req: Request, res: Response) => {
+  let job = new Job();
+  Object.assign(job, req.body.job);
+
+  const tile = findTile(germanTiles, job.location);
+
+  if (!tile) {
+    res.status(400).send({
+      message: 'Your country is currently not supported.'
+    });
+    return;
+  }
+
+  job.tile = tile;
+
+  // if (mongoose.Types.ObjectId.isValid(job._id)) {}
+  Job.findOne({ _id: req.params.id }).exec(async (err) => {
+    if (err) {
+      res.status(404).send({
+        message: 'Job could not be found.'
+      });
+    } else {
+      await Job.findOneAndUpdate(
+        { _id: job._id },
+        {
+          title: job.title,
+          description: job.description,
+          date: job.date,
+          time: job.time,
+          tile: job.tile,
+          location: job.location,
+          isFinished: job.isFinished,
+          payment: job.payment
+        }
+      );
+      res.status(200).send({
+        message: 'Successfully updated job.'
+      });
+    }
+  });
 });
 
 /**
@@ -1165,7 +1237,11 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
       if (user.interest.length === 0) {
         foundJobs.push(job._id);
       } else {
-        const commonInterests = _.intersectionWith(job.interest, user.interest, _.isEqual);
+        const commonInterests = _.intersectionWith(
+          job.interest,
+          user.interest,
+          _.isEqual
+        );
         if (commonInterests.length > 0) {
           foundJobs.push(job._id);
         }

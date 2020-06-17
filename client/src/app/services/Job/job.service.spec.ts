@@ -13,6 +13,7 @@ describe('JobService', () => {
   let service: JobService;
   let databaseSpy;
   let authSpy;
+  const editedJob = new Job();
 
   beforeEach(() => {
     databaseSpy = jasmine.createSpyObj('DatabaseControllerService', {
@@ -43,15 +44,17 @@ describe('JobService', () => {
 
   describe('Method tests', () => {
     it('should create a Job', (done) => {
+      const job = new Job();
+      job.title = 'Test';
+      job.description = 'test123';
+      job.date = new Date(2012);
+      job.location = new Coords();
+      job.image = './img.jpg';
+      job.payment = 12;
+      job.time = 8;
       service
         .createJob(
-          'Test',
-          'test123',
-          new Date(2012),
-          8,
-          12,
-          new Coords(),
-          './img.jpg'
+        job
         )
         .then(async () => {
           expect(databaseSpy.postRequest).toHaveBeenCalledWith(
@@ -61,11 +64,11 @@ describe('JobService', () => {
                 title: 'Test',
                 description: 'test123',
                 date: new Date(2012),
-                time: 8,
-                payment: 12,
-                creator: authSpy.getUser,
                 location: new Coords(),
-                image: './img.jpg'
+                image: './img.jpg',
+                payment: 12,
+                time: 8,
+                creator: authSpy.getUser,
               }
             }),
             Job
@@ -80,6 +83,16 @@ describe('JobService', () => {
           '',
           Job
         );
+        done();
+      });
+    });
+  });
+
+  describe('edit-job', () => {
+    it('should edit a Job', (done) => {
+      service.editJob(editedJob).then(async () => {
+        expect(databaseSpy.putRequest).toHaveBeenCalledWith(
+          'edit-job/' + editedJob._id, JSON.stringify({job: editedJob}), Job);
         done();
       });
     });

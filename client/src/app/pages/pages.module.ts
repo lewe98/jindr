@@ -1,7 +1,7 @@
 import { IonicModule } from '@ionic/angular';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { PagesRoutingModule } from './pages.router.module';
 import { HomePage } from './home/home.page';
@@ -15,7 +15,8 @@ import { RouterModule } from '@angular/router';
     FormsModule,
     PagesRoutingModule,
     SharedModule,
-    RouterModule
+    RouterModule,
+    ReactiveFormsModule
   ],
   declarations: [HomePage],
   exports: [SharedModule]

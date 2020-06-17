@@ -11,6 +11,7 @@ import {
 } from '@capacitor/core';
 import { ToastService } from '../../services/Toast/toast.service';
 import { Router } from '@angular/router';
+import { AssetService } from '../../services/Asset/asset.service';
 
 const { PushNotifications } = Plugins;
 
@@ -29,7 +30,8 @@ export class HomePage implements OnInit, OnDestroy {
     private authService: AuthService,
     public platform: Platform,
     private toastService: ToastService,
-    private router: Router
+    private router: Router,
+    private assetService: AssetService
   ) {}
 
   async ngOnInit() {
@@ -39,6 +41,7 @@ export class HomePage implements OnInit, OnDestroy {
       })
     );
     this.registerPush();
+    this.assetService.getInterestsRoute();
   }
 
   ngOnDestroy(): void {
