@@ -881,6 +881,44 @@ app.get('/interests', (req: Request, res: Response) => {
 });
 
 /**
+ * @api {get} /get-job-by-id Gets a Job by its _id
+ * @apiName GetJobById
+ * @apiGroup Job
+ *
+ * @apiDescription If a user gets a DetailView of a job this Method will be called
+ *
+ * @apiParam {String} job._id is a unique ID of a Job
+ *
+ * @apiSuccess {Job} message  Job with _id = XXXX found!
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "message": "Job with _id = XXXX found!",
+ *       "data": job
+ *     }
+ */
+app.get('/get-job-by-id/:_id', async (req: Request, res: Response) => {
+  try {
+    const _id: string = req.params._id;
+    let job = await Job.findOne({ _id });
+    if (job) {
+      res.status(200).send({
+        message: 'Job with _id = ' + _id + ' found!',
+        data: job
+      });
+    } else {
+      res.status(404).send({
+        message: 'No Job found with Job._id = ' + _id
+      });
+    }
+  } catch (err) {
+    res.status(500).send({
+      message: 'Error: ' + err
+    });
+  }
+});
+
+/**
  * Prepares user to be sent to client
  * Removes password and deviceID
  * @param user to be prepared

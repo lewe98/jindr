@@ -17,13 +17,15 @@ describe('JobService', () => {
   beforeEach(() => {
     databaseSpy = jasmine.createSpyObj('DatabaseControllerService', {
       postRequest: 'postRequest',
-      putRequest: 'putRequest'
+      putRequest: 'putRequest',
+      getRequest: 'getRequest'
     });
     authSpy = jasmine.createSpyObj('AuthService', {
       getUser: 'getUser'
     });
     databaseSpy.postRequest.and.returnValue(Promise.resolve(new Job()));
     databaseSpy.putRequest.and.returnValue(Promise.resolve(new Job()));
+    databaseSpy.getRequest.and.returnValue(Promise.resolve(new Job()));
     authSpy.getUser.and.returnValue(new User());
     TestBed.configureTestingModule({
       imports: [RouterTestingModule, HttpClientTestingModule],
@@ -39,7 +41,7 @@ describe('JobService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('create-job', () => {
+  describe('Method tests', () => {
     it('should create a Job', (done) => {
       const job = new Job();
       job.title = 'Test';
@@ -72,6 +74,16 @@ describe('JobService', () => {
           );
           done();
         });
+    });
+    it('should get a by id Job', (done) => {
+      service.getJobById('test123').then(async () => {
+        expect(databaseSpy.getRequest).toHaveBeenCalledWith(
+          'get-job-by-id/test123',
+          '',
+          Job
+        );
+        done();
+      });
     });
   });
 });

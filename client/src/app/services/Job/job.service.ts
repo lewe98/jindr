@@ -38,5 +38,20 @@ export class JobService {
     });
   }
 
+  getJobById(id: string): Promise<Job> {
+    return new Promise<Job>((resolve, reject) => {
+      this.databaseController
+        .getRequest('get-job-by-id/' + id, '', Job)
+        .then((res) => {
+          this.toastService.presentToast(res.message);
+          resolve(res.job);
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err.errors, err.message + ': ');
+          reject(err);
+        });
+    });
+  }
+
   editJob() {}
 }
