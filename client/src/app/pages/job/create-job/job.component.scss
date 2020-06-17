@@ -1,0 +1,54 @@
+:host {
+  --page-margin: var(--app-fair-margin);
+}
+
+.list-general {
+  ion-list-header {
+    padding-top: 8px;
+  }
+  ion-item {
+    ion-label {
+      font-size: smaller;
+      color: var(--ion-color-medium);
+    }
+  }
+  .hint {
+    font-size: smaller;
+  }
+
+  .searchbar {
+    width: 100%;
+    padding: 0;
+  }
+  .auto-list {
+    width: 100%;
+    .auto-entry {
+      font-size: small;
+    }
+  }
+
+  .radio-group {
+    display: block;
+  }
+
+  .radio-item {
+    --padding-start: var(--page-margin);
+    --padding-end: var(--page-margin);
+    --inner-padding-end: 0px;
+    width: 48%;
+    margin: 0;
+
+    .radio-label {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      color: var(--ion-color-medium);
+    }
+
+    ion-radio {
+      margin-inline-start: 0;
+    }
+  }
+}
+
+

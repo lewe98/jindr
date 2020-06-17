@@ -128,14 +128,16 @@ export class LocationService implements OnDestroy {
     if (!place.place_id) {
       return null;
     }
-    this.geocoder.geocode({ placeId: place.place_id }, (results, status) => {
-      if (status !== 'OK') {
-        console.log('Geocoder failed due to: ' + status);
-        return;
-      } else {
-        return results[0].geometry.location;
-      }
-    });
+    return new Promise<Coords>((resolve => {
+      this.geocoder.geocode({ placeId: place.place_id }, (results, status) => {
+        if (status !== 'OK') {
+          console.log('Geocoder failed due to: ' + status);
+          return null;
+        } else {
+          resolve({ lat:  results[0].geometry.location.lat(), lng: results[0].geometry.location.lng()});
+        }
+      });
+    }));
   }
 
   async presentLoader() {

@@ -16,4 +16,5 @@ export class Job {
   public image: string;
   public homepage: string;
   public interests: string[];
+  public isHourly: boolean;
 }

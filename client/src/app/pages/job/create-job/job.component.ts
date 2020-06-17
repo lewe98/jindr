@@ -55,7 +55,8 @@ export class JobComponent implements OnInit {
       time: new FormControl(this.job.time),
       date: new FormControl(this.job.date),
       interests: new FormControl(this.job.interests),
-      location: new FormControl(this.job.location)
+      location: new FormControl(this.job.location),
+      selectedOption: new FormControl('total')
     });
     this.GoogleAutocomplete = new google.maps.places.AutocompleteService();
     this.autocomplete = { input: '' };
@@ -88,10 +89,18 @@ export class JobComponent implements OnInit {
   async selectSearchResult(item) {
     this.location = item;
     this.placeid = this.location.place_id;
-    // TODO get coordinates from place with geocoding
-    this.coords = await this.locationService.geocodePlaces(
-      this.location.place_id
-    );
+    this.locationService.geocodePlaces(
+      this.location
+    ).then((res) => {
+      this.coords = res;
+    });
+
+  }
+
+  scrollToTop(id: string) {
+    const element = document.getElementById(id);
+
+    element.scrollIntoView( {behavior: "smooth", block: "start", inline: "nearest"});
   }
 
   createJob() {
