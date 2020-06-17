@@ -899,7 +899,7 @@ app.get('/interests', (req: Request, res: Response) => {
  */
 app.get('/get-job-by-id/:_id', async (req: Request, res: Response) => {
   try {
-    const _id: String = req.params._id;
+    const _id: string = req.params._id;
     let job = await Job.findOne({ _id });
     if (job) {
       res.status(200).send({
