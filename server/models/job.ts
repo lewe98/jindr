@@ -46,9 +46,19 @@ const jobSchema = mongoose.Schema({
     type: String,
     default: './assets/images/job.png'
   },
-  interest: {
+  interests: {
     type: [],
     default: []
+  },
+  isHourly: {
+    type: Boolean,
+    default: false
+  },
+  homepage: {
+    type: String
+  },
+  cityName: {
+    type: String
   }
 });
 

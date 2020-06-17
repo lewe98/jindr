@@ -80,8 +80,8 @@
             <ion-item lines="none" id="skills">
                 <ion-label>Skill</ion-label>
                 <!--ngfor-->
-                <ion-select multiple="true" cancel-text="None of them" ok-text="Ok" (click)="scrollToTop('skills')">
-                    <!-- <ion-select-option *ngFor="let interest of interests; let i = index" value="{{interest.id}}">{{interest.name}}</ion-select-option>-->
+                <ion-select formControlName="interests"  multiple="true" cancelText="cancel" okText="ok">
+                    <ion-select-option *ngFor="let interest of interests;" value="{{interest }}">{{interest}}</ion-select-option>
                 </ion-select>
             </ion-item>
             <ion-list-header>
@@ -129,7 +129,7 @@
             </ion-list-header>
                 <ion-item lines="none" id="hours">
                     <ion-label>Working hours</ion-label>
-                    <ion-select cancel-text="None of them" ok-text="Ok" (click)="scrollToTop('hours')">
+                    <ion-select formControlName="time" cancel-text="None of them" ok-text="Ok" (click)="scrollToTop('hours')">
                         <ion-select-option *ngFor="let number of [1,2,3,4,5,6,7,8,9,10,11,12]" value="{{number}}">{{number}} h</ion-select-option>
                     </ion-select>
                 </ion-item>
@@ -138,7 +138,7 @@
 </ion-content>
 
 <ion-footer>
-    <ion-button [disabled]="!createForm.valid && !coords" type="button" expand="full" fill="solid" color="primary"
+    <ion-button [disabled]="!createForm.valid || !coords || !date" type="button" expand="full" fill="solid" color="primary"
                 (click)="createJob()">RELEASE
     </ion-button>
 </ion-footer>

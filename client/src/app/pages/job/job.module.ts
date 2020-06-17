@@ -4,7 +4,7 @@ import { JobComponent } from './create-job/job.component';
 import { RouterModule, Routes } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ShellModule } from "../../shell/shell.module";
+import { ShellModule } from '../../shell/shell.module';
 
 const routes: Routes = [
   {

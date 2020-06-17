@@ -14,7 +14,9 @@ import {
   LocationService,
   Coords
 } from '../../../services/Location/location.service';
-import { ImageService } from "../../../services/Image/image.service";
+import { ImageService } from '../../../services/Image/image.service';
+import { AssetService } from '../../../services/Asset/asset.service';
+import { Interest } from '../../../../../interfaces/interest';
 
 @Component({
   selector: 'app-job',
@@ -32,7 +34,11 @@ export class JobComponent implements OnInit {
   location: any;
   placeid: any;
   coords: Coords;
-  image = './assets/images/job.png'
+  image = './assets/images/job.png';
+  tempInterests: Interest[] = [];
+  interests = [];
+  jobInterests = [];
+  cityName: string;
 
   constructor(
     private modalCtrl: ModalController,
@@ -44,20 +50,27 @@ export class JobComponent implements OnInit {
     private jobService: JobService,
     private locationService: LocationService,
     private ngZone: NgZone,
-    private imageService: ImageService
+    private imageService: ImageService,
+    private assetService: AssetService
   ) {}
 
   ngOnInit() {
-    Object.assign(this.job);
+    Object.assign(this.job); // TODO @Julian, hier muss dann dein job ausgelesen werden bei edit
+    this.tempInterests = this.assetService.getInterests();
+    this.interests = this.tempInterests?.map((i) => {
+      return i.title;
+    });
+    this.jobInterests = this.job.interests?.map((i) => {
+      return i.title;
+    });
     this.createForm = new FormGroup({
       title: new FormControl(this.job.title, Validators.required),
       description: new FormControl(this.job.description, Validators.required),
       searchbar: new FormControl(''),
       payment: new FormControl(this.job.payment, Validators.required),
       homepage: new FormControl(this.job.homepage),
-      time: new FormControl(this.job.time, Validators.required),
-      date: new FormControl(this.job.date),
-      interests: new FormControl(this.job.interests),
+      time: new FormControl(this.job.time),
+      interests: new FormControl(this.jobInterests),
       location: new FormControl(this.job.location),
       selectedOption: new FormControl('total')
     });
@@ -91,7 +104,7 @@ export class JobComponent implements OnInit {
 
   async editPicture() {
     this.imageService
-      .getImage('profilePicture')
+      .getImage('jobPicture')
       .then(async (image) => {
         this.image = image;
       })
@@ -102,41 +115,45 @@ export class JobComponent implements OnInit {
 
   async selectSearchResult(item) {
     this.location = item;
+    this.createForm.controls.searchbar.setValue(this.location.description);
+    this.autocompleteItems = [];
     this.placeid = this.location.place_id;
-    this.locationService.geocodePlaces(
-      this.location
-    ).then((res) => {
+    this.locationService.geocodePlaces(this.location).then((res) => {
       this.coords = res;
+      this.locationService.reverseGeocode(this.coords).then((city) => {
+        this.cityName = city;
+      });
     });
-
   }
 
   scrollToTop(id: string) {
     const element = document.getElementById(id);
-    element.scrollIntoView( {behavior: 'smooth', block: 'start', inline: 'nearest'});
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+      inline: 'nearest'
+    });
   }
 
   createJob() {
     this.job.title = this.createForm.controls.title.value;
     this.job.description = this.createForm.controls.description.value;
-    // this.job.date = this.createForm.controls.date.value;
-    // this.job.time = this.createForm.controls.time.value;
+    this.job.date = this.date;
+    this.job.time = this.createForm.controls.time.value;
     this.job.payment = this.createForm.controls.payment.value;
     this.job.homepage = this.createForm.controls.homepage.value;
-    this.job.interests = this.createForm.controls.interests.value;
     this.job.location = this.coords;
-    this.job.isHourly = this.createForm.controls.selectedOption.value !== 'total';
-    console.log(this.job);
+    this.job.isHourly =
+      this.createForm.controls.selectedOption.value !== 'total';
+    this.job.image = this.image;
+    this.job.interests = [];
+    this.job.cityName = this.cityName;
+    this.job.creator = this.authService.user._id;
+    this.createForm.controls.interests.value.forEach((int) => {
+      this.job.interests.push(this.tempInterests.find((i) => int === i.title));
+    });
     this.jobService
-      .createJob(
-        this.job.title,
-        this.job.description,
-        this.date,
-        this.job.time,
-        this.job.payment,
-        this.job.location,
-        './assets/images/avatar.jpg'
-      )
+      .createJob(this.job)
       .then(() => {
         this.toastService.presentToast('Job created.');
         this.router.navigate(['pages']);

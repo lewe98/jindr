@@ -870,8 +870,8 @@ app.post('/create-job', (req: Request, res: Response) => {
  * sends all interests of the interests.json to the client
  */
 app.get('/interests', (req: Request, res: Response) => {
-  let rawdata = fs.readFileSync('./assets/interests.json');
-  let interests = JSON.parse(rawdata);
+  const rawdata = fs.readFileSync('./assets/interests.json');
+  const interests = JSON.parse(rawdata);
 
     res.status(200).send({
       message: 'Successfully logged in',

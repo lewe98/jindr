@@ -22,8 +22,7 @@ export class CurriculumComponent implements OnInit {
     public alertController: AlertController,
     public authService: AuthService,
     public toastService: ToastService
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
@@ -40,7 +39,9 @@ export class CurriculumComponent implements OnInit {
    * @return String example: '1 Month, 5 Years'
    */
   getResumeEntryTime(startDate: Date, endDate: Date): string {
-    const date = (new Date(endDate).getTime() - new Date(startDate).getTime()) / 2592000000;
+    const date =
+      (new Date(endDate).getTime() - new Date(startDate).getTime()) /
+      2592000000;
     const year = Math.floor(date / 12);
     let yearString = ' Years';
     const month = Math.floor(date % 12);
