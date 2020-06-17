@@ -1,12 +1,13 @@
 import { IonicModule } from '@ionic/angular';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { PagesRoutingModule } from './pages.router.module';
 import { HomePage } from './home/home.page';
 import { SharedModule } from '../shared/shared.module';
 import { RouterModule } from '@angular/router';
+import { JobEditComponent } from './job/job-edit/job-edit.component';
 
 @NgModule({
   imports: [
@@ -15,9 +16,10 @@ import { RouterModule } from '@angular/router';
     FormsModule,
     PagesRoutingModule,
     SharedModule,
-    RouterModule
+    RouterModule,
+    ReactiveFormsModule
   ],
-  declarations: [HomePage],
+  declarations: [HomePage, JobEditComponent],
   exports: [SharedModule]
 })
 export class PagesModule {}

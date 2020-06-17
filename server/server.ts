@@ -913,7 +913,8 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
           time: job.time,
           tile: job.tile,
           location: job.location,
-          isFinished: job.isFinished
+          isFinished: job.isFinished,
+          payment: job.payment
         }
       );
       res.status(200).send({

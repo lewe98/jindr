@@ -11,7 +11,6 @@ import { ProfileEditComponent } from './profile-edit/profile-edit.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CurriculumComponent } from './curriculum/curriculum.component';
 import { ProfileResumeComponent } from './profile-resume/profile-resume.component';
-import { JobEditComponent } from '../job/job-edit/job-edit.component';
 
 const profileRoutes: Routes = [
   {
@@ -21,10 +20,6 @@ const profileRoutes: Routes = [
   {
     path: 'edit',
     component: ProfileEditComponent
-  },
-  {
-    path: 'jobs/edit-job/:id',
-    component: JobEditComponent
   }
 ];
 
@@ -35,8 +30,7 @@ const profileRoutes: Routes = [
     ProfileViewComponent,
     ProfileEditComponent,
     CurriculumComponent,
-    ProfileResumeComponent,
-    JobEditComponent
+    ProfileResumeComponent
   ],
   imports: [
     CommonModule,

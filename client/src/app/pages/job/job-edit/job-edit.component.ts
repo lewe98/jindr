@@ -43,7 +43,7 @@ export class JobEditComponent implements OnInit {
   }
 
   /**
-   * Method to submit values to the editJob-method
+   * Method to submit values to the editJob-method in job.service.ts
    * resolves if the method was called successfully and navigates to the job overview
    * rejects if an error occurred
    */
@@ -51,10 +51,11 @@ export class JobEditComponent implements OnInit {
     return new Promise<any>((resolve, reject) => {
       this.job.title = this.editForm.controls.title.value;
       this.job.description = this.editForm.controls.description.value;
-      this.job.date = this.editForm.controls.date.value;
+      // this.job.date = this.editForm.controls.date.value;
       this.job.time = this.editForm.controls.time.value;
       this.job.location = this.editForm.controls.location.value;
       this.job.isFinished = this.editForm.controls.isFinished.value;
+      this.job.payment = this.editForm.controls.payment.value;
 
       this.jobService.editJob(this.job).then(() => {
         this.router.navigate(['pages/profile/jobs']);

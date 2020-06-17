@@ -42,6 +42,11 @@
             </ion-item>
 
             <ion-item lines="none">
+                <ion-label>Payment</ion-label>
+                <ion-input formControlName="payment" class="right" slot="end"></ion-input>
+            </ion-item>
+
+            <ion-item lines="none">
                 <ion-label>Mark job as finished</ion-label>
                 <ion-toggle color="primary" [(ngModel)]="job.isFinished"></ion-toggle>
             </ion-item>

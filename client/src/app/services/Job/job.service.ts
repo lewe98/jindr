@@ -57,7 +57,7 @@ export class JobService {
   }
 
   /**
-   * Method to update a job
+   * Method to send a put request to the server to update a job
    * @param job job to be updated
    * status message is reported by ToastService
    * resolves if the job is successfully updated in database
