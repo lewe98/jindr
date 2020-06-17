@@ -867,6 +867,20 @@ app.post('/create-job', (req: Request, res: Response) => {
 });
 
 /**
+ * sends all interests of the interests.json to the client
+ */
+app.get('/interests', (req: Request, res: Response) => {
+  let rawdata = fs.readFileSync('./assets/interests.json');
+  let interests = JSON.parse(rawdata);
+
+    res.status(200).send({
+      message: 'Successfully logged in',
+      data: interests
+    });
+
+});
+
+/**
  * Prepares user to be sent to client
  * Removes password and deviceID
  * @param user to be prepared
@@ -1110,7 +1124,14 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
       !jobStack.serverStack.some((x) => x.toString() === job._id.toString()) &&
       dist <= user.distance
     ) {
-      foundJobs.push(job._id);
+      if (user.interest.length === 0) {
+        foundJobs.push(job._id);
+      } else {
+        const commonInterests = _.intersectionWith(job.interest, user.interest, _.isEqual);
+        if (commonInterests.length > 0) {
+          foundJobs.push(job._id);
+        }
+      }
     }
   });
   return foundJobs;
