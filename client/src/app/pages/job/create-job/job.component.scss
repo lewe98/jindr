@@ -2,6 +2,36 @@
   --page-margin: var(--app-fair-margin);
 }
 
+.image-row {
+  text-align: center;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  .avatar {
+    width: 120px;
+    height: 120px;
+    display: inline-block;
+
+    .change-image-btn {
+      --border-radius: 50%;
+      --padding-start: 0px;
+      --padding-end: 0px;
+
+      position: absolute;
+      right: 0;
+      bottom: calc(var(--page-margin) / 30);
+      z-index: 3;
+      width: 4ch;
+      height: 4ch;
+      margin: 0;
+
+      .btn-icon {
+        font-size: 26px;
+      }
+    }
+  }
+}
+
+
 .list-general {
   ion-list-header {
     padding-top: 8px;

@@ -8,6 +8,16 @@
 </ion-header>
 
 <ion-content class="settings-page bg-muted">
+    <div class="image-row">
+        <ion-avatar class="avatar">
+            <app-aspect-ratio [ratio]="{w: 1, h: 1}">
+                <app-image-shell class="user-image" animation="spinner" [src]="image"></app-image-shell>
+            </app-aspect-ratio>
+            <ion-button class="change-image-btn" (click)="editPicture()">
+                <ion-icon class="btn-icon" slot="icon-only" name="camera"></ion-icon>
+            </ion-button>
+        </ion-avatar>
+    </div>
 
     <form [formGroup]="createForm">
         <ion-list class="list-custom list-general">
@@ -128,7 +138,7 @@
 </ion-content>
 
 <ion-footer>
-    <ion-button [disabled]="!createForm.valid" type="button" expand="full" fill="solid" color="primary"
+    <ion-button [disabled]="!createForm.valid && !coords" type="button" expand="full" fill="solid" color="primary"
                 (click)="createJob()">RELEASE
     </ion-button>
 </ion-footer>

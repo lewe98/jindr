@@ -14,6 +14,7 @@ import {
   LocationService,
   Coords
 } from '../../../services/Location/location.service';
+import { ImageService } from "../../../services/Image/image.service";
 
 @Component({
   selector: 'app-job',
@@ -31,6 +32,7 @@ export class JobComponent implements OnInit {
   location: any;
   placeid: any;
   coords: Coords;
+  image = './assets/images/job.png'
 
   constructor(
     private modalCtrl: ModalController,
@@ -41,7 +43,8 @@ export class JobComponent implements OnInit {
     private router: Router,
     private jobService: JobService,
     private locationService: LocationService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private imageService: ImageService
   ) {}
 
   ngOnInit() {
@@ -50,9 +53,9 @@ export class JobComponent implements OnInit {
       title: new FormControl(this.job.title, Validators.required),
       description: new FormControl(this.job.description, Validators.required),
       searchbar: new FormControl(''),
-      payment: new FormControl(this.job.payment),
+      payment: new FormControl(this.job.payment, Validators.required),
       homepage: new FormControl(this.job.homepage),
-      time: new FormControl(this.job.time),
+      time: new FormControl(this.job.time, Validators.required),
       date: new FormControl(this.job.date),
       interests: new FormControl(this.job.interests),
       location: new FormControl(this.job.location),
@@ -86,6 +89,17 @@ export class JobComponent implements OnInit {
     );
   }
 
+  async editPicture() {
+    this.imageService
+      .getImage('profilePicture')
+      .then(async (image) => {
+        this.image = image;
+      })
+      .catch((error) => {
+        this.toastService.presentWarningToast(error, 'Error!');
+      });
+  }
+
   async selectSearchResult(item) {
     this.location = item;
     this.placeid = this.location.place_id;
@@ -99,8 +113,7 @@ export class JobComponent implements OnInit {
 
   scrollToTop(id: string) {
     const element = document.getElementById(id);
-
-    element.scrollIntoView( {behavior: "smooth", block: "start", inline: "nearest"});
+    element.scrollIntoView( {behavior: 'smooth', block: 'start', inline: 'nearest'});
   }
 
   createJob() {
@@ -112,6 +125,7 @@ export class JobComponent implements OnInit {
     this.job.homepage = this.createForm.controls.homepage.value;
     this.job.interests = this.createForm.controls.interests.value;
     this.job.location = this.coords;
+    this.job.isHourly = this.createForm.controls.selectedOption.value !== 'total';
     console.log(this.job);
     this.jobService
       .createJob(
