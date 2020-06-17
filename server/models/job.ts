@@ -46,6 +46,10 @@ const jobSchema = mongoose.Schema({
     type: String,
     default: './assets/images/job.png'
   },
+  interest: {
+    type: [],
+    default: []
+  }
 });
 
 module.exports = mongoose.model('Job', jobSchema, 'jobs');

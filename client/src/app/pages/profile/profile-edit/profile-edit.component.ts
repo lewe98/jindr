@@ -10,6 +10,9 @@ import { ToastService } from '../../../services/Toast/toast.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProfileResumeComponent } from '../profile-resume/profile-resume.component';
+import { AssetService } from '../../../services/Asset/asset.service';
+import { Interest } from '../../../../../interfaces/interest';
+import { SwipeService } from '../../../services/Swipe/swipe.service';
 
 @Component({
   selector: 'app-profile-edit',
@@ -20,17 +23,31 @@ export class ProfileEditComponent implements OnInit {
   editForm: FormGroup;
   user: User = new User();
   date: Date;
+  interests = [];
+  userInterests = [];
+  tempInterests: Interest[] = [];
+  changedInterests = false;
+
   constructor(
     private modalCtrl: ModalController,
     private navCtrl: NavController,
     private authService: AuthService,
     private alertCtrl: AlertController,
     private toastService: ToastService,
-    private router: Router
+    private router: Router,
+    private assetService: AssetService,
+    private swipeService: SwipeService
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
+    this.tempInterests = this.assetService.getInterests();
+    this.interests = this.tempInterests?.map((i) => {
+      return i.title;
+    });
+    this.userInterests = this.user.interest?.map((i) => {
+      return i.title;
+    });
     this.editForm = new FormGroup({
       firstName: new FormControl(this.user.firstName, Validators.required),
       lastName: new FormControl(this.user.lastName, Validators.required),
@@ -41,16 +58,31 @@ export class ProfileEditComponent implements OnInit {
   selectDOB(event) {
     this.date = event.detail.value;
   }
+
+  changedInterest() {
+    this.changedInterests = true;
+  }
+
   /* Save the changed user data.*/
   save() {
     this.user.dateOfBirth = new Date(this.date).getTime();
     this.user.firstName = this.editForm.controls.firstName.value;
     this.user.lastName = this.editForm.controls.lastName.value;
     this.user.aboutMe = this.editForm.controls.aboutMe.value;
-    console.log(this.user);
+    if (this.changedInterests) {
+      this.user.interest = [];
+      this.userInterests.forEach((int) => {
+        this.user.interest.push(
+          this.tempInterests.find((i) => int === i.title)
+        );
+      });
+    }
     this.authService
       .updateUser(this.user)
       .then(() => {
+        if (this.changedInterests) {
+          this.swipeService.updateBacklog();
+        }
         this.toastService.presentToast('Profil updated.');
         this.router.navigate(['pages/profile']);
       })
