@@ -14,4 +14,6 @@ export class Job {
   public location: Coords;
   public isFinished: boolean;
   public image: string;
+  public homepage: string;
+  public interests: string[];
 }

@@ -124,6 +124,20 @@ export class LocationService implements OnDestroy {
     });
   }
 
+  async geocodePlaces(place): Promise<Coords> {
+    if (!place.place_id) {
+      return null;
+    }
+    this.geocoder.geocode({ placeId: place.place_id }, (results, status) => {
+      if (status !== 'OK') {
+        console.log('Geocoder failed due to: ' + status);
+        return;
+      } else {
+        return results[0].geometry.location;
+      }
+    });
+  }
+
   async presentLoader() {
     await this.loadingElement.present();
   }
