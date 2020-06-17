@@ -46,6 +46,20 @@ const jobSchema = mongoose.Schema({
     type: String,
     default: './assets/images/job.png'
   },
+  interests: {
+    type: [],
+    default: []
+  },
+  isHourly: {
+    type: Boolean,
+    default: false
+  },
+  homepage: {
+    type: String
+  },
+  cityName: {
+    type: String
+  }
 });
 
 module.exports = mongoose.model('Job', jobSchema, 'jobs');

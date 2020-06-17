@@ -1,3 +1,4 @@
+/*
 import { Component, OnInit } from '@angular/core';
 import { JobService } from '../../../services/Job/job.service';
 import { Job } from '../../../../../interfaces/job';
@@ -18,16 +19,16 @@ export class JobEditComponent implements OnInit {
     private router: Router
   ) {}
 
-  // [routerLink]="['/pages/jobs/edit-job/this.job._id']
+  // [routerLink]="['/pages/profile/jobs/edit-job/this.job._id']
 
   ngOnInit() {
-    // TODO Werte des jeweiligen Jobs aus der Datenbank assignen
+    // TODO Werte des jeweiligen Jobs mit this.job assignen
     Object.assign(this.job, this.job);
 
     this.editForm = new FormGroup({
       title: new FormControl(this.job.title, Validators.required),
       description: new FormControl(this.job.description, Validators.required),
-      date: new FormControl(this.job.date, Validators.required),
+      // date: new FormControl(this.job.date, Validators.required),
       time: new FormControl(this.job.time, Validators.required),
       location: new FormControl(this.job.location, Validators.required),
       isFinished: new FormControl(this.job.isFinished, Validators.required)
@@ -42,11 +43,11 @@ export class JobEditComponent implements OnInit {
     // TODO edit image
   }
 
-  /**
+  /!**
    * Method to submit values to the editJob-method in job.service.ts
    * resolves if the method was called successfully and navigates to the job overview
    * rejects if an error occurred
-   */
+   *!/
   save() {
     return new Promise<any>((resolve, reject) => {
       this.job.title = this.editForm.controls.title.value;
@@ -74,3 +75,4 @@ export class JobEditComponent implements OnInit {
     }
   }
 }
+*/

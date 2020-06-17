@@ -873,11 +873,10 @@ app.get('/interests', (req: Request, res: Response) => {
   const rawdata = fs.readFileSync('./assets/interests.json');
   const interests = JSON.parse(rawdata);
 
-    res.status(200).send({
-      message: 'Successfully logged in',
-      data: interests
-    });
-
+  res.status(200).send({
+    message: 'Successfully logged in',
+    data: interests
+  });
 });
 
 /**
@@ -944,13 +943,13 @@ app.get('/get-job-by-id/:_id', async (req: Request, res: Response) => {
  *
  * @apiError JobNotUpdated if job could not be found or database request failed
  * @apiErrorExample Error-Response:
- *     HTTP/1.1 500 Bad Request
+ *     HTTP/1.1 404 Bad Request
  *     {
  *       "message: "Job could not be found."
  *     }
  */
 app.put('/edit-job/:id', (req: Request, res: Response) => {
-  const job = new Job();
+  let job = new Job();
   Object.assign(job, req.body.job);
 
   const tile = findTile(germanTiles, job.location);
@@ -967,7 +966,7 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
   // if (mongoose.Types.ObjectId.isValid(job._id)) {}
   Job.findOne({ _id: req.params.id }).exec(async (err) => {
     if (err) {
-      res.status(500).send({
+      res.status(404).send({
         message: 'Job could not be found.'
       });
     } else {
@@ -1238,7 +1237,11 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
       if (user.interest.length === 0) {
         foundJobs.push(job._id);
       } else {
-        const commonInterests = _.intersectionWith(job.interest, user.interest, _.isEqual);
+        const commonInterests = _.intersectionWith(
+          job.interest,
+          user.interest,
+          _.isEqual
+        );
         if (commonInterests.length > 0) {
           foundJobs.push(job._id);
         }

@@ -34,6 +34,11 @@ export class AuthService {
     return this.user;
   }
 
+  registerPushNotifications(token: string) {
+    this.user.notificationToken = token;
+    this.updateUser(this.user);
+  }
+
   /**
    * Method to start the registration of a new user
    * @param firstName of the user

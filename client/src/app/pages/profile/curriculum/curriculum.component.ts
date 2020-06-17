@@ -13,7 +13,7 @@ import { ToastService } from '../../../services/Toast/toast.service';
 })
 export class CurriculumComponent implements OnInit {
   @Input() myView: boolean;
-  @Input() inputUser?: User;
+  @Input() inputUser = new User();
   user: User = new User();
   private allowChange: boolean;
 
@@ -26,40 +26,48 @@ export class CurriculumComponent implements OnInit {
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
-    if (this.inputUser._id === this.user?._id) {
+    if (this.inputUser?._id === this.user?._id) {
       this.allowChange = true;
       Object.assign(this.inputUser, this.authService.getUser());
     }
   }
 
+  /***
+   * The Method calculates the Months and Years between two dates.
+   * @param startDate is the startDate
+   * @param endDate is the end of the time Period
+   * @return String example: '1 Month, 5 Years'
+   */
   getResumeEntryTime(startDate: Date, endDate: Date): string {
-    const timeTmp = new Date(endDate).getTime() - new Date(startDate).getTime();
-    const timeNumber = timeTmp / 2678400000;
-    if (timeNumber.toFixed() === '1') {
-      return timeNumber.toFixed() + ' Month';
-    } else if (timeNumber / 12 >= 1) {
-      return (
-        (timeNumber / 12).toFixed() +
-        ' Years, ' +
-        (12 - (timeNumber % 12)).toFixed() +
-        ' Months'
-      );
+    const date =
+      (new Date(endDate).getTime() - new Date(startDate).getTime()) /
+      2592000000;
+    const year = Math.floor(date / 12);
+    let yearString = ' Years';
+    const month = Math.floor(date % 12);
+    let monthString = ' Months';
+    if (year === 1) {
+      yearString = ' Year';
     }
-    return timeNumber.toFixed() + ' Months';
+    if (month === 1) {
+      monthString = ' Month';
+    }
+    if (year === 0) {
+      return month + monthString;
+    }
+    if (month === 0) {
+      return year + yearString;
+    }
+    return month + monthString + ', ' + year + yearString;
   }
 
-  async newResume() {
-    const modal = await this.modalCtrl.create({
-      component: ProfileResumeComponent,
-      componentProps: {
-        inputUser: this.inputUser,
-        resumeIndex: -1
-      }
-    });
-    return await modal.present();
-  }
-
-  // async editResume(resumeEntry: ResumeEntry)
+  /***
+   * Method that opens a  Modal to edit a ResumeEntry
+   * @param resumeEntry is the Entry that will be edited
+   * error if the ResumeEntry is not the Entry of the user
+   *        the Modal  will not open and show a reject message
+   * success the  Modal will open with the selected Entry
+   */
   async editResume(resumeEntry: ResumeEntry) {
     if (this.allowChange) {
       const resumeIndex = this.user.resume.indexOf(resumeEntry);
@@ -80,6 +88,16 @@ export class CurriculumComponent implements OnInit {
     }
   }
 
+  /***
+   * This Method deletes a ResumeEntry
+   * @param resumIndex of the Entry that will be deleted
+   * The method checks if the User is allowed to delete the ResumeEntry
+   * if the user is allowed it opens a alert to double check
+   * if the User clicks 'Okay' the Entry will be deleted in the user updateUser()
+   * will be called
+   * error the user gets a error message
+   * success the Entry is deleted and the user is updated
+   */
   async deleteResume(resumIndex: number) {
     if (this.allowChange) {
       const alert = await this.alertController.create({

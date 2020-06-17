@@ -120,7 +120,8 @@ and name it after the functionality you are going to implement.
 ## Emulate on Android
 1. Download [Android Studio](https://developer.android.com/studio/)
 2. localhost (127.0.0.1) is your emulator not your local computer, so to access the node backend, you need to change
-the environment file to point to 10.0.2.2 instead
+the environment file to point to ``apiUrl: 'http://10.0.2.2:8080'`` instead
+3. If you get CORS issues, set ``ORIGIN_URL=http://localhost`` in your .env file
 2. After making changes in the source code run ``npx cap copy``
 3. Run ``npx cap open android`` to open android studio
 4. Setup a device emulator in ``AVD Manager``

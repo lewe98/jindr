@@ -7,7 +7,6 @@ import { PagesRoutingModule } from './pages.router.module';
 import { HomePage } from './home/home.page';
 import { SharedModule } from '../shared/shared.module';
 import { RouterModule } from '@angular/router';
-import { JobEditComponent } from './job/job-edit/job-edit.component';
 
 @NgModule({
   imports: [
@@ -19,7 +18,7 @@ import { JobEditComponent } from './job/job-edit/job-edit.component';
     RouterModule,
     ReactiveFormsModule
   ],
-  declarations: [HomePage, JobEditComponent],
+  declarations: [HomePage],
   exports: [SharedModule]
 })
 export class PagesModule {}

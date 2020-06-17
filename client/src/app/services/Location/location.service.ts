@@ -45,6 +45,7 @@ export class LocationService implements OnDestroy {
     this.presentLoader();
     try {
       const coordinates = await Geolocation.getCurrentPosition();
+      console.log(coordinates);
       this.currentPosition = {
         lat: coordinates.coords.latitude,
         lng: coordinates.coords.longitude
@@ -120,6 +121,46 @@ export class LocationService implements OnDestroy {
       } else {
         console.log('Geocoder failed due to: ' + status);
       }
+    });
+  }
+
+  async geocodePlaces(place): Promise<Coords> {
+    if (!place.place_id) {
+      return null;
+    }
+    return new Promise<Coords>((resolve) => {
+      this.geocoder.geocode({ placeId: place.place_id }, (results, status) => {
+        if (status !== 'OK') {
+          console.log('Geocoder failed due to: ' + status);
+          return null;
+        } else {
+          resolve({
+            lat: results[0].geometry.location.lat(),
+            lng: results[0].geometry.location.lng()
+          });
+        }
+      });
+    });
+  }
+
+  async reverseGeocode(coords): Promise<string> {
+    if (!coords) {
+      return;
+    }
+    return new Promise<string>((resolve) => {
+      this.geocoder.geocode({ location: coords }, (results, status) => {
+        if (status === 'OK') {
+          if (results[0]) {
+            results[0].address_components.forEach((adr) => {
+              if (adr.types[0] === 'locality') {
+                resolve(adr.long_name);
+              }
+            });
+          }
+        } else {
+          console.log('Geocoder failed due to: ' + status);
+        }
+      });
     });
   }
 

@@ -67,6 +67,14 @@ const userSchema = mongoose.Schema({
     resume: {
         type: [resumeSchema],
         default: []
+    },
+    notificationToken: {
+        type: String
+    },
+    interest: {
+        type: [mongoose.Schema.Types.Object],
+        ref: 'Interest',
+        default: []
     }
 });
 

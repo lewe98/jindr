@@ -1,8 +1,19 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ModalController, NavController } from '@ionic/angular';
+import { ModalController, NavController, Platform } from '@ionic/angular';
 import { AuthService } from '../../services/Auth/auth.service';
 import { User } from '../../../../interfaces/user';
 import { Subscription } from 'rxjs';
+import {
+  Plugins,
+  PushNotification,
+  PushNotificationToken,
+  PushNotificationActionPerformed
+} from '@capacitor/core';
+import { ToastService } from '../../services/Toast/toast.service';
+import { Router } from '@angular/router';
+import { AssetService } from '../../services/Asset/asset.service';
+
+const { PushNotifications } = Plugins;
 
 @Component({
   selector: 'app-home',
@@ -16,7 +27,11 @@ export class HomePage implements OnInit, OnDestroy {
   constructor(
     private navCtrl: NavController,
     private modalCtrl: ModalController,
-    private authService: AuthService
+    private authService: AuthService,
+    public platform: Platform,
+    private toastService: ToastService,
+    private router: Router,
+    private assetService: AssetService
   ) {}
 
   async ngOnInit() {
@@ -25,6 +40,8 @@ export class HomePage implements OnInit, OnDestroy {
         this.user = user;
       })
     );
+    this.registerPush();
+    this.assetService.getInterestsRoute();
   }
 
   ngOnDestroy(): void {
@@ -33,5 +50,42 @@ export class HomePage implements OnInit, OnDestroy {
         s.unsubscribe();
       }
     });
+  }
+
+  registerPush() {
+    if (this.platform.is('android')) {
+      PushNotifications.requestPermission().then((result) => {
+        if (result.granted) {
+          // Register with Apple / Google to receive push via APNS/FCM
+          PushNotifications.register();
+        }
+      });
+      PushNotifications.addListener(
+        'registration',
+        (token: PushNotificationToken) => {
+          this.authService.registerPushNotifications(token.value);
+        }
+      );
+
+      // Show us the notification payload if the app is open on our device
+      PushNotifications.addListener(
+        'pushNotificationReceived',
+        (notification: PushNotification) => {
+          this.toastService.presentNotification(
+            notification.title,
+            notification.body,
+            notification.link
+          );
+        }
+      );
+
+      // Method called when tapping on a notification
+      PushNotifications.addListener(
+        'pushNotificationActionPerformed',
+        (notification: PushNotificationActionPerformed) => {
+          this.router.navigate([notification.notification.link]);
+        }
+      );
+    }
   }
 }

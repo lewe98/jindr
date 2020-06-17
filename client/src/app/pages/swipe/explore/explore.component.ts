@@ -36,6 +36,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
   stackConfig: StackConfig;
   coordsSub: Subscription;
   coords: Coords;
+  interval;
   constructor(
     private routerService: RouterService,
     private swipeService: SwipeService,
@@ -84,6 +85,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
     this.cards = [];
     this.swipeService.getClientStack().then((res) => {
       this.cards = res;
+      this.pollJobs();
     });
   }
 
@@ -127,6 +129,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
           this.cards.push(res[0]);
         }
         this.cards.shift();
+        this.pollJobs();
       });
   }
 
@@ -144,6 +147,21 @@ export class ExploreComponent implements OnInit, OnDestroy {
       cardBehind.style.transform = `scale(1, 1)`;
     }
     this.makeDecision(true);
+  }
+
+  /**
+   * If no jobs are found, poll every 60 sec for new jobs
+   */
+  pollJobs() {
+    if (this.cards.length === 0) {
+      this.interval = setInterval(() => {
+        this.swipeService.getClientStack().then((res) => {
+          this.cards = res;
+        });
+      }, 60 * 1000);
+    } else if (this.interval) {
+      clearInterval(this.interval);
+    }
   }
 
   onDisliked() {
