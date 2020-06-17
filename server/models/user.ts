@@ -70,6 +70,11 @@ const userSchema = mongoose.Schema({
     },
     notificationToken: {
         type: String
+    },
+    interest: {
+        type: [mongoose.Schema.Types.Object],
+        ref: 'Interest',
+        default: []
     }
 });
 
