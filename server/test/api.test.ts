@@ -3,6 +3,7 @@ const server = require('../server.js');
 const app = server.app;
 const request = require('supertest');
 import {describe, it, expect, beforeAll, afterAll} from 'jest-without-globals'
+import { ObjectId } from 'mongodb';
 const nodemailer = require('nodemailer');
 const dbHandler = require('./database-handler');
 const User = require('../models/user');
@@ -21,6 +22,7 @@ let LOGGED_IN_USER;
 let JOB_ONE;
 let JOB_TWO;
 let JOBS_TO_LIKE;
+let GET_JOB_ID = '';
 /**
  * Connect to a new in-memory database before running any tests.
  */
@@ -376,9 +378,33 @@ describe('test create job', () => {
           }
         }
       });
+    GET_JOB_ID = res.body.data._id;
     expect(res.statusCode).toEqual(201);
     expect(res.body.message).toBe('Successfully created job');
     expect(res.body.data.tile).toEqual(122);
+    done();
+  });
+});
+
+describe('test get job by _id', () => {
+  it('it should get a Job by _id', async (done) => {
+    const res = await request(app)
+      .get('/get-job-by-id/' + GET_JOB_ID);
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.message).toBe('Job with _id = ' + GET_JOB_ID + ' found!');
+    done();
+  });
+  it('it should failed getting Job by _id', async (done) => {
+    GET_JOB_ID = String(new ObjectId("507f1f77bcf86cd799439011"));
+    const res = await request(app)
+      .get('/get-job-by-id/' + GET_JOB_ID);
+    expect(res.statusCode).toEqual(404);
+    done();
+  });
+  it('it should give an internal error', async (done) => {
+    const res = await request(app)
+      .get('/get-job-by-id/test');
+    expect(res.statusCode).toEqual(500);
     done();
   });
 });
