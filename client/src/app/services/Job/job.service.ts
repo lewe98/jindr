@@ -13,8 +13,7 @@ export class JobService {
     private databaseController: DatabaseControllerService,
     private toastService: ToastService,
     private authService: AuthService
-  ) {
-  }
+  ) {}
 
   /**
    * Method to create a Job
@@ -30,7 +29,15 @@ export class JobService {
    * resolves if the Job is successfully created in the Database
    * rejects if an error occurred
    */
-  createJob(title: string, description: string, date: Date, time: number, payment: number, location: Coords, image: string): Promise<any> {
+  createJob(
+    title: string,
+    description: string,
+    date: Date,
+    time: number,
+    payment: number,
+    location: Coords,
+    image: string
+  ): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const data = {
         job: {
@@ -72,6 +79,5 @@ export class JobService {
     });
   }
 
-  editJob() {
-  }
+  editJob() {}
 }

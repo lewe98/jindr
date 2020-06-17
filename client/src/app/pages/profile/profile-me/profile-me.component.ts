@@ -7,6 +7,7 @@ import { ImageService } from '../../../services/Image/image.service';
 import { ToastService } from '../../../services/Toast/toast.service';
 import { ProfileViewComponent } from '../profile-view/profile-view.component';
 import { LocationService } from '../../../services/Location/location.service';
+import { AssetService } from '../../../services/Asset/asset.service';
 
 @Component({
   selector: 'app-profile-me',
@@ -22,11 +23,13 @@ export class ProfileMeComponent implements OnInit {
     private authService: AuthService,
     public imageService: ImageService,
     private toastService: ToastService,
-    private locationService: LocationService
+    private locationService: LocationService,
+    private assetService: AssetService
   ) {}
 
   async ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
+    this.assetService.getInterestsRoute();
     this.location = this.locationService.location;
   }
 

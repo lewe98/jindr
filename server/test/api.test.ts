@@ -610,3 +610,5 @@ describe('repopulate backlog', () => {
     done();
   });
 });
+// TODO add interest to user
+// TODO check if jobs without this interest are added to backlog

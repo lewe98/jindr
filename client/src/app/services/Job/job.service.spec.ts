@@ -29,8 +29,10 @@ describe('JobService', () => {
     authSpy.getUser.and.returnValue(new User());
     TestBed.configureTestingModule({
       imports: [RouterTestingModule, HttpClientTestingModule],
-      providers: [{ provide: DatabaseControllerService, useValue: databaseSpy },
-        { provide: AuthService, useValue: authSpy }]
+      providers: [
+        { provide: DatabaseControllerService, useValue: databaseSpy },
+        { provide: AuthService, useValue: authSpy }
+      ]
     });
     service = TestBed.inject(JobService);
   });
@@ -41,11 +43,20 @@ describe('JobService', () => {
 
   describe('Method tests', () => {
     it('should create a Job', (done) => {
-      service.createJob('Test', 'test123', new Date(2012), 8, 12, new Coords(), './img.jpg').then(async () => {
-        expect(databaseSpy.postRequest).toHaveBeenCalledWith(
-          'create-job',
-          JSON.stringify(
-            {
+      service
+        .createJob(
+          'Test',
+          'test123',
+          new Date(2012),
+          8,
+          12,
+          new Coords(),
+          './img.jpg'
+        )
+        .then(async () => {
+          expect(databaseSpy.postRequest).toHaveBeenCalledWith(
+            'create-job',
+            JSON.stringify({
               job: {
                 title: 'Test',
                 description: 'test123',
@@ -56,12 +67,11 @@ describe('JobService', () => {
                 location: new Coords(),
                 image: './img.jpg'
               }
-            }
-          ),
-          Job
-        );
-        done();
-      });
+            }),
+            Job
+          );
+          done();
+        });
     });
     it('should get a by id Job', (done) => {
       service.getJobById('test123').then(async () => {
