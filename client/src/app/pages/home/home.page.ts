@@ -49,7 +49,7 @@ export class HomePage implements OnInit, OnDestroy {
       })
     );
     this.registerPush();
-    this.assetService.getInterestsRoute();
+    this.assetService.setInterests();
   }
 
   ngOnDestroy(): void {

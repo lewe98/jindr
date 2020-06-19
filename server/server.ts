@@ -866,19 +866,6 @@ app.post('/create-job', (req: Request, res: Response) => {
 });
 
 /**
- * sends all interests of the interests.json to the client
- */
-app.get('/interests', (req: Request, res: Response) => {
-  const rawdata = fs.readFileSync('./assets/interests.json');
-  const interests = JSON.parse(rawdata);
-
-  res.status(200).send({
-    message: 'Successfully logged in',
-    data: interests
-  });
-});
-
-/**
  * @api {get} /get-job-by-id Gets a Job by its _id
  * @apiName GetJobById
  * @apiGroup Job
