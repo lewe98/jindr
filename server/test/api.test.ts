@@ -1,4 +1,5 @@
 const server = require('../server.js');
+const helper = require('./helper');
 const app = server.app;
 const request = require('supertest');
 import {describe, it, expect, beforeAll, afterAll} from 'jest-without-globals'
@@ -348,35 +349,14 @@ describe('Reset password', () => {
 
 describe('test create job', () => {
   it('should fail if user is outside of supported area', async (done) => {
-    const res = await request(app)
-      .post('/create-job')
-      .send({
-        job: {
-            location: {
-            lat: 49.94484531666043,
-            lng: 5.048706257591307
-          }
-        }
-      });
+    const res = await helper.createJob("5ee24164c71c594a94003ea3",  { lat: 50.94484531666043, lng: 5.048706257591307 }, []);
     expect(res.statusCode).toEqual(400);
     expect(res.body.message).toBe('Your country is currently not supported.');
     done();
   });
 
   it('should create if all required fields are filled', async (done) => {
-    const res = await request(app)
-      .post('/create-job')
-      .send({
-        job: {
-          title: "erster job",
-          description: "test123",
-          creator: "5ee24164c71c594a94003ea3",
-          location: {
-            lat: 51.3260435992175,
-            lng: 9.72345094553722
-          }
-        }
-      });
+    const res = await helper.createJob("5ee24164c71c594a94003ea3", { lat: 51.3260435992175, lng: 9.72345094553722}, []);
     GET_JOB_ID = res.body.data._id;
     expect(res.statusCode).toEqual(201);
     expect(res.body.message).toBe('Successfully created job');
@@ -476,19 +456,7 @@ describe('test edit job', () => {
 describe('test clientJob stack', () => {
   it('should get all jobs in the radius, if there are less than clientStack size', async (done) => {
     for (let i = 0; i < 4; i++) {
-      await request(app)
-        .post('/create-job')
-        .send({
-          job: {
-            title: "erster job",
-            description: "test123",
-            creator: "5ee24164c71c594a94003ea3",
-            location: {
-              lat: 51.3260435992175,
-              lng: 9.72345094553722
-            }
-          }
-        });
+      await helper.createJob("5ee24164c71c594a94003ea3", { lat: 51.3260435992175, lng: 9.72345094553722 }, []);
     }
     const res = await request(app)
       .put('/job-stack')
@@ -507,19 +475,7 @@ describe('test clientJob stack', () => {
       done();
   });
   it('should not get jobs outside of the specified radius', async (done) => {
-    await request(app)
-      .post('/create-job')
-      .send({
-        job: {
-          title: "distance > radius",
-          description: "test123",
-          creator: "5ee24164c71c594a94003ea3",
-          location: {
-            lat: 51.5260435992175,
-            lng: 9.72345094553722
-          }
-        }
-      });
+    await helper.createJob("5ee24164c71c594a94003ea3", { lat: 51.5260435992175, lng: 9.72345094553722}, []);
     const res2 = await request(app)
       .get('/jobstack/' + USER_ONE._id)
       .send();
@@ -594,19 +550,7 @@ describe('test dislike job', () => {
 describe('test serverStack', () => {
   it('should fill the client stack and server stack', async (done) => {
     for (let i = 0; i < 35; i++) {
-      await request(app)
-        .post('/create-job')
-        .send({
-          job: {
-            title: "job",
-            description: "test123",
-            creator: "5ee24164c71c594a94003ea3",
-            location: {
-              lat: 51.3260435992175,
-              lng: 9.72345094553722
-            }
-          }
-        });
+      await helper.createJob("5ee24164c71c594a94003ea3", { lat: 51.3260435992175, lng: 9.72345094553722}, []);
     }
     const jobStackTest = await request(app)
       .put('/job-stack')
@@ -674,5 +618,54 @@ describe('repopulate backlog', () => {
     done();
   });
 });
-// TODO add interest to user
-// TODO check if jobs without this interest are added to backlog
+describe('interest add and backlog test', () => {
+  it('should add an interest to the user', async (done) => {
+    USER_ONE.interest.push({id: 0, title: 'Gardening'}, {id: 1, title: 'Sleeping'});
+    const res = await request(app)
+      .put('/update-user')
+      .send({user: USER_ONE});
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.data.interest.length).toEqual(2);
+    done();
+  });
+  it('should not find any job for the backlog', async (done) => {
+    await request(app)
+      .put('/update-backlog')
+      .send({
+        user: USER_ONE,
+        coords: {
+          lat: 51.3260435992175,
+          lng: 9.72345094553722
+        }
+      });
+    const res = await request(app)
+      .get('/jobstack/' + USER_ONE._id)
+      .send();
+    expect(res.body.data.clientStack.length).toEqual(10);
+    expect(res.body.data.serverStack.length).toEqual(0);
+    expect(res.body.data.backLog.length).toEqual(0);
+    done();
+  });
+  it('should find jobs with the same interest', async (done) => {
+    for (let i = 0; i < 3; i++) {
+      await helper.createJob("5ee24164c71c594a94003ea3", { lat: 51.3260435992175, lng: 9.72345094553722 }, [{id: 0, title: 'Gardening'}]);
+    }
+    await helper.createJob("5ee24164c71c594a94003ea3", { lat: 51.3260435992175, lng: 9.72345094553722 }, [{id: 3, title: 'Blabla'}]);
+    await request(app)
+      .put('/update-backlog')
+      .send({
+        user: USER_ONE,
+        coords: {
+          lat: 51.3260435992175,
+          lng: 9.72345094553722
+        }
+      });
+    const res = await request(app)
+      .get('/jobstack/' + USER_ONE._id)
+      .send();
+    expect(res.body.data.clientStack.length).toEqual(10);
+    expect(res.body.data.serverStack.length).toEqual(3);
+    expect(res.body.data.backLog.length).toEqual(0);
+    done();
+  });
+});

@@ -59,7 +59,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
     this.initPosition();
     this.locationService.$mapReady.subscribe((isReady) => {
       if (isReady) {
-        this.locationService.getCurrentPosition();
+        // this.locationService.getCurrentPosition();
       }
     });
   }

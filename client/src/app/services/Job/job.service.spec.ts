@@ -52,29 +52,25 @@ describe('JobService', () => {
       job.image = './img.jpg';
       job.payment = 12;
       job.time = 8;
-      service
-        .createJob(
-        job
-        )
-        .then(async () => {
-          expect(databaseSpy.postRequest).toHaveBeenCalledWith(
-            'create-job',
-            JSON.stringify({
-              job: {
-                title: 'Test',
-                description: 'test123',
-                date: new Date(2012),
-                location: new Coords(),
-                image: './img.jpg',
-                payment: 12,
-                time: 8,
-                creator: authSpy.getUser,
-              }
-            }),
-            Job
-          );
-          done();
-        });
+      service.createJob(job).then(async () => {
+        expect(databaseSpy.postRequest).toHaveBeenCalledWith(
+          'create-job',
+          JSON.stringify({
+            job: {
+              title: 'Test',
+              description: 'test123',
+              date: new Date(2012),
+              location: new Coords(),
+              image: './img.jpg',
+              payment: 12,
+              time: 8,
+              creator: authSpy.getUser
+            }
+          }),
+          Job
+        );
+        done();
+      });
     });
     it('should get a by id Job', (done) => {
       service.getJobById('test123').then(async () => {
@@ -92,7 +88,10 @@ describe('JobService', () => {
     it('should edit a Job', (done) => {
       service.editJob(editedJob).then(async () => {
         expect(databaseSpy.putRequest).toHaveBeenCalledWith(
-          'edit-job/' + editedJob._id, JSON.stringify({job: editedJob}), Job);
+          'edit-job/' + editedJob._id,
+          JSON.stringify({ job: editedJob }),
+          Job
+        );
         done();
       });
     });

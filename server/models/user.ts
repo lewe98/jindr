@@ -75,6 +75,13 @@ const userSchema = mongoose.Schema({
         type: [mongoose.Schema.Types.Object],
         ref: 'Interest',
         default: []
+    },
+    coordinates: {
+        type: {lat: Number, lng: Number}
+    },
+    locateMe: {
+        type: Boolean,
+        default: true
     }
 });
 

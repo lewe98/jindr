@@ -796,9 +796,8 @@ app.put('/job-stack', async (req: Request, res: Response) => {
   }
   jobStack = await fillStack(jobStack, user, coords);
   // since findMany does not preserve order, we need to look them up one by one
-  let jobIDs;
   let jobs = [];
-  jobIDs =
+  const jobIDs =
     jobStack.clientStack.length > 3
       ? jobStack.clientStack.splice(0, 3)
       : jobStack.clientStack.splice(0, jobStack.clientStack.length);
@@ -899,7 +898,7 @@ app.get('/interests', (req: Request, res: Response) => {
 app.get('/get-job-by-id/:_id', async (req: Request, res: Response) => {
   try {
     const _id: string = req.params._id;
-    let job = await Job.findOne({ _id });
+    const job = await Job.findOne({ _id });
     if (job) {
       res.status(200).send({
         message: 'Job with _id = ' + _id + ' found!',
@@ -949,7 +948,7 @@ app.get('/get-job-by-id/:_id', async (req: Request, res: Response) => {
  *     }
  */
 app.put('/edit-job/:id', (req: Request, res: Response) => {
-  let job = new Job();
+  const job = new Job();
   Object.assign(job, req.body.job);
 
   const tile = findTile(germanTiles, job.location);
@@ -1032,9 +1031,11 @@ async function sendPushNotification(
   const users = await User.find().where('_id').in(userIDs).exec();
   if (users) {
     users.forEach((user) => {
-      admin
-        .messaging()
-        .sendToDevice(user.notificationToken, payload, notificationOptions);
+      if (user.allowNotifications) {
+        admin
+          .messaging()
+          .sendToDevice(user.notificationToken, payload, notificationOptions);
+      }
     });
   }
 }
@@ -1238,7 +1239,7 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
         foundJobs.push(job._id);
       } else {
         const commonInterests = _.intersectionWith(
-          job.interest,
+          job.interests,
           user.interest,
           _.isEqual
         );
