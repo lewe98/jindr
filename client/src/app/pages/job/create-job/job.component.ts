@@ -28,6 +28,8 @@ export class JobComponent implements OnInit {
   job: Job = new Job();
   date: Date;
 
+  edit = false;
+
   GoogleAutocomplete: google.maps.places.AutocompleteService;
   autocomplete: { input: string };
   autocompleteItems: any[];
@@ -53,14 +55,7 @@ export class JobComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    Object.assign(this.job); // TODO @Julian, hier muss dann dein job ausgelesen werden bei edit
-    this.tempInterests = this.assetService.getInterests();
-    this.interests = this.tempInterests?.map((i) => {
-      return i.title;
-    });
-    this.jobInterests = this.job.interests?.map((i) => {
-      return i.title;
-    });
+
     this.createForm = new FormGroup({
       title: new FormControl(this.job.title, Validators.required),
       description: new FormControl(this.job.description, Validators.required),
@@ -72,12 +67,47 @@ export class JobComponent implements OnInit {
       location: new FormControl(this.job.location),
       selectedOption: new FormControl('total')
     });
+
+    if (document.location.href.includes('/pages/job/edit/')) {
+      this.edit = true;
+      const id = document.location.pathname.replace('/pages/job/edit/', '');
+      this.jobService.getJobById(id)
+        .then((res) => {
+          Object.assign(this.job, res);
+          this.createForm.controls.title.reset(this.job.title);
+          this.createForm.controls.description.reset(this.job.description);
+          this.createForm.controls.payment.reset(this.job.payment);
+          this.createForm.controls.homepage.reset(this.job.homepage);
+          this.createForm.controls.interests.reset(this.job.interests);
+
+          // TODO: - Vollständigen Wert / Location auslesen
+          this.createForm.controls.searchbar.reset(this.job.cityName);
+
+          // TODO: - Werte auslesen
+          this.createForm.controls.selectedOption.reset(this.job.isHourly);
+          this.createForm.controls.date.reset(this.job.date);
+          this.createForm.controls.time.reset(this.job.time);
+
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err, 'Error!');
+        });
+    }
+
+    this.tempInterests = this.assetService.getInterests();
+    this.interests = this.tempInterests?.map((i) => {
+      return i.title;
+    });
+    this.jobInterests = this.job.interests?.map((i) => {
+      return i.title;
+    });
+
     this.GoogleAutocomplete = new google.maps.places.AutocompleteService();
     this.autocomplete = { input: '' };
     this.autocompleteItems = [];
   }
 
-  selectDOB(event) {
+  selectDate(event) {
     this.date = event.detail.value;
   }
 
@@ -157,5 +187,35 @@ export class JobComponent implements OnInit {
       .catch((err) => {
         this.toastService.presentWarningToast(err.message, 'Error!');
       });
+  }
+
+  editJob() {
+    this.job.title = this.createForm.controls.title.value;
+    this.job.description = this.createForm.controls.description.value;
+    this.job.date = this.date;
+    this.job.time = this.createForm.controls.time.value;
+    this.job.payment = this.createForm.controls.payment.value;
+    this.job.homepage = this.createForm.controls.homepage.value;
+    this.job.location = this.coords;
+    this.job.isHourly =
+      this.createForm.controls.selectedOption.value !== 'total';
+    this.job.image = this.image;
+    this.job.cityName = this.cityName;
+    this.job.interests = [];
+    this.createForm.controls.interests.value.forEach((int) => {
+      this.job.interests.push(this.tempInterests.find((i) => int === i.title));
+    });
+
+    this.jobService
+      .editJob(this.job)
+      .then(() => {
+        this.toastService.presentToast('Job updated.');
+        this.router.navigate(['pages']);
+      })
+      .catch((err) => {
+        this.toastService.presentWarningToast(err.message, 'Error!');
+      });
+
+    this.edit = false;
   }
 }

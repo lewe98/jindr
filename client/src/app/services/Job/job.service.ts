@@ -22,9 +22,7 @@ export class JobService {
    */
   createJob(job: Job): Promise<any> {
     return new Promise<any>((resolve, reject) => {
-      const data = {
-        job
-      };
+      const data = { job };
       this.databaseController
         .postRequest('create-job', JSON.stringify(data), Job)
         .then((res) => {
@@ -44,7 +42,7 @@ export class JobService {
         .getRequest('get-job-by-id/' + id, '', Job)
         .then((res) => {
           this.toastService.presentToast(res.message);
-          resolve(res.job);
+          resolve(res.data);
         })
         .catch((err) => {
           this.toastService.presentWarningToast(err.errors, err.message + ': ');
@@ -67,7 +65,7 @@ export class JobService {
         .putRequest('edit-job/' + job._id, JSON.stringify(data), Job)
         .then((res) => {
           this.toastService.presentToast(res.message);
-          resolve();
+          resolve(res.data);
         })
         .catch((err) => {
           this.toastService.presentWarningToast(

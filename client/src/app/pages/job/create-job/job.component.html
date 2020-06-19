@@ -1,6 +1,9 @@
 <ion-header>
     <ion-toolbar class="toolbar-no-border">
-        <ion-title>Create Job</ion-title>
+
+        <ion-title *ngIf="edit">Edit Job</ion-title>
+        <ion-title *ngIf="!edit">Create Job</ion-title>
+
         <ion-buttons slot="start">
             <ion-back-button defaultHref="pages"></ion-back-button>
         </ion-buttons>
@@ -18,6 +21,11 @@
             </ion-button>
         </ion-avatar>
     </div>
+
+    <ion-item lines="none">
+        <ion-label>Mark job as finished</ion-label>
+        <ion-toggle color="primary" [(ngModel)]="job.isFinished"></ion-toggle>
+    </ion-item>
 
     <form [formGroup]="createForm">
         <ion-list class="list-custom list-general">
@@ -121,7 +129,7 @@
                 <!--Enddatum/Zeit datepicker/picker-->
                 <ion-item lines="none" id="startDate">
                     <ion-label>Date</ion-label>
-                    <ion-datetime (click)="scrollToTop('startDate')" [value]="job.date | date: 'dd.MM.yyyy'" (ionChange)="selectDOB($event)"
+                    <ion-datetime (click)="scrollToTop('startDate')" [value]="job.date | date: 'dd.MM.yyyy'" (ionChange)="selectDate($event)"
                                   displayFormat="DD.MM.YYYY" placeholder="Select Date"></ion-datetime>
                 </ion-item>
             <ion-list-header>
@@ -138,7 +146,11 @@
 </ion-content>
 
 <ion-footer>
-    <ion-button [disabled]="!createForm.valid || !coords || !date" type="button" expand="full" fill="solid" color="primary"
-                (click)="createJob()">RELEASE
+    <ion-button *ngIf="edit" [disabled]="!createForm.valid || !coords || !date" type="button" expand="full" fill="solid"
+                color="primary" (click)="editJob()">SUBMIT CHANGES
+    </ion-button>
+
+    <ion-button *ngIf="!edit" [disabled]="!createForm.valid || !coords || !date" type="button" expand="full"
+                fill="solid" color="primary" (click)="createJob()">RELEASE
     </ion-button>
 </ion-footer>

@@ -962,7 +962,6 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
 
   job.tile = tile;
 
-  // if (mongoose.Types.ObjectId.isValid(job._id)) {}
   Job.findOne({ _id: req.params.id }).exec(async (err) => {
     if (err) {
       res.status(404).send({
@@ -972,18 +971,24 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
       await Job.findOneAndUpdate(
         { _id: job._id },
         {
+          isFinished: job.isFinished,
+          image: job.image,
           title: job.title,
           description: job.description,
-          date: job.date,
-          time: job.time,
+          payment: job.payment,
+          isHourly: job.isHourly,
+          homepage: job.homepage,
+          interests: job.interests,
           tile: job.tile,
           location: job.location,
-          isFinished: job.isFinished,
-          payment: job.payment
+          cityName: job.cityName,
+          date: job.date,
+          time: job.time
         }
       );
       res.status(200).send({
-        message: 'Successfully updated job.'
+        message: 'Successfully updated job.',
+        data: job
       });
     }
   });
