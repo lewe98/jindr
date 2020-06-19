@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { DatabaseControllerService } from '../DatabaseController/database-controller.service';
 import { Interest } from '../../../../interfaces/interest';
 import data from '../../../assets/interests.json';
 
