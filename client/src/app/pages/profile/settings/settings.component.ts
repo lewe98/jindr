@@ -75,6 +75,7 @@ export class SettingsComponent implements OnInit {
           }
           if (this.user.distance !== this.distance) {
             this.swipeService.updateBacklog();
+            this.locationService.radiusChanged();
           }
         })
         .catch((err) => {

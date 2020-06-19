@@ -12,6 +12,7 @@ import {
 import { ToastService } from '../../services/Toast/toast.service';
 import { Router } from '@angular/router';
 import { AssetService } from '../../services/Asset/asset.service';
+import { LocationService } from '../../services/Location/location.service';
 
 const { PushNotifications } = Plugins;
 
@@ -24,6 +25,7 @@ export class HomePage implements OnInit, OnDestroy {
   user: User = new User();
   sub: Subscription[] = [];
   jobs = 14;
+  accuracy;
   constructor(
     private navCtrl: NavController,
     private modalCtrl: ModalController,
@@ -31,13 +33,19 @@ export class HomePage implements OnInit, OnDestroy {
     public platform: Platform,
     private toastService: ToastService,
     private router: Router,
-    private assetService: AssetService
+    private assetService: AssetService,
+    private locationService: LocationService
   ) {}
 
   async ngOnInit() {
     this.sub.push(
       this.authService.user$.subscribe((user) => {
         this.user = user;
+      })
+    );
+    this.sub.push(
+      this.locationService.accuracySubscription?.subscribe((acc) => {
+        this.accuracy = acc;
       })
     );
     this.registerPush();
