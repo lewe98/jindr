@@ -19,18 +19,23 @@ export class LocationService implements OnDestroy {
   location = 'unknown';
   geocoder = new google.maps.Geocoder();
   currentPosition: Coords;
+  accuracy = { text: 'Getting location...', color: 'orange' };
   private httpClient: HttpClient;
-  public $mapReady: EventEmitter<any> = new EventEmitter();
+  public $radiusChanged: EventEmitter<any> = new EventEmitter();
   coords: Coords = { lat: 50.05, lng: 8.8 };
   user: User;
   isApiFallback = false;
-  private coordsSubject: BehaviorSubject<Coords> = new BehaviorSubject<Coords>(
+  private accuracySubject: BehaviorSubject<any> = new BehaviorSubject<any>(
+    this.accuracy
+  );
+  coordsSubject: BehaviorSubject<Coords> = new BehaviorSubject<Coords>(
     this.coords
   );
   /**
    * Subscribe to this to get live coordinates on location change
    */
   public coordsSubscription = this.coordsSubject.asObservable();
+  public accuracySubscription = this.accuracySubject.asObservable();
   constructor(
     public ngZone: NgZone,
     private toastService: ToastService,
@@ -47,8 +52,11 @@ export class LocationService implements OnDestroy {
 
   async init() {
     await this.createLoader();
-    this.$mapReady.emit(true);
     this.startLocating();
+  }
+
+  radiusChanged() {
+    this.$radiusChanged.emit(true);
   }
 
   getUser() {
@@ -66,12 +74,14 @@ export class LocationService implements OnDestroy {
       this.watchPosition();
     } else {
       if (this.user?.coordinates) {
+        this.accuracySubject.next({ text: 'Fixed location', color: 'green' });
         this.coords = this.user?.coordinates;
         this.coordsSubject.next(this.coords);
         this.reverseGeocode(this.coords).then((res) => {
           this.location = res;
         });
       } else {
+        this.accuracySubject.next({ text: 'No location', color: 'red' });
         this.presentAlertConfirm(
           'You have disabled our locating service. Please enable it or set' +
             ' your current location manually in your settings.'
@@ -126,6 +136,7 @@ export class LocationService implements OnDestroy {
       (position) => {
         this.ngZone.run(async () => {
           if (position && position.coords.accuracy < 100) {
+            this.accuracySubject.next({ text: 'GPS', color: 'green' });
             this.dismissLoader();
             this.coords = {
               lat: position?.coords.latitude,
@@ -151,7 +162,7 @@ export class LocationService implements OnDestroy {
             /**
              * If geolocation failed, or if not accurate enough, try locating with IP Api fallback
              */
-            if (!this.isApiFallback) {
+            if (!this.isApiFallback && !this.coords) {
               this.useIpApiFallback();
             }
           }
@@ -159,28 +170,27 @@ export class LocationService implements OnDestroy {
       }
     );
   }
-
+  // http://api.ipapi.com/api/check?access_key=${environment.ipapiApi}
+  // free: https://ipapi.co/json/
   useIpApiFallback() {
-    this.httpClient
-      .get<Location>(
-        `http://api.ipapi.com/api/check?access_key=${environment.ipapiApi}`
-      )
-      .subscribe(
-        (sub) => {
-          this.dismissLoader();
-          this.isApiFallback = true;
-          this.location = sub.city;
-          this.coords = { lat: sub.latitude, lng: sub.longitude };
-          this.coordsSubject.next(this.coords);
-        },
-        () => {
-          this.presentAlertConfirm(
-            'We were unable to locate you. Please make sure your' +
-              ' GPS is enabled and permission is granted, or set your current position' +
-              ' manually in your settings.'
-          );
-        }
-      );
+    this.httpClient.get<Location>(`https://freegeoip.app/json/`).subscribe(
+      (sub) => {
+        this.dismissLoader();
+        this.isApiFallback = true;
+        this.location = sub.city;
+        this.accuracySubject.next({ text: 'Low accuracy', color: 'orange' });
+        this.coords = { lat: sub.latitude, lng: sub.longitude };
+        this.coordsSubject.next(this.coords);
+      },
+      () => {
+        this.accuracySubject.next({ text: 'No location', color: 'red' });
+        this.presentAlertConfirm(
+          'We were unable to locate you. Please make sure your' +
+            ' GPS is enabled and permission is granted, or set your current position' +
+            ' manually in your settings.'
+        );
+      }
+    );
   }
 
   async createLoader() {

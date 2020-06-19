@@ -12,9 +12,9 @@
                 <tspan x="-9" y="0">{{user?.distance}} km</tspan>
             </text>
             <ion-icon name="search-outline"></ion-icon>
-            <text id="_15_Jobs_" data-name="􀎜 15 Jobs " class="cls-2" transform="translate(188 147)">
+            <text id="_15_Jobs_" data-name="􀎜 15 Jobs " class="cls-2" [ngClass]="accuracy?.color" transform="translate(188 147)">
                 <tspan x="-45.209" y="0" ><ion-icon name="search-outline"></ion-icon></tspan>
-                <tspan x="-25" y="0">{{jobs}} Jobs</tspan>
+                <tspan x="-30" y="0">{{accuracy?.text}}</tspan>
             </text>
         </g>
     </svg>

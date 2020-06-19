@@ -5,6 +5,19 @@ ion-content {
   --background: url(../../../assets/images/Background1024.svg) no-repeat center/cover fixed;
 }
 
+.green {
+  fill: var(--ion-color-success-shade)!important;
+}
+
+.red {
+  fill: var(--ion-color-danger)!important;
+}
+
+.orange {
+  fill: var(--ion-color-warning)!important;
+  text-align: center;
+}
+
 #map_overlay {
   pointer-events: none;
   position: absolute;
