@@ -28,6 +28,10 @@ export class ProfileMeComponent implements OnInit {
   async ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
     this.location = this.locationService.location;
+    if (history.state && history.state.location === 'Unknown') {
+      this.location = history.state.location;
+      this.viewSettings();
+    }
   }
 
   async viewProfile() {

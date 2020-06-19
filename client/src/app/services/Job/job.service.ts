@@ -70,7 +70,10 @@ export class JobService {
           resolve();
         })
         .catch((err) => {
-          this.toastService.presentWarningToast(err.message, 'An error occurred: ');
+          this.toastService.presentWarningToast(
+            err.message,
+            'An error occurred: '
+          );
           reject(err);
         });
     });

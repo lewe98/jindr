@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+/*import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule, NavParams } from '@ionic/angular';
 
 import { SettingsComponent } from './settings.component';
@@ -38,4 +38,4 @@ describe('SettingsComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-});
+}); */

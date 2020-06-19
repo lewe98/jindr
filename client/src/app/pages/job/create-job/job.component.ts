@@ -31,8 +31,6 @@ export class JobComponent implements OnInit {
   GoogleAutocomplete: google.maps.places.AutocompleteService;
   autocomplete: { input: string };
   autocompleteItems: any[];
-  location: any;
-  placeid: any;
   coords: Coords;
   image = './assets/images/job.png';
   tempInterests: Interest[] = [];
@@ -91,7 +89,7 @@ export class JobComponent implements OnInit {
     }
     this.GoogleAutocomplete.getPlacePredictions(
       { input: this.autocomplete.input },
-      (predictions, status) => {
+      (predictions) => {
         this.autocompleteItems = [];
         this.ngZone.run(() => {
           predictions.forEach((prediction) => {
@@ -114,11 +112,9 @@ export class JobComponent implements OnInit {
   }
 
   async selectSearchResult(item) {
-    this.location = item;
-    this.createForm.controls.searchbar.setValue(this.location.description);
+    this.createForm.controls.searchbar.setValue(item.description);
     this.autocompleteItems = [];
-    this.placeid = this.location.place_id;
-    this.locationService.geocodePlaces(this.location).then((res) => {
+    this.locationService.geocodePlaces(item).then((res) => {
       this.coords = res;
       this.locationService.reverseGeocode(this.coords).then((city) => {
         this.cityName = city;
