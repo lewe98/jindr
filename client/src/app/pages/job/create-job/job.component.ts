@@ -189,6 +189,12 @@ export class JobComponent implements OnInit {
       });
   }
 
+  /**
+   * Method to pass values to the editJob method in job.service.ts
+   * status message is reported by ToastService
+   * resolves if the job is successfully updated in database
+   * rejects if an error occurred
+   */
   editJob() {
     this.job.title = this.createForm.controls.title.value;
     this.job.description = this.createForm.controls.description.value;

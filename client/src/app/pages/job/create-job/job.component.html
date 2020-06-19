@@ -22,7 +22,7 @@
         </ion-avatar>
     </div>
 
-    <ion-item lines="none">
+    <ion-item *ngIf="edit" lines="none">
         <ion-label>Mark job as finished</ion-label>
         <ion-toggle color="primary" [(ngModel)]="job.isFinished"></ion-toggle>
     </ion-item>
