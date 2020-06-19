@@ -34,6 +34,7 @@
     <ion-item lines="none">
       <ion-textarea maxlength="400" rows="3" auto-grow="true" type="text" spellcheck="true" autocapitalize="on" formControlName="aboutMe"></ion-textarea>
     </ion-item>
+    <!--This *ngIf counts the characters of the text area and calculates the remaining characters.-->
     <ion-item lines="none" *ngIf="editForm.controls.aboutMe.value">
       <ion-note slot="end">
         {{ 400 - editForm.controls.aboutMe.value.length }}

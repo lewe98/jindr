@@ -63,7 +63,13 @@ export class ProfileEditComponent implements OnInit {
     this.changedInterests = true;
   }
 
-  /* Save the changed user data.*/
+  /***
+   * Method that saves changed profile contents
+   * @modifies the profile contents (dateOfBirth, firstName, lastName, aboutMe, Interests)
+   * @throws a subtle success notification if the profile has been changed successfully.
+   *         a subtle error notification if the profile has been not changed successfully.
+   * @post After successful editing you will be redirected to the profile page.
+   * */
   save() {
     this.user.dateOfBirth = new Date(this.date).getTime();
     this.user.firstName = this.editForm.controls.firstName.value;

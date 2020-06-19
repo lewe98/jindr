@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar class="toolbar-no-border">
+    <ion-buttons slot="end">
+      <ion-button color="danger" (click)="close()">
+        Close
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="view-enumeration">
+  <ion-card>
+    <ion-avatar style="margin-top: 1rem; width: 200px; height: 200px" class="avatar">
+      <app-aspect-ratio  [ratio]="{w:1 ,h:1}">
+        <app-image-shell class="user-image" [src]="data?.image"></app-image-shell>
+      </app-aspect-ratio>
+    </ion-avatar>
+
+    <ion-card-title><ion-icon name="location-outline"></ion-icon>{{data?.title}}, {{data?.cityName}}</ion-card-title>
+    <ion-card-content *ngIf="data.date" >Start Date: {{data?.date | date: 'dd.MM.yy'}}</ion-card-content>
+
+    <ion-card-subtitle>Working hours</ion-card-subtitle>
+    <ion-card-content *ngIf="data.time">{{data?.time}} h</ion-card-content>
+
+    <ion-card-subtitle>Payment</ion-card-subtitle>
+    <ion-card-content *ngIf="!data.isHourly">{{data?.payment}} €</ion-card-content>
+    <ion-card-content *ngIf="data.isHourly">{{data?.payment}} €/h</ion-card-content>
+
+    <ion-card-subtitle>Description</ion-card-subtitle>
+    <ion-card-content *ngIf="data.description">{{data?.description}}</ion-card-content>
+
+    <ion-card-subtitle *ngIf="data.homepage">Homepage</ion-card-subtitle>
+    <ion-card-content>{{data?.homepage}}</ion-card-content>
+
+    <ion-card-subtitle *ngIf="data?.interests">Interests</ion-card-subtitle>
+    <ion-card-content>
+      <ion-chip *ngFor="let Interest of data?.interests;" color="medium" >
+        <ion-label>{{interests[Interest.id]['title']}}</ion-label>
+      </ion-chip>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
