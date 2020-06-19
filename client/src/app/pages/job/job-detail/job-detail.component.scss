@@ -1,0 +1,34 @@
+@import '../../../../sass/helper.scss';
+
+app-image-shell.user-image {
+  --image-shell-border-radius: 50%;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  display: inline-block;
+  margin: auto;
+}
+
+.view-enumeration {
+  height: auto;
+  text-align: center;
+
+}
+
+ion-card{
+  --ion-background-color: white;
+  ion-card-title{
+    font-size: 26px;
+    color: black;
+  }
+  ion-card-subtitle{
+    font-size: 20px;
+    color: black;
+  }
+  ion-card-content{
+    font-size: 16px;
+    color: black;
+  }
+}

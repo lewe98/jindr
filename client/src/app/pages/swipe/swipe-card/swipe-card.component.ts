@@ -4,6 +4,8 @@ import {
   Coords,
   LocationService
 } from '../../../services/Location/location.service';
+import { JobDetailComponent } from '../../job/job-detail/job-detail.component';
+import { ModalController, NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-swipe-card',
@@ -17,7 +19,11 @@ export class SwipeCardComponent implements OnInit {
   @Output() viewInfo = new EventEmitter();
   distance: number;
 
-  constructor(private locationService: LocationService) {}
+  constructor(
+    private locationService: LocationService,
+    private navCtrl: NavController,
+    private modalCtrl: ModalController
+  ) {}
 
   ngOnInit() {
     if (this.coords) {
@@ -31,7 +37,11 @@ export class SwipeCardComponent implements OnInit {
     }
   }
 
-  handleViewInfo() {
-    this.viewInfo.emit();
+  async handleViewInfo() {
+    const modal = await this.modalCtrl.create({
+      component: JobDetailComponent,
+      componentProps: { job: this.data }
+    });
+    return await modal.present();
   }
 }
