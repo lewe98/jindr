@@ -34,6 +34,7 @@
     <ion-item lines="none">
       <ion-textarea maxlength="400" rows="3" auto-grow="true" type="text" spellcheck="true" autocapitalize="on" formControlName="aboutMe"></ion-textarea>
     </ion-item>
+    <!--This *ngIf counts the characters of the text area and calculates the remaining characters.-->
     <ion-item lines="none" *ngIf="editForm.controls.aboutMe.value">
       <ion-note slot="end">
         {{ 400 - editForm.controls.aboutMe.value.length }}
@@ -41,6 +42,14 @@
     </ion-item>
   </ion-list>
   </form>
+
+  <ion-item>
+    <ion-label>Interests</ion-label>
+    <ion-select (ionChange)="changedInterest()"  [(ngModel)]="userInterests"  multiple="true" cancelText="cancel" okText="ok">
+      <ion-select-option *ngFor="let interest of interests;" value="{{interest }}">{{interest}}</ion-select-option>
+    </ion-select>
+  </ion-item>
+
   <ion-list class="list-custom">
     <ion-list-header>
       <ion-row style="width: 100%">

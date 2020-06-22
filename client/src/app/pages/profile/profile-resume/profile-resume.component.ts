@@ -52,7 +52,10 @@ export class ProfileResumeComponent implements OnInit {
 
   /**
    * The Method adds a resumeEntry to this.user and calls the Method updateUser().
-   * first the checks if it
+   * first the checks if all values are filled
+   * next it checks if the startDate is before the endDate
+   * If everything is correct the user gets a new resumeEntry sort by the startDate
+   *
    * @success it closes the Modal
    * @error it presents a alert, that the user could not be updated.
    */
@@ -122,6 +125,5 @@ export class ProfileResumeComponent implements OnInit {
       .catch((err) => {
         this.toastService.presentWarningToast(err.message, 'Resume Error');
       });
-
   }
 }

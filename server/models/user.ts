@@ -67,6 +67,21 @@ const userSchema = mongoose.Schema({
     resume: {
         type: [resumeSchema],
         default: []
+    },
+    notificationToken: {
+        type: String
+    },
+    interest: {
+        type: [mongoose.Schema.Types.Object],
+        ref: 'Interest',
+        default: []
+    },
+    coordinates: {
+        type: {lat: Number, lng: Number}
+    },
+    locateMe: {
+        type: Boolean,
+        default: true
     }
 });
 

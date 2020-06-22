@@ -7,7 +7,8 @@ const jobStackSchema = mongoose.Schema({
     ref: 'User'
   },
   clientStack: {
-    type: [],
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'Job',
     default: []
   },
   serverStack: {
@@ -24,6 +25,10 @@ const jobStackSchema = mongoose.Schema({
     type: Number
   },
   swipedJobs: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'Job'
+  },
+  likedJobs: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: 'Job'
   }

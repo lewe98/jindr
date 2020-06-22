@@ -2,15 +2,28 @@ import { TestBed } from '@angular/core/testing';
 
 import { LocationService } from './location.service';
 import { HttpBackend } from '@angular/common/http';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { User } from '../../../../interfaces/user';
+import { AuthService } from '../Auth/auth.service';
 
 describe('LocationService', () => {
   let service: LocationService;
   let fixture;
+  let authSpy;
   let component;
 
   beforeEach(() => {
+    authSpy = jasmine.createSpyObj('AuthService', {
+      getUser: 'getUser'
+    });
+    authSpy.getUser.and.returnValue(new User());
     fixture = TestBed.configureTestingModule({
-      providers: [{ provide: HttpBackend }]
+      imports: [RouterTestingModule, HttpClientTestingModule],
+      providers: [
+        { provide: HttpBackend },
+        { provide: AuthService, useValue: authSpy }
+      ]
     });
     service = TestBed.inject(LocationService);
     component = fixture.componentInstance;
@@ -22,11 +35,11 @@ describe('LocationService', () => {
 
   describe('get current position', () => {
     it('should return coordinates', async () => {
-      spyOn(service, 'getCurrentPosition').and.returnValue(
-        Promise.resolve({ lat: 10, lng: 20 })
+      spyOn(service, 'reverseGeocode').and.returnValue(
+        Promise.resolve('Gießen')
       );
-      service.getCurrentPosition().then((res) => {
-        expect(res.lat).toBe(10);
+      service.reverseGeocode({ lat: 50.58727, lng: 8.67554 }).then((res) => {
+        expect(res).toBe('Gießen');
       });
     });
   });

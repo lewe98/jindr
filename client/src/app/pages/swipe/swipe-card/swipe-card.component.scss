@@ -1,0 +1,60 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+
+.swipe-card {
+  height: 100%;
+  position: relative;
+  border-radius: var(--swipe-card-border);
+  background-color: white;
+  background-image: linear-gradient(to top, var(--color-jindr-stop3) 0%, var(--color-jindr-stop2) 100%);
+  opacity: 1;
+
+  .image-container {
+    width: 55%;
+    margin: 0 auto;
+    padding-top: 15px;
+    .user-image {
+      border-radius: 50%;
+      border: 10px solid white;
+      box-shadow: var(--card-box-shadow);
+    }
+  }
+  .card-caption {
+    height: 60%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px;
+    z-index: 200;
+    color: #fff;
+    border-radius: 0 0 var(--swipe-card-border) var(--swipe-card-border);
+    text-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .card-user-name {
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .card-user-age {
+    font-size: 24px;
+  }
+
+  .button-info {
+    font-size: 32px;
+  }
+
+  .card-user-info {
+    line-height: 1.4em;
+    font-size: 18px;
+
+    ion-icon {
+      margin-right: 4px;
+      font-size: 18px;
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { LoadingController, ToastController } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +9,8 @@ export class ToastService {
   loading;
   constructor(
     public toastController: ToastController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private router: Router
   ) {}
 
   /**
@@ -51,6 +53,30 @@ export class ToastService {
       ]
     });
     toast.present();
+  }
+
+  async presentNotification(header, message, link) {
+    const notification = await this.toastController.create({
+      header,
+      message,
+      duration: 3000,
+      position: 'top',
+      animated: true,
+      cssClass: 'custom-notification',
+      buttons: [
+        {
+          side: 'end',
+          text: 'View',
+          icon: 'arrow-forward-sharp',
+          handler: () => {
+            if (link) {
+              this.router.navigate([link]);
+            }
+          }
+        }
+      ]
+    });
+    notification.present();
   }
 
   /**

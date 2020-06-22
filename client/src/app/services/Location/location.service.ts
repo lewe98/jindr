@@ -2,7 +2,11 @@ import { EventEmitter, Injectable, NgZone, OnDestroy } from '@angular/core';
 import { Plugins } from '@capacitor/core';
 import { BehaviorSubject } from 'rxjs';
 import { ToastService } from '../Toast/toast.service';
-import { LoadingController } from '@ionic/angular';
+import { AlertController, LoadingController } from '@ionic/angular';
+import { AuthService } from '../Auth/auth.service';
+import { User } from '../../../../interfaces/user';
+import { HttpBackend, HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 const { Geolocation } = Plugins;
 @Injectable({
@@ -11,79 +15,187 @@ const { Geolocation } = Plugins;
 export class LocationService implements OnDestroy {
   wait;
   loadingElement: any;
-  location: string;
+  location = 'Unknown';
   geocoder = new google.maps.Geocoder();
   currentPosition: Coords;
-  public $mapReady: EventEmitter<any> = new EventEmitter();
+  accuracy = { text: 'Getting location...', color: 'orange' };
+  private httpClient: HttpClient;
+  public $radiusChanged: EventEmitter<any> = new EventEmitter();
   coords: Coords = { lat: 50.05, lng: 8.8 };
-  private coordsSubject: BehaviorSubject<Coords> = new BehaviorSubject<Coords>(
+  user: User;
+  isApiFallback = false;
+  private accuracySubject: BehaviorSubject<any> = new BehaviorSubject<any>(
+    this.accuracy
+  );
+  coordsSubject: BehaviorSubject<Coords> = new BehaviorSubject<Coords>(
     this.coords
   );
   /**
    * Subscribe to this to get live coordinates on location change
    */
   public coordsSubscription = this.coordsSubject.asObservable();
+  public accuracySubscription = this.accuracySubject.asObservable();
   constructor(
     public ngZone: NgZone,
     private toastService: ToastService,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private authService: AuthService,
+    private handler: HttpBackend,
+    private alertController: AlertController,
+    private router: Router
   ) {
+    this.httpClient = new HttpClient(handler);
+    this.getUser();
     this.init();
   }
 
   async init() {
     await this.createLoader();
-    this.$mapReady.emit(true);
-    this.watchPosition();
-    this.geocodeLatLng();
+    this.startLocating();
+  }
+
+  radiusChanged() {
+    this.$radiusChanged.emit(true);
+  }
+
+  getUser() {
+    this.user = this.authService.getUser();
   }
 
   /**
-   * Method to get the current position as coordinates
+   * if user has allowed locating, try gps
+   * if not, user specified position. If no position specified -> prompt warning
    */
-  async getCurrentPosition(): Promise<Coords> {
-    this.presentLoader();
-    try {
-      const coordinates = await Geolocation.getCurrentPosition();
-      this.currentPosition = {
-        lat: coordinates.coords.latitude,
-        lng: coordinates.coords.longitude
-      };
-      return this.currentPosition;
-    } catch (e) {
-      this.toastService.presentWarningToast(e, 'Error getting location!');
-    } finally {
-      this.dismissLoader();
+  startLocating() {
+    this.getUser();
+    if (this.user?.locateMe) {
+      this.coords = null;
+      this.watchPosition();
+    } else {
+      if (this.user?.coordinates) {
+        this.accuracySubject.next({ text: 'Fixed location', color: 'green' });
+        this.coords = this.user?.coordinates;
+        this.coordsSubject.next(this.coords);
+        this.reverseGeocode(this.coords).then((res) => {
+          this.location = res;
+        });
+      } else {
+        this.accuracySubject.next({ text: 'No location', color: 'red' });
+        this.presentAlertConfirm(
+          'You have disabled our locating service. Please enable it or set' +
+            ' your current location manually in your settings.'
+        );
+      }
     }
+  }
+
+  /**
+   * Present alert to user, if no location is available
+   * @param message the message to prompt
+   */
+  async presentAlertConfirm(message) {
+    const alert = await this.alertController.create({
+      header: 'Location not available',
+      message,
+      buttons: [
+        {
+          text: 'Ignore',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: () => {
+            this.location = 'Unknown';
+            this.coords = null;
+            this.coordsSubject.next(this.coords);
+            this.stopTracking();
+          }
+        },
+        {
+          text: 'Settings',
+          handler: async () => {
+            this.location = 'Unknown';
+            this.router.navigate(['pages/profile'], {
+              state: { location: 'Unknown' }
+            });
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   /**
    * Continuously tracks the current position and updates the coordsSubject with new
    * coordinates on every location change
    */
-  watchPosition() {
+  async watchPosition() {
+    await this.presentLoader();
     this.wait = Geolocation.watchPosition(
-      { enableHighAccuracy: true, maximumAge: 300 * 1000 },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 1000 },
       (position) => {
-        this.ngZone.run(() => {
-          this.coordsSubject.next({
-            lat: position?.coords.latitude,
-            lng: position?.coords.longitude
-          });
-          /**
-           * If user traveled more than 8 kilometers, update current location name
-           */
-          if (
-            this.getDistanceFromLatLonInKm(
-              this.currentPosition?.lat,
-              this.currentPosition?.lng,
-              position?.coords.latitude,
-              position?.coords.longitude
-            ) > 8
-          ) {
-            this.geocodeLatLng();
+        this.ngZone.run(async () => {
+          if (position && position.coords.accuracy < 100) {
+            this.accuracySubject.next({ text: 'GPS', color: 'green' });
+            this.dismissLoader();
+            this.coords = {
+              lat: position?.coords.latitude,
+              lng: position?.coords.longitude
+            };
+            this.coordsSubject.next(this.coords);
+            if (this.location === 'Unknown') {
+              this.reverseGeocode(this.coords).then((res) => {
+                this.location = res;
+              });
+            }
+            /**
+             * If user traveled more than 8 kilometers, update current location name
+             */
+            if (
+              this.getDistanceFromLatLonInKm(
+                this.currentPosition?.lat,
+                this.currentPosition?.lng,
+                position?.coords.latitude,
+                position?.coords.longitude
+              ) > 8
+            ) {
+              this.reverseGeocode(this.coords).then((res) => {
+                this.location = res;
+              });
+            }
+          } else {
+            /**
+             * If geolocation failed, or if not accurate enough, try locating with IP Api fallback
+             */
+            if (!this.isApiFallback && !this.coords) {
+              this.useIpApiFallback();
+            }
           }
         });
+      }
+    );
+  }
+  // http://api.ipapi.com/api/check?access_key=${environment.ipapiApi}
+  // free: https://ipapi.co/json/
+  useIpApiFallback() {
+    this.httpClient.get<Location>(`https://freegeoip.app/json/`).subscribe(
+      (sub) => {
+        this.dismissLoader();
+        this.isApiFallback = true;
+        this.location = sub.city;
+        this.accuracySubject.next({ text: 'Low accuracy', color: 'orange' });
+        this.coords = { lat: sub.latitude, lng: sub.longitude };
+        this.coordsSubject.next(this.coords);
+        this.reverseGeocode(this.coords).then((res) => {
+          this.location = res;
+        });
+      },
+      () => {
+        this.accuracySubject.next({ text: 'No location', color: 'red' });
+        this.presentAlertConfirm(
+          'We were unable to locate you. Please make sure your' +
+            ' GPS is enabled and permission is granted, or set your current position' +
+            ' manually in your settings.'
+        );
       }
     );
   }
@@ -91,34 +203,55 @@ export class LocationService implements OnDestroy {
   async createLoader() {
     this.loadingElement = await this.loadingController.create({
       message: 'Trying to get your current location...',
-      duration: 2000
+      duration: 4000
     });
   }
 
-  async geocodeLatLng() {
-    const coords = await this.getCurrentPosition();
+  /**
+   * Get coordinates of a place by its place_id
+   * @param place place from autocomplete
+   */
+  async geocodePlaces(place): Promise<Coords> {
+    if (!place.place_id) {
+      return null;
+    }
+    return new Promise<Coords>((resolve) => {
+      this.geocoder.geocode({ placeId: place.place_id }, (results, status) => {
+        if (status !== 'OK') {
+          console.log('Geocoder failed due to: ' + status);
+          return null;
+        } else {
+          resolve({
+            lat: results[0].geometry.location.lat(),
+            lng: results[0].geometry.location.lng()
+          });
+        }
+      });
+    });
+  }
+
+  /**
+   * Get name of a city from coordinates
+   * @param coords the coordinates
+   */
+  async reverseGeocode(coords): Promise<string> {
     if (!coords) {
-      this.location = 'Unknown';
       return;
     }
-    this.geocoder.geocode({ location: coords }, (results, status) => {
-      if (status === 'OK') {
-        if (results[0]) {
-          this.location = 'Unknown';
-          results[0].address_components.forEach((adr) => {
-            if (adr.types[0] === 'locality') {
-              this.location = adr.long_name;
-            }
-          });
+    return new Promise<string>((resolve) => {
+      this.geocoder.geocode({ location: coords }, (results, status) => {
+        if (status === 'OK') {
+          if (results[0]) {
+            results[0].address_components.forEach((adr) => {
+              if (adr.types[0] === 'locality') {
+                resolve(adr.long_name);
+              }
+            });
+          }
         } else {
-          this.location = 'Unknown';
+          console.log('Geocoder failed due to: ' + status);
         }
-      } else {
-        this.toastService.presentWarningToast(
-          status,
-          'Geocoder failed due to: '
-        );
-      }
+      });
     });
   }
 
@@ -171,4 +304,10 @@ export class LocationService implements OnDestroy {
 export interface Coords {
   lat: number;
   lng: number;
+}
+
+interface Location {
+  latitude: number;
+  longitude: number;
+  city: string;
 }

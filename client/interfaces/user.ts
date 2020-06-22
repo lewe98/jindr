@@ -1,4 +1,6 @@
 import { ResumeEntry } from './ResumeEntry';
+import { Interest } from './interest';
+import { Coords } from '../src/app/services/Location/location.service';
 
 export class User {
   // tslint:disable-next-line:variable-name
@@ -12,4 +14,8 @@ export class User {
   public aboutMe: string;
   public resume: ResumeEntry[];
   public dateOfBirth: number;
+  public notificationToken: string;
+  public interest: Interest[];
+  public coordinates: Coords;
+  public locateMe: boolean;
 }

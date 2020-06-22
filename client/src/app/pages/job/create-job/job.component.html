@@ -1,0 +1,144 @@
+<ion-header>
+    <ion-toolbar class="toolbar-no-border">
+        <ion-title>Create Job</ion-title>
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="pages"></ion-back-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="settings-page bg-muted">
+    <div class="image-row">
+        <ion-avatar class="avatar">
+            <app-aspect-ratio [ratio]="{w: 1, h: 1}">
+                <app-image-shell class="user-image" animation="spinner" [src]="image"></app-image-shell>
+            </app-aspect-ratio>
+            <ion-button class="change-image-btn" (click)="editPicture()">
+                <ion-icon class="btn-icon" slot="icon-only" name="camera"></ion-icon>
+            </ion-button>
+        </ion-avatar>
+    </div>
+
+    <form [formGroup]="createForm">
+        <ion-list class="list-custom list-general">
+            <ion-list-header>
+                <ion-label>What needs to be done?</ion-label>
+            </ion-list-header>
+            <ion-item lines="none">
+                <ion-label>Title</ion-label>
+                <ion-input formControlName="title" class="right" slot="end"></ion-input>
+            </ion-item>
+            <ion-list-header>
+                <ion-label>Describe the job</ion-label>
+            </ion-list-header>
+            <ion-item lines="none">
+                <ion-textarea maxlength="600" rows="3" auto-grow="true" type="text" spellcheck="true" autocapitalize="on" formControlName="description"></ion-textarea>
+            </ion-item>
+            <ion-item lines="none" *ngIf="createForm.controls.description.value">
+                <ion-note slot="end">
+                    {{ 600 - createForm.controls.description.value.length }}
+                </ion-note>
+            </ion-item>
+            <ion-list-header>
+                <ion-label>How much money do you offer?</ion-label>
+            </ion-list-header>
+            <ion-item lines="none">
+                <ion-label>Payment</ion-label>
+                <ion-input min="0" type="number" formControlName="payment" class="right" slot="end"></ion-input>
+                <ion-label slot="end">€</ion-label>
+            </ion-item>
+            <ion-radio-group class="radio-group" formControlName="selectedOption">
+                <ion-item class="radio-item" style="float: left" lines="none">
+                    <ion-label class="radio-label">hourly</ion-label>
+                    <ion-radio slot="start" color="secondary" value="hourly"></ion-radio>
+                </ion-item>
+                <ion-item class="radio-item" lines="none">
+                    <ion-label class="radio-label">total</ion-label>
+                    <ion-radio slot="start" color="secondary" value="total"></ion-radio>
+                </ion-item>
+            </ion-radio-group>
+
+            <ion-list-header>
+                <ion-label>Do you have a homepage?</ion-label>
+            </ion-list-header>
+            <ion-item lines="none">
+                <ion-label>Homepage</ion-label>
+                <ion-input formControlName="homepage" type="url" autocomplete="url" class="right" slot="end"></ion-input>
+            </ion-item>
+            <ion-list-header>
+                <ion-grid>
+                    <ion-row>
+                        <ion-col class="ion-no-padding" size="12">
+                            <ion-label>Choose some skills to refine the search!</ion-label>
+                        </ion-col>
+                        <ion-col class="ion-no-padding" size="12">
+                            <ion-label class="hint">If you specify some required skills, you will find better candidates.</ion-label>
+                        </ion-col>
+                    </ion-row>
+                </ion-grid>
+            </ion-list-header>
+            <ion-item lines="none" id="skills">
+                <ion-label>Skill</ion-label>
+                <!--ngfor-->
+                <ion-select formControlName="interests"  multiple="true" cancelText="cancel" okText="ok">
+                    <ion-select-option *ngFor="let interest of interests;" value="{{interest }}">{{interest}}</ion-select-option>
+                </ion-select>
+            </ion-item>
+            <ion-list-header>
+                <ion-grid>
+                    <ion-row>
+                        <ion-col class="ion-no-padding" size="12">
+                            <ion-label>Where is this job located?</ion-label>
+                        </ion-col>
+                        <ion-col class="ion-no-padding" size="12">
+                            <ion-label class="hint">The location will not be visible to others!</ion-label>
+                        </ion-col>
+                    </ion-row>
+                </ion-grid>
+            </ion-list-header>
+            <ion-item lines="none" id="location">
+                <ion-grid>
+                    <ion-row>
+                        <ion-col size="12">
+                            <ion-searchbar (ionChange)="scrollToTop('location')" class="searchbar" formControlName="searchbar" (ionInput)="updateSearchResults()"
+                                           placeholder="Search for a place" (click)="scrollToTop('location')"></ion-searchbar>
+                        </ion-col>
+                        <ion-col size="12">
+                            <ion-list class="auto-list" [hidden]="autocompleteItems.length == 0 || createForm.controls.searchbar.value === ''">
+                                <ion-item class="auto-entry" *ngFor="let item of autocompleteItems" tappable (click)="selectSearchResult(item)">
+                                    {{ item.description }}
+                                </ion-item>
+                            </ion-list>
+                        </ion-col>
+                    </ion-row>
+                </ion-grid>
+
+
+            </ion-item>
+            <ion-list-header>
+                <ion-label>When does it start?</ion-label>
+            </ion-list-header>
+                <!--Enddatum/Zeit datepicker/picker-->
+                <ion-item lines="none" id="startDate">
+                    <ion-label>Date</ion-label>
+                    <ion-datetime (click)="scrollToTop('startDate')" [value]="job.date | date: 'dd.MM.yyyy'" (ionChange)="selectDOB($event)"
+                                  displayFormat="DD.MM.YYYY" placeholder="Select Date"></ion-datetime>
+                </ion-item>
+            <ion-list-header>
+                <ion-label>How many hours?</ion-label>
+            </ion-list-header>
+                <ion-item lines="none" id="hours">
+                    <ion-label>Working hours</ion-label>
+                    <ion-select formControlName="time" cancel-text="None of them" ok-text="Ok" (click)="scrollToTop('hours')">
+                        <ion-select-option *ngFor="let number of [1,2,3,4,5,6,7,8,9,10,11,12]" value="{{number}}">{{number}} h</ion-select-option>
+                    </ion-select>
+                </ion-item>
+        </ion-list>
+    </form>
+</ion-content>
+
+<ion-footer>
+    <ion-button [disabled]="!createForm.valid || !coords || !date" type="button" expand="full" fill="solid" color="primary"
+                (click)="createJob()">RELEASE
+    </ion-button>
+</ion-footer>

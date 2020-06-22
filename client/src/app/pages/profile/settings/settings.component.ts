@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { AlertController, ModalController, NavParams } from '@ionic/angular';
 import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
 import { ToastService } from '../../../services/Toast/toast.service';
+import { LocationService } from '../../../services/Location/location.service';
+import { Router } from '@angular/router';
+import { SwipeService } from '../../../services/Swipe/swipe.service';
 
 @Component({
   selector: 'app-settings',
@@ -14,31 +17,119 @@ export class SettingsComponent implements OnInit {
   distance: number;
   location: string;
   allowNotifications: boolean;
+  locateMeTemp: boolean;
+  navBack: boolean;
+  GoogleAutocomplete: google.maps.places.AutocompleteService;
+  autocomplete: { input: string };
+  autocompleteItems: any[];
+  coordsChanged = false;
   constructor(
     public modalCtrl: ModalController,
     private authService: AuthService,
     private alertCtrl: AlertController,
     private toastService: ToastService,
-    private navParams: NavParams
-  ) {}
+    private navParams: NavParams,
+    private locationService: LocationService,
+    private router: Router,
+    private ngZone: NgZone,
+    private swipeService: SwipeService
+  ) {
+    this.GoogleAutocomplete = new google.maps.places.AutocompleteService();
+    this.autocomplete = { input: '' };
+    this.autocompleteItems = [];
+  }
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
+    this.locateMeTemp = this.user.locateMe;
     this.location = this.navParams.get('location');
+    if (this.location === 'Unknown') {
+      this.navBack = true;
+    }
     this.distance = this.authService.getUser().distance;
     this.allowNotifications = this.authService.getUser().allowNotifications;
+    if (!this.user.locateMe && this.user.coordinates) {
+      this.locationService.reverseGeocode(this.user.coordinates).then((res) => {
+        this.location = res;
+        this.autocomplete.input = this.location;
+      });
+    }
   }
 
   close() {
     if (
       this.user.distance !== this.distance ||
-      this.user.allowNotifications !== this.allowNotifications
+      this.user.allowNotifications !== this.allowNotifications ||
+      this.user.locateMe !== this.locateMeTemp ||
+      this.coordsChanged
     ) {
-      this.authService.updateUser(this.user).catch((err) => {
-        this.toastService.presentWarningToast(err.message, 'Error');
-      });
+      if (this.user.locateMe === true) {
+        this.user.coordinates = null;
+      }
+      this.authService
+        .updateUser(this.user)
+        .then(() => {
+          if (this.user.locateMe !== this.locateMeTemp || this.coordsChanged) {
+            this.swipeService.updateBacklog();
+            this.locationService.startLocating();
+          }
+          if (this.user.distance !== this.distance) {
+            this.swipeService.updateBacklog();
+            this.locationService.radiusChanged();
+          }
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err.message, 'Error');
+        });
     }
-    this.modalCtrl.dismiss();
+    if (this.navBack) {
+      this.router.navigate(['pages']).then(() => {
+        this.modalCtrl.dismiss();
+      });
+    } else {
+      this.modalCtrl.dismiss();
+    }
+  }
+
+  scrollToTop(id: string) {
+    const element = document.getElementById(id);
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+      inline: 'nearest'
+    });
+  }
+
+  async selectSearchResult(item) {
+    this.autocomplete.input = item.description;
+    this.autocompleteItems = [];
+    this.locationService.geocodePlaces(item).then((res) => {
+      this.user.coordinates = res;
+      this.coordsChanged = true;
+      this.locationService
+        .reverseGeocode(this.user.coordinates)
+        .then((city) => {
+          this.location = city;
+        });
+    });
+  }
+
+  updateSearchResults() {
+    if (this.autocomplete.input === '') {
+      this.autocompleteItems = [];
+      return;
+    }
+    this.GoogleAutocomplete.getPlacePredictions(
+      { input: this.autocomplete.input },
+      (predictions) => {
+        this.autocompleteItems = [];
+        this.ngZone.run(() => {
+          predictions.forEach((prediction) => {
+            this.autocompleteItems.push(prediction);
+          });
+        });
+      }
+    );
   }
 
   logout() {
@@ -78,7 +169,6 @@ export class SettingsComponent implements OnInit {
                   'Error!'
                 );
                 this.user = this.authService.getUser();
-                console.log(this.authService.user);
               });
           }
         }

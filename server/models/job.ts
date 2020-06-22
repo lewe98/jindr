@@ -15,6 +15,18 @@ const jobSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  date: {
+    type: Date,
+    default: new Date()
+  },
+  time: {
+    type: Number,
+    default: 8
+  },
+  payment: {
+    type: Number,
+    default: 12
+  },
   tile: {
     type: Number
   },
@@ -29,6 +41,24 @@ const jobSchema = mongoose.Schema({
   isFinished: {
     type: Boolean,
     default: false
+  },
+  image: {
+    type: String,
+    default: './assets/images/job.png'
+  },
+  interests: {
+    type: [],
+    default: []
+  },
+  isHourly: {
+    type: Boolean,
+    default: false
+  },
+  homepage: {
+    type: String
+  },
+  cityName: {
+    type: String
   }
 });
 

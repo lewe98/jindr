@@ -73,16 +73,16 @@ Content-Type: application/json
 
 {
   "coords": {
-    "lat": 51.3260435992175,
-    "lng": 9.72345094553722
+    "lat": 50.05998611450195,
+    "lng": 8.803301811218262
   },
   "job": {
-    "title": "erster job",
-    "description": "test123",
+    "title": "Gartenarbeiten",
+    "description": "adsa d sadas das fasdaf sfasf das fasf asdf asf asf asfae fsa fdasfe asdf asfas fadf ",
     "creator": "5ee24164c71c594a94003ea3",
     "location": {
-      "lat": 51.3260435992175,
-      "lng": 9.72345094553722
+      "lat": 50.05998611450195,
+      "lng": 8.803301811218262
     }
   }
 }

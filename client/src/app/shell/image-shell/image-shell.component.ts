@@ -7,20 +7,12 @@ import {
 } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
 
-import { AppShellConfig } from '../config/app-shell.config';
-
 @Component({
   selector: 'app-image-shell',
   templateUrl: './image-shell.component.html',
   styleUrls: ['./image-shell.component.scss']
 })
 export class ImageShellComponent {
-  // To debug shell styles, change configuration in the assets/app-shell.config.json file
-  private debugDisplay =
-    AppShellConfig.settings && AppShellConfig.settings.debug
-      ? AppShellConfig.settings.debug
-      : false;
-
   // tslint:disable-next-line:variable-name
   _src = '';
   // tslint:disable-next-line:variable-name
@@ -43,9 +35,7 @@ export class ImageShellComponent {
 
   @Input()
   set src(val: string) {
-    if (!this.debugDisplay) {
-      this._src = val !== undefined && val !== null ? val : '';
-    }
+    this._src = val !== undefined && val !== null ? val : '';
 
     if (this._display === 'cover') {
       // Unset the background-image

@@ -11,6 +11,15 @@ const routes: Routes = [
     path: 'profile',
     loadChildren: () =>
       import('./profile/profile.module').then((m) => m.ProfileModule)
+  },
+  {
+    path: 'explore',
+    loadChildren: () =>
+      import('./swipe/swipe.module').then((m) => m.SwipeModule)
+  },
+  {
+    path: 'job',
+    loadChildren: () => import('./job/job.module').then((m) => m.JobModule)
   }
 ];
 

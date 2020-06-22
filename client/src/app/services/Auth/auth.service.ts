@@ -34,6 +34,11 @@ export class AuthService {
     return this.user;
   }
 
+  registerPushNotifications(token: string) {
+    this.user.notificationToken = token;
+    this.updateUser(this.user);
+  }
+
   /**
    * Method to start the registration of a new user
    * @param firstName of the user
@@ -45,7 +50,12 @@ export class AuthService {
    * resolves if registration mail has been sent successfully
    * rejects if an error occurred
    */
-  async register(firstName: string, lastName: string, email: string, password: string): Promise<any> {
+  async register(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string
+  ): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const data = {
         user: {
@@ -63,10 +73,7 @@ export class AuthService {
           resolve();
         })
         .catch((err) => {
-          this.toastService.presentWarningToast(
-            err.errors,
-            err.message + ': '
-          );
+          this.toastService.presentWarningToast(err.errors, err.message + ': ');
           reject(err);
         });
     });
@@ -83,18 +90,16 @@ export class AuthService {
   async verifyRegistration(token: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       this.databaseController
-          .getRequest('register/' + token, '')
-          .then((res) => {
-            this.toastService.presentToast(res.message);
-            this.router.navigate(['login']);
-            resolve();
-          })
-          .catch((err) => {
-            this.toastService.presentWarningToast(
-                err.message, 'Error: '
-            );
-            reject(err);
-          });
+        .getRequest('register/' + token, '')
+        .then((res) => {
+          this.toastService.presentToast(res.message);
+          this.router.navigate(['login']);
+          resolve();
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err.message, 'Error: ');
+          reject(err);
+        });
     });
   }
 

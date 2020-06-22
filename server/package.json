@@ -9,8 +9,8 @@
     "tsc": "tsc && cd test && tsc && cd .. && cd models && tsc",
     "prettier-format": "prettier --config .prettierrc server.ts --write",
     "build": "tsc server.ts",
-    "ci-test": "NODE_ENV=test && jest --runInBand ./test",
-    "test": "SET NODE_ENV=test && jest --runInBand --coverage ./test",
+    "ci-test": "NODE_ENV=test && jest --detectOpenHandles --runInBand  --forceExit ./test",
+    "test": "SET NODE_ENV=test && jest --detectOpenHandles --runInBand --coverage --forceExit ./test",
     "start": "node server.js"
   },
   "jest": {
@@ -40,6 +40,7 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "firebase-admin": "^8.12.1",
     "heroku-ssl-redirect": "0.0.4",
     "lodash": "^4.17.15",
     "mongodb": "^3.5.7",
