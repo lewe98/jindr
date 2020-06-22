@@ -24,7 +24,7 @@
     </ion-item>
       <ion-item lines="none">
         <ion-label>Date of Birth</ion-label>
-        <ion-datetime [value]="user.dateOfBirth | date: 'dd.MM.yyyy'" (ionChange)="selectDOB($event)" displayFormat="DD.MM.YYYY" placeholder="Select Date"></ion-datetime>
+        <ion-datetime [ngModelOptions]="{standalone: true}" [(ngModel)]="userBirthday"  displayFormat="DD.MM.YYYY" placeholder="Select Date"></ion-datetime>
       </ion-item>
   </ion-list>
   <ion-list class="list-custom">
