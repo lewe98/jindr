@@ -175,9 +175,13 @@ export class JobComponent implements OnInit {
     this.job.interests = [];
     this.job.cityName = this.cityName;
     this.job.creator = this.authService.user._id;
-    this.createForm.controls.interests.value.forEach((int) => {
-      this.job.interests.push(this.tempInterests.find((i) => int === i.title));
-    });
+    if (this.createForm.controls.interests.value) {
+      this.createForm.controls.interests.value.forEach((int) => {
+        this.job.interests.push(
+          this.tempInterests.find((i) => int === i.title)
+        );
+      });
+    }
     this.jobService
       .createJob(this.job)
       .then(() => {

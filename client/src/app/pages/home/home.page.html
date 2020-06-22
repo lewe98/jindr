@@ -2,6 +2,9 @@
 
 <ion-content>
 <ng-container>
+    <div class="top-info">
+        <p [ngClass]="accuracy?.color" style="font-size: smaller"><ion-icon name="navigate-outline" style="margin-right: 5px"></ion-icon>{{accuracy?.text}}</p>
+    </div>
     <app-map id="map"></app-map>
     <svg id="map_overlay" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 419 418">
         <g id="Gruppe_43" data-name="Gruppe 43" transform="translate(22 -110)">
@@ -12,10 +15,6 @@
                 <tspan x="-9" y="0">{{user?.distance}} km</tspan>
             </text>
             <ion-icon name="search-outline"></ion-icon>
-            <text id="_15_Jobs_" data-name="􀎜 15 Jobs " class="cls-2" [ngClass]="accuracy?.color" transform="translate(188 147)">
-                <tspan x="-45.209" y="0" ><ion-icon name="search-outline"></ion-icon></tspan>
-                <tspan x="-30" y="0">{{accuracy?.text}}</tspan>
-            </text>
         </g>
     </svg>
 </ng-container>

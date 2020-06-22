@@ -30,11 +30,11 @@ beforeAll(async (done) => {
   await dbHandler.connect();
   server.rasterizeMap(maxRadius, southWest, northEast);
   const transporter = nodemailer.createTransport({
-    host: "smtp.mailspons.com",
+    host: "dummysmtp.com",
     port: 2525,
     auth: {
-      user: "344777f0965d46fe8329",
-      pass: "425c069dc48e4449ac3df08b80405e1a"
+      user: "noreply.jindr@gmail.com",
+      pass: "kkb955dbtghq "
     },
     debug: false,
     logger: false

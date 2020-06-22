@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  Input,
   OnDestroy,
   OnInit,
   ViewChild
@@ -19,6 +20,7 @@ import { User } from '../../../../interfaces/user';
 export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('map', { static: false }) mapElement: ElementRef;
   map;
+  @Input() noZoom;
   circle: google.maps.Circle;
   mapOptions: google.maps.MapOptions = {
     zoom: 13,
@@ -82,17 +84,19 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
           this.map.setZoom(13);
           const currentLocation = new google.maps.LatLng(sub.lat, sub.lng);
           this.map.setCenter(currentLocation);
-          const circleOptions = {
-            center: currentLocation,
-            fillOpacity: 0.04,
-            strokeOpacity: 0.5,
-            color: '#dafffa',
-            strokeColor: '#dafffa',
-            map: this.map,
-            radius: (this.authService.user.distance * 1000) / 2
-          };
-          this.circle = new google.maps.Circle(circleOptions);
-          this.map.fitBounds(this.circle.getBounds());
+          if (!this.noZoom) {
+            const circleOptions = {
+              center: currentLocation,
+              fillOpacity: 0.04,
+              strokeOpacity: 0.5,
+              color: '#dafffa',
+              strokeColor: '#dafffa',
+              map: this.map,
+              radius: (this.authService.user.distance * 1000) / 2
+            };
+            this.circle = new google.maps.Circle(circleOptions);
+            this.map.fitBounds(this.circle.getBounds());
+          }
         } else {
           this.map.setZoom(8);
         }

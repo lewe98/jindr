@@ -16,7 +16,15 @@
         <div class="card-user-info">
           <div *ngIf="distance"><ion-icon name="location-outline"></ion-icon>
             {{distance}} {{distance === 1 ? 'kilometer' : 'kilometers'}} away</div>
-          <div><ion-icon name="briefcase-outline"></ion-icon>{{data?.description}}</div>
+          <div><ion-icon name="business-outline"></ion-icon>
+            {{data?.cityName}}</div>
+          <div><ion-icon name="calendar-outline"></ion-icon>
+            {{data?.date | date: 'dd.MM.yyyy'}}</div>
+          <div *ngIf="data?.time"><ion-icon name="time-outline"></ion-icon>
+            {{data.time}} hour{{data.time > 1 ? 's' : ''}} of work</div>
+          <div><ion-icon name="cash-outline"></ion-icon>
+            {{data?.payment}} € {{data?.isHourly ? '/h' : 'total'}}</div>
+          <div><ion-icon name="briefcase-outline"></ion-icon>{{description}}</div>
         </div>
       </ion-col>
       <ion-col size="auto" *ngIf="!isPreview">

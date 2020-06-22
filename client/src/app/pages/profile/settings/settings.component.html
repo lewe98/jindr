@@ -40,11 +40,11 @@
       <ion-label>Allow Location Tracking</ion-label>
       <ion-toggle color="primary" [(ngModel)]="user.locateMe"></ion-toggle>
     </ion-item>
-    <ion-item lines="none" id="location" *ngIf="!user.locateMe">
+    <ion-item lines="none" id="location">
       <ion-grid>
         <ion-row>
           <ion-col size="12">
-            <ion-searchbar (ionChange)="scrollToTop('location')" class="searchbar" [(ngModel)]="autocomplete.input" (ionInput)="updateSearchResults()"
+            <ion-searchbar [disabled]="user.locateMe" (ionChange)="scrollToTop('location')" class="searchbar" [(ngModel)]="autocomplete.input" (ionInput)="updateSearchResults()"
                            placeholder="Search for a place" (click)="scrollToTop('location')"></ion-searchbar>
           </ion-col>
           <ion-col size="12">

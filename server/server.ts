@@ -165,8 +165,8 @@ app.post('/register', (req: Request, res: Response) => {
   user = Object.assign(user, req.body.user);
 
   const token = crypto.randomBytes(20).toString('hex');
-  const expirationDate = new Date().setHours(new Date().getHours() + 24);
-
+  user.token = token;
+  user.tokenExpires = new Date().setHours(new Date().getHours() + 24);
   const REGISTER_URL: string = req.body.BASE_URL + '/auth/register/' + token;
   const subject = 'jindr - Register now!';
   const html =
@@ -183,14 +183,6 @@ app.post('/register', (req: Request, res: Response) => {
         errors: err.message
       });
     } else {
-      await User.findOneAndUpdate(
-        { email: user.email },
-        {
-          token: token,
-          tokenExpires: expirationDate
-        }
-      );
-
       try {
         await sendMail(user.email, html, subject);
         res.status(201).send({
@@ -862,19 +854,6 @@ app.post('/create-job', (req: Request, res: Response) => {
         data: obj
       });
     }
-  });
-});
-
-/**
- * sends all interests of the interests.json to the client
- */
-app.get('/interests', (req: Request, res: Response) => {
-  const rawdata = fs.readFileSync('./assets/interests.json');
-  const interests = JSON.parse(rawdata);
-
-  res.status(200).send({
-    message: 'Successfully logged in',
-    data: interests
   });
 });
 

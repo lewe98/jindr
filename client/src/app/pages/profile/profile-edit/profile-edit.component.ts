@@ -57,6 +57,7 @@ export class ProfileEditComponent implements OnInit {
 
   selectDOB(event) {
     this.date = event.detail.value;
+    console.log(this.date);
   }
 
   changedInterest() {
