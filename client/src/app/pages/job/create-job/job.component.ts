@@ -35,10 +35,11 @@ export class JobComponent implements OnInit {
   autocompleteItems: any[];
   coords: Coords;
   image = './assets/images/job.png';
-  tempInterests: Interest[] = [];
-  interests = [];
   jobInterests = [];
   cityName: string;
+  interests = [];
+  tempInterests: Interest[] = [];
+  changedInterests = false;
 
   constructor(
     private modalCtrl: ModalController,
@@ -55,6 +56,8 @@ export class JobComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+
+
 
     this.createForm = new FormGroup({
       title: new FormControl(this.job.title, Validators.required),
@@ -74,11 +77,18 @@ export class JobComponent implements OnInit {
       this.jobService.getJobById(id)
         .then((res) => {
           Object.assign(this.job, res);
+          this.tempInterests = this.assetService.getInterests();
+          this.interests = this.tempInterests?.map((i) => {
+            return i.title;
+          });
+          this.jobInterests = this.job.interests?.map((i) => {
+            return i.title;
+          });
           this.createForm.controls.title.reset(this.job.title);
           this.createForm.controls.description.reset(this.job.description);
           this.createForm.controls.payment.reset(this.job.payment);
           this.createForm.controls.homepage.reset(this.job.homepage);
-          this.createForm.controls.interests.reset(this.job.interests);
+        //  this.createForm.controls.interests.reset(this.job.interests);
 
           // TODO: - Vollständigen Wert / Location auslesen
           this.createForm.controls.searchbar.reset(this.job.cityName);
@@ -94,13 +104,7 @@ export class JobComponent implements OnInit {
         });
     }
 
-    this.tempInterests = this.assetService.getInterests();
-    this.interests = this.tempInterests?.map((i) => {
-      return i.title;
-    });
-    this.jobInterests = this.job.interests?.map((i) => {
-      return i.title;
-    });
+
 
     this.GoogleAutocomplete = new google.maps.places.AutocompleteService();
     this.autocomplete = { input: '' };
@@ -109,6 +113,10 @@ export class JobComponent implements OnInit {
 
   selectDate(event) {
     this.date = event.detail.value;
+  }
+
+  changedInterest() {
+    this.changedInterests = true;
   }
 
   updateSearchResults() {
