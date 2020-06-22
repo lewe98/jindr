@@ -27,7 +27,6 @@ export class JobComponent implements OnInit {
   createForm: FormGroup;
   job: Job = new Job();
   date: Date;
-
   edit = false;
 
   GoogleAutocomplete: google.maps.places.AutocompleteService;
@@ -57,8 +56,6 @@ export class JobComponent implements OnInit {
 
   ngOnInit() {
 
-
-
     this.createForm = new FormGroup({
       title: new FormControl(this.job.title, Validators.required),
       description: new FormControl(this.job.description, Validators.required),
@@ -72,11 +69,15 @@ export class JobComponent implements OnInit {
     });
 
     if (document.location.href.includes('/pages/job/edit/')) {
+
       this.edit = true;
       const id = document.location.pathname.replace('/pages/job/edit/', '');
+
       this.jobService.getJobById(id)
         .then((res) => {
+
           Object.assign(this.job, res);
+
           this.tempInterests = this.assetService.getInterests();
           this.interests = this.tempInterests?.map((i) => {
             return i.title;
@@ -88,23 +89,18 @@ export class JobComponent implements OnInit {
           this.createForm.controls.description.reset(this.job.description);
           this.createForm.controls.payment.reset(this.job.payment);
           this.createForm.controls.homepage.reset(this.job.homepage);
-        //  this.createForm.controls.interests.reset(this.job.interests);
 
-          // TODO: - Vollständigen Wert / Location auslesen
+          // TODO: - Übernahme der Werte
           this.createForm.controls.searchbar.reset(this.job.cityName);
-
-          // TODO: - Werte auslesen
           this.createForm.controls.selectedOption.reset(this.job.isHourly);
-          this.createForm.controls.date.reset(this.job.date);
           this.createForm.controls.time.reset(this.job.time);
+          this.date = this.job.date;
 
         })
         .catch((err) => {
           this.toastService.presentWarningToast(err, 'Error!');
         });
     }
-
-
 
     this.GoogleAutocomplete = new google.maps.places.AutocompleteService();
     this.autocomplete = { input: '' };
