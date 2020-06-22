@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import { Job } from '../../../../../interfaces/job';
 import { AuthService } from '../../../services/Auth/auth.service';
