@@ -6,7 +6,6 @@ import { AlertController, LoadingController } from '@ionic/angular';
 import { AuthService } from '../Auth/auth.service';
 import { User } from '../../../../interfaces/user';
 import { HttpBackend, HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
 import { Router } from '@angular/router';
 
 const { Geolocation } = Plugins;
@@ -16,7 +15,7 @@ const { Geolocation } = Plugins;
 export class LocationService implements OnDestroy {
   wait;
   loadingElement: any;
-  location = 'unknown';
+  location = 'Unknown';
   geocoder = new google.maps.Geocoder();
   currentPosition: Coords;
   accuracy = { text: 'Getting location...', color: 'orange' };
@@ -143,6 +142,11 @@ export class LocationService implements OnDestroy {
               lng: position?.coords.longitude
             };
             this.coordsSubject.next(this.coords);
+            if (this.location === 'Unknown') {
+              this.reverseGeocode(this.coords).then((res) => {
+                this.location = res;
+              });
+            }
             /**
              * If user traveled more than 8 kilometers, update current location name
              */
@@ -181,6 +185,9 @@ export class LocationService implements OnDestroy {
         this.accuracySubject.next({ text: 'Low accuracy', color: 'orange' });
         this.coords = { lat: sub.latitude, lng: sub.longitude };
         this.coordsSubject.next(this.coords);
+        this.reverseGeocode(this.coords).then((res) => {
+          this.location = res;
+        });
       },
       () => {
         this.accuracySubject.next({ text: 'No location', color: 'red' });

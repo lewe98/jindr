@@ -18,6 +18,7 @@ export class SwipeCardComponent implements OnInit {
   @Input() coords: Coords;
   @Output() viewInfo = new EventEmitter();
   distance: number;
+  description;
 
   constructor(
     private locationService: LocationService,
@@ -35,6 +36,7 @@ export class SwipeCardComponent implements OnInit {
       );
       this.distance = Math.round(this.distance);
     }
+    this.description = this.data?.description.substring(0, 100) + '...';
   }
 
   async handleViewInfo() {

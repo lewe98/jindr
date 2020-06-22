@@ -4,18 +4,23 @@ $topSpace: 220px;
 ion-content {
   --background: url(../../../assets/images/Background1024.svg) no-repeat center/cover fixed;
 }
-
+.top-info {
+    z-index: 100;
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 4%;
+}
 .green {
-  fill: var(--ion-color-success-shade)!important;
+  color: var(--ion-color-success-shade)!important;
 }
 
 .red {
-  fill: var(--ion-color-danger)!important;
+  color: var(--ion-color-danger)!important;
 }
 
 .orange {
-  fill: var(--ion-color-warning)!important;
-  text-align: center;
+  color: var(--ion-color-warning)!important;
 }
 
 #map_overlay {
