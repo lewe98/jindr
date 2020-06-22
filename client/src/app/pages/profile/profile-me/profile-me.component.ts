@@ -49,6 +49,9 @@ export class ProfileMeComponent implements OnInit {
         location: this.location
       }
     });
+    modal.onDidDismiss().then((res) => {
+      this.location = res.data;
+    });
     return await modal.present();
   }
 
