@@ -13,7 +13,7 @@ export class User {
   public allowNotifications: boolean;
   public aboutMe: string;
   public resume: ResumeEntry[];
-  public dateOfBirth: number;
+  public dateOfBirth: Date;
   public notificationToken: string;
   public interest: Interest[];
   public coordinates: Coords;

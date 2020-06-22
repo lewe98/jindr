@@ -84,10 +84,10 @@ export class SettingsComponent implements OnInit {
     }
     if (this.navBack) {
       this.router.navigate(['pages']).then(() => {
-        this.modalCtrl.dismiss();
+        this.modalCtrl.dismiss(this.location);
       });
     } else {
-      this.modalCtrl.dismiss();
+      this.modalCtrl.dismiss(this.location);
     }
   }
 

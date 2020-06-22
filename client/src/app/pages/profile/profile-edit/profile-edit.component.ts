@@ -22,6 +22,7 @@ import { SwipeService } from '../../../services/Swipe/swipe.service';
 export class ProfileEditComponent implements OnInit {
   editForm: FormGroup;
   user: User = new User();
+  userBirthday = new Date();
   date: Date;
   interests = [];
   userInterests = [];
@@ -41,6 +42,7 @@ export class ProfileEditComponent implements OnInit {
 
   async ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
+    this.userBirthday = this.user.dateOfBirth;
     this.tempInterests = this.assetService.getInterests();
     this.interests = this.tempInterests?.map((i) => {
       return i.title;
@@ -55,11 +57,6 @@ export class ProfileEditComponent implements OnInit {
     });
   }
 
-  selectDOB(event) {
-    this.date = event.detail.value;
-    console.log(this.date);
-  }
-
   changedInterest() {
     this.changedInterests = true;
   }
@@ -72,7 +69,7 @@ export class ProfileEditComponent implements OnInit {
    * @post After successful editing you will be redirected to the profile page.
    * */
   save() {
-    this.user.dateOfBirth = new Date(this.date).getTime();
+    this.user.dateOfBirth = new Date(this.userBirthday);
     this.user.firstName = this.editForm.controls.firstName.value;
     this.user.lastName = this.editForm.controls.lastName.value;
     this.user.aboutMe = this.editForm.controls.aboutMe.value;

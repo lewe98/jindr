@@ -81,10 +81,10 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
           if (this.circle) {
             this.circle.setMap(null);
           }
-          this.map.setZoom(13);
+          this.map.setZoom(12);
           const currentLocation = new google.maps.LatLng(sub.lat, sub.lng);
           this.map.setCenter(currentLocation);
-          if (!this.noZoom) {
+          /*  if (!this.noZoom) {
             const circleOptions = {
               center: currentLocation,
               fillOpacity: 0.04,
@@ -96,7 +96,7 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
             };
             this.circle = new google.maps.Circle(circleOptions);
             this.map.fitBounds(this.circle.getBounds());
-          }
+          } */
         } else {
           this.map.setZoom(8);
         }
