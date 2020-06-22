@@ -51,7 +51,7 @@ const userSchema = mongoose.Schema({
         trim: true
     },
     dateOfBirth: {
-        type: Number,
+        type: Date,
         trim: true
     },
     token: {

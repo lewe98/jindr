@@ -28,7 +28,7 @@ export class ProfileViewComponent implements OnInit {
 
     if (this.user.dateOfBirth) {
       this.date = Math.floor(
-        (Date.now() - this.user.dateOfBirth) / 31556952000
+        (Date.now() - new Date(this.user.dateOfBirth).getTime()) / 31556952000
       );
     }
   }
