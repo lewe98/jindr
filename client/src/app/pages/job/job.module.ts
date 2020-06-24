@@ -6,8 +6,13 @@ import { IonicModule } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ShellModule } from '../../shell/shell.module';
 import { JobDetailComponent } from './job-detail/job-detail.component';
+import { DisplayJobsComponent } from './display-jobs/display-jobs.component';
 
 const routes: Routes = [
+  {
+    path: '',
+    component: DisplayJobsComponent
+  },
   {
     path: 'create',
     component: JobComponent
@@ -19,7 +24,11 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [JobComponent, JobDetailComponent],
+  declarations: [
+    DisplayJobsComponent,
+    JobComponent,
+    JobDetailComponent
+  ],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),

@@ -895,6 +895,28 @@ app.get('/get-job-by-id/:_id', async (req: Request, res: Response) => {
   }
 });
 
+app.get('/get-jobs/:_id', async (req: Request, res: Response) => {
+  try {
+    const _id: string = req.params._id;
+    const jobs = await Job.find({ creator: _id });
+
+    if (jobs) {
+      res.status(200).send({
+        message: 'Jobs found.',
+        data: jobs
+      });
+    } else {
+      res.status(404).send({
+        message: 'No Jobs found.'
+      });
+    }
+  } catch (err) {
+    res.status(500).send({
+      message: 'Error: ' + err
+    });
+  }
+});
+
 /**
  * @api {put} /edit-job/:id edits a job
  * @apiName EditJob

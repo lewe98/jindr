@@ -91,15 +91,15 @@
                 </ion-grid>
             </ion-list-header>
 
-            <ion-item lines="none" id="skills">
-                <ion-label>Skill</ion-label>
-                <!--ngfor-->
-                <ion-select formControlName="interests" (ionChange)="changedInterest()"  [(ngModel)]="jobInterests"  multiple="true" cancelText="cancel" okText="ok">
-                    <ion-select-option *ngFor="let interest of interests;" value="{{interest }}">{{interest}}</ion-select-option>
-                </ion-select>
-            </ion-item>
+        <ion-item lines="none" id="skills">
+            <ion-label>Skill</ion-label>
+            <!--ngfor-->
+            <ion-select formControlName="interests"  multiple="true" cancelText="cancel" okText="ok">
+                <ion-select-option *ngFor="let interest of interests;" value="{{interest }}">{{interest}}</ion-select-option>
+            </ion-select>
+        </ion-item>
 
-            <ion-list-header>
+        <ion-list-header>
                 <ion-grid>
                     <ion-row>
                         <ion-col class="ion-no-padding" size="12">
@@ -146,11 +146,13 @@
         <ion-list-header>
             <ion-label>When does it start?</ion-label>
         </ion-list-header>
+        <!--Enddatum/Zeit datepicker/picker-->
         <ion-item lines="none" id="startDate">
             <ion-label>Date</ion-label>
-            <ion-datetime (click)="scrollToTop('startDate')" [value]="date | date: 'DD.MM.YYYY'" (ionChange)="selectDate($event)"
+            <ion-datetime (click)="scrollToTop('startDate')" [value]="job.date | date: 'dd.MM.yyyy'" (ionChange)="selectDate($event)"
                           displayFormat="DD.MM.YYYY" placeholder="Select Date"></ion-datetime>
         </ion-item>
+
     </ion-list>
 </ion-content>
 

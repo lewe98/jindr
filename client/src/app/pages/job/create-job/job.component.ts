@@ -34,11 +34,11 @@ export class JobComponent implements OnInit {
   autocompleteItems: any[];
   coords: Coords;
   image = './assets/images/job.png';
-  jobInterests = [];
-  cityName: string;
-  interests = [];
   tempInterests: Interest[] = [];
+  interests = [];
+  jobInterests = [];
   changedInterests = false;
+  cityName: string;
 
   constructor(
     private modalCtrl: ModalController,
@@ -56,6 +56,13 @@ export class JobComponent implements OnInit {
 
   ngOnInit() {
 
+    this.tempInterests = this.assetService.getInterests();
+    this.interests = this.tempInterests?.map((i) => {
+      return i.title;
+    });
+    this.jobInterests = this.job.interests?.map((i) => {
+      return i.title;
+    });
     this.createForm = new FormGroup({
       title: new FormControl(this.job.title, Validators.required),
       description: new FormControl(this.job.description, Validators.required),
@@ -78,23 +85,16 @@ export class JobComponent implements OnInit {
 
           Object.assign(this.job, res);
 
-          this.tempInterests = this.assetService.getInterests();
-          this.interests = this.tempInterests?.map((i) => {
-            return i.title;
-          });
-          this.jobInterests = this.job.interests?.map((i) => {
-            return i.title;
-          });
           this.createForm.controls.title.reset(this.job.title);
           this.createForm.controls.description.reset(this.job.description);
           this.createForm.controls.payment.reset(this.job.payment);
           this.createForm.controls.homepage.reset(this.job.homepage);
 
-          // TODO: - Übernahme der Werte
-          this.createForm.controls.searchbar.reset(this.job.cityName);
-          this.createForm.controls.selectedOption.reset(this.job.isHourly);
-          this.createForm.controls.time.reset(this.job.time);
-          this.date = this.job.date;
+          // TODO: - Werte werden nicht übernommen
+          // this.createForm.controls.searchbar.reset(this.job.cityName);
+          // this.createForm.controls.selectedOption.reset(this.job.isHourly);
+          // this.createForm.controls.time.reset(this.job.time);
+          // this.date = this.job.date;
 
         })
         .catch((err) => {
