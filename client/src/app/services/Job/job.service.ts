@@ -39,7 +39,7 @@ export class JobService {
   /**
    * Method to get one specific job
    * @param id id of the job
-   * status message is reported by ToastService
+   * error message is reported by ToastService
    * resolves if the job could be obtained successfully
    * rejects if an error occurred
    */
@@ -48,7 +48,6 @@ export class JobService {
       this.databaseController
         .getRequest('get-job-by-id/' + id, '', Job)
         .then((res) => {
-          this.toastService.presentToast(res.message);
           resolve(res.data);
         })
         .catch((err) => {
@@ -61,7 +60,7 @@ export class JobService {
   /**
    * Method to get all jobs of a certain user
    * @param id id of the user
-   * status message is reported by ToastService
+   * error message is reported by ToastService
    * resolves if the jobs could be obtained successfully
    * rejects if an error occurred
    */
@@ -70,7 +69,6 @@ export class JobService {
       this.databaseController
         .getRequest('get-jobs/' + id, '', Job)
         .then((res) => {
-          this.toastService.presentToast(res.message);
           resolve(res.data);
         })
         .catch((err) => {
@@ -101,6 +99,27 @@ export class JobService {
             err.message,
             'An error occurred: '
           );
+          reject(err);
+        });
+    });
+  }
+
+  /**
+   * Method to delete a job
+   * @param id id of the job that is deleted
+   * status message is reported by ToastService
+   * resolves if the job is successfully removed from database
+   * rejects if an error occurred
+   */
+  deleteJob(id: string): Promise<Job> {
+    return new Promise<Job>((resolve, reject) => {
+      this.databaseController
+        .getRequest('delete-job/' + id, '', Job)
+        .then((res) => {
+          this.toastService.presentToast(res.message);
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err.message,  + 'Error: ');
           reject(err);
         });
     });

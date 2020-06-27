@@ -365,15 +365,15 @@ describe('test create job', () => {
   });
 });
 
-describe('test get job by _id', () => {
-  it('it should get a Job by _id', async (done) => {
+describe('get job by _id', () => {
+  it('it should get a job by _id', async (done) => {
     const res = await request(app)
       .get('/get-job-by-id/' + GET_JOB_ID);
     expect(res.statusCode).toEqual(200);
     expect(res.body.message).toBe('Job with _id = ' + GET_JOB_ID + ' found!');
     done();
   });
-  it('it should failed getting Job by _id', async (done) => {
+  it('it should fail getting job by _id', async (done) => {
     GET_JOB_ID = String(new ObjectId("507f1f77bcf86cd799439011"));
     const res = await request(app)
       .get('/get-job-by-id/' + GET_JOB_ID);
@@ -384,6 +384,16 @@ describe('test get job by _id', () => {
     const res = await request(app)
       .get('/get-job-by-id/test');
     expect(res.statusCode).toEqual(500);
+    done();
+  });
+});
+
+describe('get users jobs', () => {
+  it('it should get all jobs from a specific user', async (done) => {
+    const res = await request(app)
+      .get('/get-jobs/' + USER_ONE._id);
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.message).toBe('Jobs found.');
     done();
   });
 });
@@ -666,6 +676,16 @@ describe('interest add and backlog test', () => {
     expect(res.body.data.clientStack.length).toEqual(10);
     expect(res.body.data.serverStack.length).toEqual(3);
     expect(res.body.data.backLog.length).toEqual(0);
+    done();
+  });
+});
+
+describe('delete job', () => {
+  it('it should delete a specific job', async (done) => {
+    const res = await request(app)
+      .get('/delete-job/' + GET_JOB_ID);
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.message).toBe('Job deleted.');
     done();
   });
 });

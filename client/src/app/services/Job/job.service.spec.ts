@@ -42,8 +42,8 @@ describe('JobService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('Method tests', () => {
-    it('should create a Job', (done) => {
+  describe('GET tests', () => {
+    it('should create a job', (done) => {
       const job = new Job();
       job.title = 'Test';
       job.description = 'test123';
@@ -72,13 +72,19 @@ describe('JobService', () => {
         done();
       });
     });
-    it('should get a by id Job', (done) => {
+    it('should get a job by id', (done) => {
       service.getJobById('test123').then(async () => {
         expect(databaseSpy.getRequest).toHaveBeenCalledWith(
           'get-job-by-id/test123',
           '',
           Job
         );
+        done();
+      });
+    });
+    it('should get all jobs from a specific user', (done) => {
+      service.getJobs('test123').then(async () => {
+        expect(databaseSpy.getRequest).toHaveBeenCalledWith('get-jobs/test123', '', Job);
         done();
       });
     });

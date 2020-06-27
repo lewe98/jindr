@@ -4,6 +4,8 @@ import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
 import { JobService } from '../../../services/Job/job.service';
 import { ToastService } from '../../../services/Toast/toast.service';
+import { ProfileViewComponent } from '../../profile/profile-view/profile-view.component';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-display-jobs',
@@ -17,8 +19,10 @@ export class DisplayJobsComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private jobService: JobService,
-    private toastService: ToastService
-  ) {}
+    private toastService: ToastService,
+    private modalCtrl: ModalController
+  ) {
+  }
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
@@ -29,7 +33,18 @@ export class DisplayJobsComponent implements OnInit {
       .catch((err) => {
         this.toastService.presentWarningToast(err, 'Error!');
       });
+  }
 
+  async viewProfile() {
+    const modal = await this.modalCtrl.create({
+      component: ProfileViewComponent,
+      componentProps: { user: this.user }
+    });
+    return await modal.present();
+  }
+
+  deleteJob(id: string) {
+    this.jobService.deleteJob(id);
   }
 
 }

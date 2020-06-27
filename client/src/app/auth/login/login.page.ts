@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/Auth/auth.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
 import { ToastService } from '../../services/Toast/toast.service';
 import { ResetPwService } from '../../services/Reset-PW/reset-pw.service';
@@ -32,6 +32,7 @@ export class LoginPage implements OnInit {
     private router: Router,
     private platform: Platform,
     private toastService: ToastService,
+    private activatedRoute: ActivatedRoute,
     public resetPwService: ResetPwService
   ) {
     this.loginForm = new FormGroup({
@@ -93,7 +94,7 @@ export class LoginPage implements OnInit {
   }
 
   ngOnInit() {
-    const token = document.location.pathname.replace('/auth/register/', '');
+    const token = this.activatedRoute.snapshot.paramMap.get('token');
     if (document.location.href.includes('/auth/register/')) {
       this.authService.verifyRegistration(token);
     }

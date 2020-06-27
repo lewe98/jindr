@@ -1,15 +1,42 @@
-<div *ngFor="let job of jobs">
-    <ion-card>
-        <ion-card-header>
-            <ion-card-title>{{job.title}}</ion-card-title>
+<ion-header class="ion-no-border">
+    <ion-toolbar class="toolbar-custom toolbar-no-border profile-toolbar">
 
-            <ion-card-subtitle>{{job.date | date: 'dd.MM.yyyy'}}</ion-card-subtitle>
-        </ion-card-header>
+        <ion-title>My Jobs</ion-title>
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="pages"></ion-back-button>
+        </ion-buttons>
 
-        <ion-item>
-            <ion-button [routerLink]="'/pages/job/edit/' + job._id" fill="outline" slot="end">Edit</ion-button>
-            <ion-button fill="outline" slot="end">Delete</ion-button>
-            <ion-button fill="outline" slot="end">Interests</ion-button>
-        </ion-item>
-    </ion-card>
-</div>
+        <ion-buttons slot="end">
+            <app-image-shell class="img" [src]="user.image" (click)="viewProfile()"></app-image-shell>
+        </ion-buttons>
+
+        <ion-label slot="end">{{jobs.length}} jobs online.</ion-label>
+
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <div *ngFor="let job of jobs">
+        <ion-card>
+            <ion-card-header>
+                <ion-card-title>{{job.title}}</ion-card-title>
+
+                <ion-card-subtitle>{{job.date | date: 'dd.MM.yyyy'}}</ion-card-subtitle>
+            </ion-card-header>
+
+            <ion-item>
+                <ion-button [routerLink]="'/pages/job/edit/' + job._id" fill="outline" slot="end">
+                    <ion-icon name="create-outline"></ion-icon>
+                </ion-button>
+
+                <ion-button (click)="deleteJob(job._id)" fill="outline" slot="end">
+                    <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+
+                <ion-button [disabled]="!job.interestedUsers.length" fill="outline" slot="end">
+                    <ion-icon name="star-outline"></ion-icon>
+                    {{job.interestedUsers.length}}</ion-button>
+            </ion-item>
+        </ion-card>
+    </div>
+</ion-content>

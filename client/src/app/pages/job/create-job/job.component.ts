@@ -6,7 +6,7 @@ import {
   AlertController
 } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../services/Auth/auth.service';
 import { ToastService } from '../../../services/Toast/toast.service';
 import { Job } from '../../../../../interfaces/job';
@@ -51,7 +51,8 @@ export class JobComponent implements OnInit {
     private locationService: LocationService,
     private ngZone: NgZone,
     private imageService: ImageService,
-    private assetService: AssetService
+    private assetService: AssetService,
+    private activatedRoute: ActivatedRoute,
   ) {}
 
   ngOnInit() {
@@ -78,7 +79,7 @@ export class JobComponent implements OnInit {
     if (document.location.href.includes('/pages/job/edit/')) {
 
       this.edit = true;
-      const id = document.location.pathname.replace('/pages/job/edit/', '');
+      const id = this.activatedRoute.snapshot.paramMap.get('id');
 
       this.jobService.getJobById(id)
         .then((res) => {

@@ -866,7 +866,7 @@ app.post('/create-job', (req: Request, res: Response) => {
  *
  * @apiParam {String} job._id is a unique ID of a Job
  *
- * @apiSuccess {Job} message  Job with _id = XXXX found!
+ * @apiSuccess {Job} message a success message
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -895,26 +895,84 @@ app.get('/get-job-by-id/:_id', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @api {get} /get-jobs Gets all jobs from a user
+ * @apiName GetJobs
+ * @apiGroup Job
+ *
+ * @apiDescription Pass the creator's id to get all of her/his created jobs
+ *
+ * @apiParam {String} _id creator's id
+ *
+ * @apiSuccess {Job} message success message and job are included in response body
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *      message: 'Jobs found.',
+ *      data: jobs
+ *     }
+ *
+ * @apiError NoJobsFound error message, if no jobs could be found
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Bad Request
+ *     {
+ *       "message: "No Jobs found."
+ *     }
+ *
+ */
 app.get('/get-jobs/:_id', async (req: Request, res: Response) => {
-  try {
-    const _id: string = req.params._id;
-    const jobs = await Job.find({ creator: _id });
-
-    if (jobs) {
-      res.status(200).send({
-        message: 'Jobs found.',
-        data: jobs
-      });
-    } else {
-      res.status(404).send({
-        message: 'No Jobs found.'
-      });
-    }
-  } catch (err) {
-    res.status(500).send({
-      message: 'Error: ' + err
+  const _id: string = req.params._id;
+  const jobs = await Job.find({ creator: _id });
+  if (jobs) {
+    res.status(200).send({
+      message: 'Jobs found.',
+      data: jobs
+    });
+  } else {
+    res.status(404).send({
+      message: 'No Jobs found.'
     });
   }
+});
+
+/**
+ * @api {get} /delete-job Delete and remove one job from the database
+ * @apiName DeleteJob
+ * @apiGroup Job
+ *
+ * @apiDescription Pass the job's id to look it up and delete it in the database
+ *
+ * @apiParam {String} _id job's id
+ *
+ * @apiSuccess {Job} message success message if job could be deleted
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *      message: 'Job deleted.'
+ *     }
+ *
+ * @apiError NoJobsFound error message, if no job with that id could be found
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Bad Request
+ *     {
+ *       "message: "Job could not be found."
+ *     }
+ *
+ */
+app.get('/delete-job/:_id', async (req: Request, res: Response) => {
+  const _id: string = req.params._id;
+  Job.findOne({ _id: _id }).exec(async (err) => {
+    if (err) {
+      res.status(404).send({
+        message: 'Job could not be found.'
+      });
+    } else {
+      await Job.deleteOne({ _id });
+      res.status(200).send({
+        message: 'Job deleted.'
+      });
+    }
+  });
 });
 
 /**
@@ -947,6 +1005,7 @@ app.get('/get-jobs/:_id', async (req: Request, res: Response) => {
  *     {
  *       "message: "Job could not be found."
  *     }
+ *
  */
 app.put('/edit-job/:id', (req: Request, res: Response) => {
   const job = new Job();
