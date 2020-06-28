@@ -42,7 +42,7 @@ describe('JobService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('GET tests', () => {
+  describe('create and get job', () => {
     it('should create a job', (done) => {
       const job = new Job();
       job.title = 'Test';

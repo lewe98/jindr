@@ -14,6 +14,7 @@ import { ModalController } from '@ionic/angular';
 })
 export class DisplayJobsComponent implements OnInit {
   user: User = new User();
+  interestedUsers: User[] = [];
   jobs: Job[] = [];
 
   constructor(
@@ -39,6 +40,24 @@ export class DisplayJobsComponent implements OnInit {
     const modal = await this.modalCtrl.create({
       component: ProfileViewComponent,
       componentProps: { user: this.user }
+    });
+    return await modal.present();
+  }
+
+  async viewInterestedUsers(job: Job) {
+    await job.interestedUsers.forEach((userID) => {
+      this.authService.getUserByID(userID)
+        .then((res) => {
+          if (!this.interestedUsers.includes(res)) {
+            // TODO: - AMK
+            this.interestedUsers.push(res);
+          }
+        });
+    });
+
+    const modal = await this.modalCtrl.create({
+      component: ProfileViewComponent,
+      componentProps: { user: this.interestedUsers[0] }
     });
     return await modal.present();
   }

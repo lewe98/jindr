@@ -10,7 +10,8 @@
             <app-image-shell class="img" [src]="user.image" (click)="viewProfile()"></app-image-shell>
         </ion-buttons>
 
-        <ion-label slot="end">{{jobs.length}} jobs online.</ion-label>
+        <ion-label *ngIf="jobs.length == 1" slot="end">{{jobs.length}} job online.</ion-label>
+        <ion-label *ngIf="jobs.length > 1 || jobs.length == 0" slot="end">{{jobs.length}} jobs online.</ion-label>
 
     </ion-toolbar>
 </ion-header>
@@ -33,7 +34,7 @@
                     <ion-icon name="trash-outline"></ion-icon>
                 </ion-button>
 
-                <ion-button [disabled]="!job.interestedUsers.length" fill="outline" slot="end">
+                <ion-button (click)="viewInterestedUsers(job)" [disabled]="!job.interestedUsers.length" fill="outline" slot="end">
                     <ion-icon name="star-outline"></ion-icon>
                     {{job.interestedUsers.length}}</ion-button>
             </ion-item>
