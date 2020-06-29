@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { ShellModule } from '../../shell/shell.module';
 import { ChatViewComponent } from './chat-view/chat-view.component';
 import { GiphyModule } from './giphy/giphy';
+import { FormsModule } from '@angular/forms';
 
 const routes: Routes = [
   {
@@ -21,7 +22,8 @@ const routes: Routes = [
     IonicModule,
     RouterModule.forChild(routes),
     ShellModule,
-    GiphyModule
+    GiphyModule,
+    FormsModule
   ]
 })
 export class ChatModule {}

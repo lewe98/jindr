@@ -1,28 +1,27 @@
 <ion-header class="header-custom">
   <ion-toolbar class="toolbar-no-border">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/matches"></ion-back-button>
-    </ion-buttons>
     <ion-title>
-      <div class="job-name">JOB Bla Bla</div>
+      <div class="job-name">{{job?.title}}</div>
     </ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="danger" (click)="close()">
+        Done
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content #content class="ion-padding">
-  <div class="wrapper ion-text-center text-sm text-muted">
-    YOU LIKED THIS JOB ON DD.MM.YYYY
-  </div>
 
   <div class="chat-list">
-    <div class="chat-item" *ngFor="let item of messages" [ngClass]="{'chat-item-sender': item.isSender}">
+    <div class="chat-item" *ngFor="let item of messageWrapper?.messages" [ngClass]="{'chat-item-sender': item.sender === you._id}">
       <div class="chat-timestamp">
-        {{item.timestamp}}
+        {{item.timeStamp | date: 'short'}}
       </div>
 
       <div class="chat-item-content">
-        <div class="chat-avatar" *ngIf="!item.isSender">
-          <img [src]="item.avatar">
+        <div class="chat-avatar" *ngIf="item.sender !== you._id">
+          <img [src]="he.image">
         </div>
 
         <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type == 'image'}">
@@ -31,7 +30,7 @@
         </div>
       </div>
 
-      <div class="chat-item-status" *ngIf="item.isSender">
+      <div class="chat-item-status" *ngIf="item.sender === you._id && item.isSent">
         <ion-icon name="checkmark-circle" color="secondary"></ion-icon>
         Sent
       </div>

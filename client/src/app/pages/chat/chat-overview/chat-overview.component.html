@@ -9,26 +9,29 @@
 <ion-content>
 
       <div class="border-bottom">
-        <ion-searchbar placeholder="Search Messages" class="search-bar"></ion-searchbar>
+        <ion-searchbar (ionChange)="search()" [(ngModel)]="searchQuery" placeholder="Search Messages" class="search-bar"></ion-searchbar>
       </div>
-
         <div class="message-list">
-          <ion-row class="entry ion-align-items-center" (click)="goToChat()">
+          <ion-row class="entry ion-align-items-center" (click)="goToChat(chat)" *ngFor="let chat of filterWrappers">
             <ion-col size="2">
               <ion-avatar class="avatar">
                 <app-aspect-ratio class="rounded" [ratio]="{w: 1, h: 1}">
-                  <app-image-shell  animation="spinner" [src]="'assets/images/avatar.jpg'"></app-image-shell>
+                  <app-image-shell  animation="spinner" [src]="chat.employer === you ? chat.employeeImage : chat.employerImage"></app-image-shell>
                 </app-aspect-ratio>
               </ion-avatar>
             </ion-col>
-            <ion-col size="10" class="message-item-text">
+            <ion-col size="8" class="message-item-text">
               <div>
-                <div class="user-name">Testname</div>
-                <ion-text color="medium"><div>Sent you a message</div></ion-text>
+                <div class="user-name">{{chat.employer.toString() === you ? chat.employeeName : chat.employerName}}</div>
+                <ion-text color="medium" *ngIf="chat.messages[chat.messages.length - 1].type === 'text'"><div>{{chat.messages[chat.messages.length - 1].body.substring(0, 30)}}
+                {{chat.messages[chat.messages.length - 1].body.length > 30 ? '...' : ''}}</div></ion-text>
+                <ion-text color="medium" *ngIf="chat.messages[chat.messages.length - 1].type === 'image'"><div>{{chat.messages[chat.messages.length - 1].sender === you ?
+                  'You sent a gif' : 'Sent you a gif'}}</div></ion-text>
               </div>
+            </ion-col>
+            <ion-col size="2" *ngIf="chat.unread > 0">
+              <ion-badge color="primary">{{chat.unread}}</ion-badge>
             </ion-col>
           </ion-row>
         </div>
-
-
 </ion-content>
