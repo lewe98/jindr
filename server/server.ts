@@ -21,8 +21,13 @@ const serviceAccount = require('./config/jindr-firebase-push.json');
 const nodemailerConfig = require('./config/nodemailerConfig');
 
 const User = require('./models/user');
+const MessageWrapper = require('./models/messageWrapper');
 const Job = require('./models/job');
 const JobStack = require('./models/jobStack');
+const connectedUsersByID: Map<string, string> = new Map<string, string>();
+const connectedUsersBySocket: Map<string, string> = new Map<string, string>();
+let server;
+let io;
 
 const MONGODB_URI: string = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.MONGODB_NAME;
@@ -68,7 +73,7 @@ const maxRadius = 50; // Max search radius users can set in the app
 app.set('port', process.env.PORT);
 /* istanbul ignore next */
 if (process.env.NODE_ENV.trim() !== 'test') {
-  app.listen(app.get('port'), () => {
+  server = app.listen(app.get('port'), () => {
     (async () => {
       // eslint-disable-next-line
       console.log('Server connected at: ' + app.get('port'));
@@ -76,6 +81,7 @@ if (process.env.NODE_ENV.trim() !== 'test') {
       rasterizeMap(maxRadius, southWest, northEast);
     })();
   });
+  io = require('socket.io')(server);
 }
 
 /* istanbul ignore next */
@@ -167,6 +173,7 @@ app.post('/register', (req: Request, res: Response) => {
   const token = crypto.randomBytes(20).toString('hex');
   user.token = token;
   user.tokenExpires = new Date().setHours(new Date().getHours() + 24);
+  console.log(user);
   const REGISTER_URL: string = req.body.BASE_URL + '/auth/register/' + token;
   const subject = 'jindr - Register now!';
   const html =
@@ -222,6 +229,7 @@ app.post('/register', (req: Request, res: Response) => {
  *     }
  */
 app.get('/register/:token', (req: Request, res: Response) => {
+  console.log(req.params.token);
   User.findOne({
     token: req.params.token,
     tokenExpires: { $gt: Date.now() }
@@ -372,6 +380,134 @@ app.post('/logout', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @api {post} /new-wrapper Start a new chat
+ * @apiName NewWrapper
+ * @apiGroup Chat
+ *
+ * @apiDescription starts a new chat with a user and sends a socket message or
+ * push notification if user is not currently online
+ *
+ * @apiParam {String} wrapper a new messageWrapper
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       "data": wrapper
+ *     }
+ */
+app.post('/new-wrapper', async (req: Request, res: Response) => {
+  let wrapper = new MessageWrapper();
+  Object.assign(wrapper, req.body.wrapper);
+  wrapper = await wrapper.save({ new: true });
+  if (connectedUsersByID.get(wrapper.employee)) {
+    io.to(wrapper.employee.toString()).emit('new-wrapper', wrapper);
+  } else {
+    sendPushNotification(
+      [wrapper.employee],
+      'New Message!',
+      'You got a new message!',
+      'pages/chat'
+    );
+  }
+  res.status(201).send({
+    data: wrapper
+  });
+});
+
+/**
+ * @api {post} /new-message Send a new message to existing chat
+ * @apiName NewChat
+ * @apiGroup Chat
+ *
+ * @apiDescription sends a new message to an existing chat and sends a socket message or
+ * push notification if user is not currently online
+ *
+ * @apiParam {String} wrapperID id of the chat wrapper
+ * @apiParam {String} message the message to send
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": message
+ *     }
+ */
+app.post('/new-message', async (req: Request, res: Response) => {
+  const wrapperID = req.body.wrapperID;
+  const message = req.body.message;
+  const wrapper = await MessageWrapper.findOne({ _id: wrapperID });
+  wrapper.messages.push(message);
+  const receiver =
+    wrapper.employer.toString() === message.sender.toString()
+      ? wrapper.employee
+      : wrapper.employer;
+  await wrapper.save();
+  if (connectedUsersByID.get(receiver.toString())) {
+    io.to(receiver.toString()).emit('new-message', { message, wrapperID });
+  } else {
+    sendPushNotification(
+      [wrapper.employee],
+      'New Message!',
+      'You got a new message!',
+      'pages/chat'
+    );
+  }
+  res.status(200).send({
+    data: message
+  });
+});
+
+app.get(
+  '/message-wrapper-by-user/:userID',
+  async (req: Request, res: Response) => {
+    const userID = req.params.userID;
+    try {
+      const wrappers = await MessageWrapper.find()
+        .or([{ employee: userID }, { employer: userID }])
+        .exec();
+      res.status(200).send({
+        data: wrappers
+      });
+    } catch (e) {
+      res.status(400).send({
+        message: 'Could not get chats',
+        errors: e
+      });
+    }
+  }
+);
+
+app.put('/update-wrapper', async (req: Request, res: Response) => {
+  const wrapper = req.body.wrapper;
+  const you = req.body.you;
+  let newWrapper;
+  try {
+    newWrapper = await MessageWrapper.findOneAndUpdate(
+      { _id: wrapper._id },
+      {
+        employeeName: wrapper.employeeName,
+        employeeImage: wrapper.employeeImage,
+        employerName: wrapper.employerName,
+        employerImage: wrapper.employerImage,
+        employeeLastViewed: wrapper.employeeLastViewed,
+        employerLastViewed: wrapper.employerLastViewed
+      },
+      { new: true }
+    );
+    const receiver =
+      wrapper.employer.toString() === you ? wrapper.employee : wrapper.employer;
+    if (connectedUsersByID.get(receiver.toString())) {
+      io.to(receiver).emit('update-wrapper', { wrapper: newWrapper });
+    }
+    res.status(200).send({
+      data: newWrapper
+    });
+  } catch (e) {
+    res.status(400).send({
+      errors: e
+    });
+  }
+});
 /**
  * @api {put} /update-user Updated user in the Database
  * @apiName UpdateUser
@@ -741,6 +877,7 @@ app.put('/decision', async (req: Request, res: Response) => {
       likedJob.title +
       '. Check out now!';
     // TODO add link once page exists
+    // TODO add unread count
     sendPushNotification([likedJob.creator], 'Help offered!', message, '');
   }
   jobStack.markModified('swipedJobs');
@@ -996,6 +1133,9 @@ async function sendPushNotification(
   message: string,
   link: string
 ) {
+  if (process.env.NODE_ENV.trim() === 'test') {
+    return;
+  }
   const notificationOptions = {
     priority: 'high',
     timeToLive: 60 * 60 * 24
@@ -1010,7 +1150,7 @@ async function sendPushNotification(
   const users = await User.find().where('_id').in(userIDs).exec();
   if (users) {
     users.forEach((user) => {
-      if (user.allowNotifications) {
+      if (user.allowNotifications && user.notificationToken) {
         admin
           .messaging()
           .sendToDevice(user.notificationToken, payload, notificationOptions);
@@ -1396,6 +1536,27 @@ app.get('/jobstack/:userID', async (req: Request, res: Response) => {
     });
   }
 });
+
+/*****************************************************************************
+ ***  Handle IO-Socket requests                                              *
+ *****************************************************************************/
+/* istanbul ignore next */
+if (process.env.NODE_ENV.trim() !== 'test') {
+  io.on('connection', (soc) => {
+    soc.on('init', (userID) => {
+      soc.join(userID);
+      connectedUsersByID.set(userID, soc.id);
+      connectedUsersBySocket.set(soc.id, userID);
+    });
+
+    soc.on('disconnect', () => {
+      const tmp = connectedUsersBySocket.get(soc.id);
+      soc.leave(tmp);
+      connectedUsersBySocket.delete(soc.id);
+      connectedUsersByID.delete(tmp);
+    });
+  });
+}
 /**
  * Method to set nodemailer transporter, only used for testing purposes
  * @param transp transporter

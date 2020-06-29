@@ -1,0 +1,66 @@
+:host {
+  --page-margin: var(--app-narrow-margin);
+  --page-border-radius: var(--app-fair-radius);
+  --page-segment-background: var(--app-background);
+  --page-segment-indicator-height: 2px;
+}
+
+:host-context(.ios) {
+  .segment-changer {
+    width: 100%;
+    --background: var(--page-segment-background);
+    padding: var(--page-margin);
+
+    ion-segment-button {
+      --color-checked: var(--ion-color-light);
+    }
+  }
+
+  ion-searchbar.offer-searchbar {
+    padding-top: 0;
+  }
+}
+
+.segment-changer {
+  width: 100%;
+  --background: var(--page-segment-background);
+  position: sticky;
+  top: 0;
+  z-index: 8;
+
+  ion-segment-button {
+    --padding-end: var(--page-margin);
+    --padding-start: var(--page-margin);
+    --color: rgba(var(--ion-color-dark-rgb), 0.4);
+    --indicator-color: var(--ion-color-medium-shade);
+
+    text-transform: capitalize;
+    min-height: calc((var(--page-margin) * 3) - var(--page-segment-indicator-height));
+  }
+}
+
+.empty-list-message {
+  margin: calc(var(--page-margin) * 3);
+  color: rgba(var(--ion-color-dark-rgb), 0.4);
+  text-align: center;
+}
+
+ion-item.offer-item {
+  --inner-padding-start: 0px;
+  --inner-padding-end: 0px;
+  --padding-start: 0px;
+  --padding-end: 0px;
+  --padding-bottom: var(--page-margin);
+  --inner-padding-bottom: var(--page-margin);
+
+  &:last-child {
+    --border-style: none;
+    --padding-bottom: 0px;
+    --inner-padding-bottom: 0px;
+  }
+}
+
+.offer-list {
+  padding: 0 var(--page-margin);
+  margin-bottom: calc(var(--page-margin) * 3);
+}

@@ -38,6 +38,7 @@
     "es6-promise-plugin": "^4.2.2",
     "lodash": "^4.17.15",
     "ngx-image-compress": "^8.0.4",
+    "ngx-socket-io": "^3.0.1",
     "rxjs": "~6.5.1",
     "tslib": "^1.10.0",
     "zone.js": "~0.10.2"

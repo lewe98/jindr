@@ -43,8 +43,7 @@ export class JobService {
       this.databaseController
         .getRequest('get-job-by-id/' + id, '', Job)
         .then((res) => {
-          this.toastService.presentToast(res.message);
-          resolve(res.job);
+          resolve(res.data);
         })
         .catch((err) => {
           this.toastService.presentWarningToast(err.errors, err.message + ': ');

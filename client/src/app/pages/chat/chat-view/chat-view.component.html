@@ -1,0 +1,48 @@
+<ion-header class="header-custom">
+  <ion-toolbar class="toolbar-no-border">
+    <ion-title>
+      <div class="job-name">{{job?.title}}</div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="danger" (click)="close()">
+        Done
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content #content class="ion-padding">
+
+  <div class="chat-list">
+    <div class="chat-item" *ngFor="let item of messageWrapper?.messages" [ngClass]="{'chat-item-sender': item.sender === you._id}">
+      <div class="chat-timestamp">
+        {{item.timeStamp | date: 'short'}}
+      </div>
+
+      <div class="chat-item-content">
+        <div class="chat-avatar" *ngIf="item.sender !== you._id">
+          <img [src]="he.image">
+        </div>
+
+        <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type == 'image'}">
+          <div class="chat-body" *ngIf="item.type !== 'image'" [innerHtml]="item.body | nlbr"></div>
+          <img [src]="item.body" *ngIf="item.type == 'image'">
+        </div>
+      </div>
+
+      <div class="chat-item-status" *ngIf="item.sender === you._id && item.isSent">
+        <ion-icon name="checkmark-circle" color="secondary"></ion-icon>
+        Sent
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar class="toolbar-no-border">
+    <app-input-with-giphy
+            (doSubmit)="onSubmitMessage($event)"
+            (doSizeChange)="onInputSizeChange()">
+    </app-input-with-giphy>
+  </ion-toolbar>
+</ion-footer>

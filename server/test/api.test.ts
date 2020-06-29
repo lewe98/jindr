@@ -23,6 +23,7 @@ let JOB_ONE;
 let JOB_TWO;
 let JOBS_TO_LIKE;
 let GET_JOB_ID = '';
+let WRAPPER_ONE;
 /**
  * Connect to a new in-memory database before running any tests.
  */
@@ -116,7 +117,6 @@ describe('Register new User', () => {
         const u = await request(app)
           .get("/user/" + USER_ONE._id)
           .send();
-
         const res = await request(app)
           .get("/register/" + u.body.data.token)
           .send();
@@ -669,3 +669,78 @@ describe('interest add and backlog test', () => {
     done();
   });
 });
+
+describe('test chat', () => {
+  it('should start a new chat', async () => {
+    const wrapper = {
+      "employer": USER_ONE._id,
+      "employee": USER_TWO._id,
+      "employeeName": USER_TWO.firstName + ' ' + USER_TWO.lastName,
+      "employerName": USER_ONE.firstName + ' ' + USER_ONE.lastName,
+      "jobID": JOB_ONE._id,
+      "messages": {
+        "sender": USER_ONE._id,
+        "timeStamp": Date.now(),
+        "body": "Test Message",
+        "type":  "text"
+      }
+    }
+    const res = await request(app)
+      .post('/new-wrapper')
+      .send({
+        wrapper
+      });
+    expect(res.statusCode).toEqual(201);
+    WRAPPER_ONE = res.body.data;
+    expect(WRAPPER_ONE._id).not.toBe(null);
+    expect(WRAPPER_ONE.messages.length).toEqual(1);
+  });
+
+  it('should add a message to the chat', async () => {
+      const res = await request(app)
+        .post('/new-message')
+        .send({
+          wrapperID: WRAPPER_ONE._id,
+          message: {
+            "sender": USER_ONE._id,
+            "timeStamp": Date.now(),
+            "body": "Test Message 2",
+            "type":  "text"
+          }
+        });
+      expect(res.statusCode).toEqual(200);
+      const wrapper = await request(app)
+        .get('/message-wrapper-by-user/' + USER_ONE._id)
+        .send();
+      expect(wrapper.body.data.length).toEqual(1);
+      WRAPPER_ONE = wrapper.body.data[0];
+      expect(WRAPPER_ONE.messages.length).toEqual(2);
+  });
+});
+
+describe('test get wrapper', () => {
+  it ('should get all wrappers by userID', async () => {
+    const wrapper = {
+      "employer": USER_TWO._id,
+      "employee": USER_ONE._id,
+      "employeeName": USER_ONE.firstName + ' ' + USER_ONE.lastName,
+      "employerName": USER_TWO.firstName + ' ' + USER_TWO.lastName,
+      "jobID": JOB_ONE._id,
+      "messages": {
+        "sender": USER_TWO._id,
+        "timeStamp": Date.now(),
+        "body": "Test Message",
+        "type":  "text"
+      }
+    }
+    await request(app)
+      .post('/new-wrapper')
+      .send({
+        wrapper
+      });
+    const res = await request(app)
+      .get('/message-wrapper-by-user/' + USER_ONE._id)
+      .send();
+    expect(res.body.data.length).toEqual(2);
+  })
+})
