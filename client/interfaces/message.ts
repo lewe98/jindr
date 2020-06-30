@@ -3,5 +3,4 @@ export class Message {
   timeStamp: number;
   body: string;
   type: 'image' | 'text';
-  isSent: boolean;
 }

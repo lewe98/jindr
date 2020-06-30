@@ -490,6 +490,22 @@ app.get(
   }
 );
 
+/**
+ * @api {put} /update-wrapper Updates a messageWrapper
+ * @apiName UpdateWrapper
+ * @apiGroup Chat
+ *
+ * @apiDescription updates all fields of a messageWrapper that can be subject to change
+ *
+ * @apiParam {String} wrapper the message wrapper with updated values
+ * @apiParam {String} you the id of the user requesting the update
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": newWrapper
+ *     }
+ */
 app.put('/update-wrapper', async (req: Request, res: Response) => {
   const wrapper = req.body.wrapper;
   const you = req.body.you;
@@ -613,6 +629,7 @@ app.put('/update-user', async (req: Request, res: Response) => {
  *     }
  */
 app.get('/user/:userID', (req: Request, res: Response) => {
+  const isTester = req.body.isTester;
   User.findOne({ _id: req.params.userID })
     .select('-password -deviceID')
     .exec((err, user) => {
@@ -624,7 +641,7 @@ app.get('/user/:userID', (req: Request, res: Response) => {
       } else {
         res.status(200).send({
           message: 'User retrieved',
-          data: user
+          data: isTester ? user : prepareUser(user)
         });
       }
     });
@@ -1131,6 +1148,7 @@ function prepareUser(user) {
   delete user.deviceID;
   delete user.token;
   delete user.tokenExpires;
+  delete user.notificationToken;
   return user;
 }
 
@@ -1141,6 +1159,7 @@ function prepareUser(user) {
  * @param message the message of the notification
  * @param link the link of the page to open when tapped on the notification
  */
+/* istanbul ignore next */
 async function sendPushNotification(
   userIDs: string[],
   title: string,

@@ -26,6 +26,12 @@ export class ChatService {
     this.getAllWrappers();
   }
 
+  /**
+   * Sends a new message or creates a new message wrapper if message wrapper does not exist
+   * @param message the message to add to the wrapper
+   * @param wrapper the message wrapper to add the message to. ID is empty if message wrapper does
+   * not exist
+   */
   sendMessage(message: Message, wrapper: MessageWrapper): Promise<any> {
     return new Promise((resolve, reject) => {
       if (!wrapper._id) {
@@ -59,6 +65,11 @@ export class ChatService {
     });
   }
 
+  /**
+   * Adds a new message to an existing wrapper
+   * @param message the message to add to the wrapper
+   * @param wrapperID the id of the wrapper
+   */
   addMessageAndSort(message, wrapperID) {
     const idx = _.findIndex(this.allChats, { _id: wrapperID });
     this.allChats[idx].messages.push(message);
@@ -66,6 +77,9 @@ export class ChatService {
     this.$newMessage.emit(true);
   }
 
+  /**
+   * Sorts all messageWrappers by timestamp of the last message, in descending order
+   */
   sortWrapper() {
     this.allChats.sort((a, b) =>
       a.messages[a.messages.length - 1].timeStamp <
@@ -77,12 +91,20 @@ export class ChatService {
     this.wrapperSubject.next(this.allChats);
   }
 
+  /**
+   * pushes a new wrapper to the front of the list, since a new wrapper will always
+   * contain the latest message
+   * @param wrapper the wrapper to add to the list
+   */
   addWrapperAndSort(wrapper: MessageWrapper) {
     this.allChats.unshift(wrapper);
     this.countUnread();
     this.wrapperSubject.next(this.allChats);
   }
 
+  /**
+   * Gets all wrappers of the user from the server
+   */
   getAllWrappers() {
     this.databaseController
       .getRequest(
@@ -92,17 +114,14 @@ export class ChatService {
       )
       .then((res) => {
         this.allChats = res.data;
-        this.allChats.sort((a, b) =>
-          a.messages[a.messages.length - 1].timeStamp <
-          b.messages[b.messages.length - 1].timeStamp
-            ? -1
-            : 1
-        );
-        this.countUnread();
-        this.wrapperSubject.next(this.allChats);
+        this.sortWrapper();
       });
   }
 
+  /**
+   * Counts how many unread messages a user has per messageWrapper
+   * Every message received after last time he viewed the job is unread.
+   */
   countUnread() {
     let unreadCount = 0;
     this.allChats.map((c) => {
@@ -120,6 +139,12 @@ export class ChatService {
     });
     this.unreadSubject.next(unreadCount);
   }
+
+  /**
+   * Updates a wrapper with current user details
+   * @param wrapper the wrapper with updated information
+   * @param you current users userID to check requesting user
+   */
   updateWrapper(wrapper: MessageWrapper, you: string): Promise<MessageWrapper> {
     return new Promise<MessageWrapper>((resolve) => {
       this.databaseController
@@ -135,6 +160,10 @@ export class ChatService {
     });
   }
 
+  /**
+   * Updates information of a wrapper in the wrapperList
+   * @param wrapper the wrapper with updated information
+   */
   putUpdatedWrapper(wrapper: MessageWrapper) {
     const idx = _.findIndex(this.allChats, { _id: wrapper._id });
     this.allChats[idx].employeeImage = wrapper.employeeImage;

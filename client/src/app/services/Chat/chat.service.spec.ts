@@ -6,7 +6,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ChatService', () => {
   let service: ChatService;
-
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule]

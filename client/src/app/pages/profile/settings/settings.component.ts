@@ -91,6 +91,13 @@ export class SettingsComponent implements OnInit {
     }
   }
 
+  allowChange() {
+    if (this.user.locateMe === false) {
+      this.autocompleteItems = [];
+      this.autocomplete.input = '';
+    }
+  }
+
   scrollToTop(id: string) {
     const element = document.getElementById(id);
     element.scrollIntoView({

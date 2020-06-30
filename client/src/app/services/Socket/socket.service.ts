@@ -17,6 +17,10 @@ export class SocketService {
     this.initResponses();
   }
 
+  /**
+   * Establishes socket connection with server
+   * @param userID id of the current user to save in the server map
+   */
   connect(userID) {
     this.userID = userID;
     this.socket.connect();
@@ -26,14 +30,28 @@ export class SocketService {
     this.socket.disconnect();
   }
 
+  /**
+   * Sends a socket request to the server
+   * @param identifier name of the socket request
+   * @param data to send to the server
+   */
   send(identifier: string, data) {
     this.socket.emit(identifier, data);
   }
 
+  /**
+   * Method to initialize and listen to incoming server responses
+   */
   initResponses() {
+    /**
+     * Send user ID to the server after connection was established
+     */
     this.socket.on('connect', () => {
       this.socket.emit('init', this.userID);
     });
+    /**
+     * Listens for new message wrappers
+     */
     this.socket.on('new-wrapper', (wrapper: MessageWrapper) => {
       this.chatService.addWrapperAndSort(wrapper);
       if (this.chatService.activeChat !== wrapper._id) {
@@ -45,18 +63,24 @@ export class SocketService {
       }
     });
 
+    /**
+     * Listens for new messages
+     */
     this.socket.on('new-message', (data) => {
-      console.log(data);
       this.chatService.addMessageAndSort(data.message, data.wrapperID);
       if (this.chatService.activeChat !== data.wrapperID) {
         this.toastService.presentNotification(
           'New Message',
           'You got a new message.',
-          'pages/chat'
+          'pages/chat',
+          data.wrapperID
         );
       }
     });
 
+    /**
+     * Listens for updated wrappers
+     */
     this.socket.on('update-wrapper', (data) => {
       this.chatService.putUpdatedWrapper(data.wrapper);
     });
