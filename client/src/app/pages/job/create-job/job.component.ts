@@ -52,8 +52,9 @@ export class JobComponent implements OnInit {
     private ngZone: NgZone,
     private imageService: ImageService,
     private assetService: AssetService,
-    private activatedRoute: ActivatedRoute,
-  ) {}
+    private activatedRoute: ActivatedRoute
+  ) {
+  }
 
   ngOnInit() {
 
@@ -99,9 +100,9 @@ export class JobComponent implements OnInit {
           this.createForm.controls.homepage.reset(this.job.homepage);
           this.createForm.controls.interests.reset(this.jobInterests);
 
-          if(this.job.isHourly){
+          if (this.job.isHourly) {
             this.createForm.controls.selectedOption.reset('hourly');
-          }else{
+          } else {
             this.createForm.controls.selectedOption.reset('total');
           }
           this.createForm.controls.time.reset(this.job.time);
