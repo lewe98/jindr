@@ -25,7 +25,7 @@
                     <ion-button [routerLink]="['/pages/chat']" color="white" class="button-custom button-icon">
                         <ion-icon name="chatbubbles-outline"></ion-icon>
                     </ion-button>
-                    <ion-badge *ngIf="unread > 0" class="badge" color="secondary">{{unread}}</ion-badge>
+                    <ion-badge mode="ios" *ngIf="unread > 0" class="badge" color="secondary">{{unread}}</ion-badge>
                     <div class="button-label">Chat</div>
                 </ion-col>
                 <ion-col class="ion-text-center m-t">

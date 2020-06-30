@@ -1,5 +1,10 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { IonContent, ModalController, NavParams } from '@ionic/angular';
+import {
+  IonContent,
+  ModalController,
+  NavParams,
+  PopoverController
+} from '@ionic/angular';
 import { MessageWrapper } from '../../../../../interfaces/messageWrapper';
 import { Message } from '../../../../../interfaces/message';
 import { AuthService } from '../../../services/Auth/auth.service';
@@ -8,6 +13,8 @@ import { Job } from '../../../../../interfaces/job';
 import { ChatService } from '../../../services/Chat/chat.service';
 import { JobService } from '../../../services/Job/job.service';
 import { Subscription } from 'rxjs';
+import { JobDetailComponent } from '../../job/job-detail/job-detail.component';
+import { ProfileViewComponent } from '../../profile/profile-view/profile-view.component';
 
 @Component({
   selector: 'app-chat-view',
@@ -28,10 +35,14 @@ export class ChatViewComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private chatService: ChatService,
     private jobService: JobService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    public popoverController: PopoverController
   ) {}
 
   ngOnInit() {
+    /**
+     * Checks whether it is an already existing chat or to start a new one and retrieves all required data
+     */
     this.you = this.authService.user;
     if (this.navParams.get('wrapper')) {
       this.messageWrapper = this.navParams.get('wrapper');
@@ -81,6 +92,10 @@ export class ChatViewComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Updates the values in messageWrapper that are subject to change, to improve data integrity
+   * @param wrapper the wrapper to update
+   */
   compareAndUpdate(wrapper: MessageWrapper) {
     if (this.you._id === wrapper.employer) {
       wrapper.employerImage = this.you.image;
@@ -100,12 +115,20 @@ export class ChatViewComponent implements OnInit, OnDestroy {
       this.messageWrapper.employerImage = res.employerImage;
     });
   }
+
+  /**
+   * Method to either send a message to an existing wrapper or create a new wrapper to start a chat
+   * @param data attribute which contains the message body and the message type
+   */
   onSubmitMessage(data: any) {
     this.message.body =
       data.type.toUpperCase() === 'IMAGE' ? data.imageUrl : data.message;
     this.message.timeStamp = Date.now();
     this.message.type = data.type;
     this.message.sender = this.you._id;
+    /**
+     * Create a new wrapper, fill it with required data and send it to the server
+     */
     if (!this.messageWrapper) {
       this.messageWrapper = new MessageWrapper();
       this.messageWrapper.messages = [];
@@ -127,6 +150,9 @@ export class ChatViewComponent implements OnInit, OnDestroy {
           this.scrollToBottom();
         });
     } else {
+      /**
+       * Send a message to an existing wrapper
+       */
       this.chatService
         .sendMessage(this.message, this.messageWrapper)
         .then((res) => {
@@ -138,6 +164,10 @@ export class ChatViewComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Closes the modal and updates the chat wrapper with current time as last viewed. This is needed
+   * to check whether the user has unread messages
+   */
   close() {
     this.modalCtrl.dismiss();
     this.chatService.activeChat = null;
@@ -155,5 +185,64 @@ export class ChatViewComponent implements OnInit, OnDestroy {
         sub.unsubscribe();
       }
     });
+  }
+
+  /**
+   * Opens job details
+   */
+  async handleJobInfo() {
+    const modal = await this.modalCtrl.create({
+      component: JobDetailComponent,
+      componentProps: { job: this.job }
+    });
+    return await modal.present();
+  }
+
+  async presentPopover(ev: any) {
+    const popover = await this.popoverController.create({
+      component: PopoverComponent,
+      cssClass: 'my-custom-class',
+      event: ev,
+      showBackdrop: true,
+      componentProps: { job: this.job, profile: this.he }
+    });
+    return await popover.present();
+  }
+}
+
+@Component({
+  template: `
+    <ion-list>
+      <ion-item (click)="handleJobInfo()">View Job</ion-item>
+      <ion-item (click)="handleProfileInfo()">View Profile</ion-item>
+    </ion-list>
+  `
+})
+export class PopoverComponent {
+  job;
+  profile;
+  constructor(public modalCtrl: ModalController, public navParams: NavParams) {
+    this.job = this.navParams.get('job');
+    this.profile = this.navParams.get('profile');
+  }
+
+  close() {
+    this.modalCtrl.dismiss();
+  }
+
+  async handleJobInfo() {
+    const modal = await this.modalCtrl.create({
+      component: JobDetailComponent,
+      componentProps: { job: this.job }
+    });
+    return await modal.present();
+  }
+
+  async handleProfileInfo() {
+    const modal = await this.modalCtrl.create({
+      component: ProfileViewComponent,
+      componentProps: { user: this.profile }
+    });
+    return await modal.present();
   }
 }

@@ -1,7 +1,12 @@
 <ion-header class="header-custom">
   <ion-toolbar class="toolbar-no-border">
+    <ion-buttons slot="start">
+        <ion-button (click)="presentPopover($event)" fill="clear">
+          <ion-icon slot="icon-only" name="ellipsis-vertical" class="text-2x" color="medium"></ion-icon>
+        </ion-button>
+    </ion-buttons>
     <ion-title>
-      <div class="job-name">{{job?.title}}</div>
+      <div class="job-name" (click)="handleJobInfo()">{{job?.title}}</div>
     </ion-title>
     <ion-buttons slot="end">
       <ion-button color="danger" (click)="close()">
@@ -21,7 +26,9 @@
 
       <div class="chat-item-content">
         <div class="chat-avatar" *ngIf="item.sender !== you._id">
-          <img [src]="he.image">
+          <app-aspect-ratio class="rounded" [ratio]="{w: 1, h: 1}">
+            <app-image-shell  animation="spinner" [src]="he.image"></app-image-shell>
+          </app-aspect-ratio>
         </div>
 
         <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type == 'image'}">
@@ -30,7 +37,7 @@
         </div>
       </div>
 
-      <div class="chat-item-status" *ngIf="item.sender === you._id && item.isSent">
+      <div style="visibility: hidden" class="chat-item-status" *ngIf="item.sender === you._id">
         <ion-icon name="checkmark-circle" color="secondary"></ion-icon>
         Sent
       </div>

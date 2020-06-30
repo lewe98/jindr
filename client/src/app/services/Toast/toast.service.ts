@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { LoadingController, ToastController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { NavigationExtras, Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -55,7 +55,12 @@ export class ToastService {
     toast.present();
   }
 
-  async presentNotification(header, message, link) {
+  async presentNotification(header, message, link, data?) {
+    const navigationExtras: NavigationExtras = {
+      queryParams: {
+        data
+      }
+    };
     const notification = await this.toastController.create({
       header,
       message,
@@ -70,7 +75,7 @@ export class ToastService {
           icon: 'arrow-forward-sharp',
           handler: () => {
             if (link) {
-              this.router.navigate([link]);
+              this.router.navigate([link], navigationExtras);
             }
           }
         }

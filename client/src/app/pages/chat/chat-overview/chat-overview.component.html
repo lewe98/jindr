@@ -27,10 +27,11 @@
                 {{chat.messages[chat.messages.length - 1].body.length > 30 ? '...' : ''}}</div></ion-text>
                 <ion-text color="medium" *ngIf="chat.messages[chat.messages.length - 1].type === 'image'"><div>{{chat.messages[chat.messages.length - 1].sender === you ?
                   'You sent a gif' : 'Sent you a gif'}}</div></ion-text>
+                <div class="timestamp text-muted">{{chat.messages[chat.messages.length - 1].timeStamp | date: 'short'}}</div>
               </div>
             </ion-col>
             <ion-col size="2" *ngIf="chat.unread > 0">
-              <ion-badge color="primary">{{chat.unread}}</ion-badge>
+              <ion-badge mode="ios" color="primary">{{chat.unread}}</ion-badge>
             </ion-col>
           </ion-row>
         </div>
