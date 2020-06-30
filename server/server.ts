@@ -173,7 +173,6 @@ app.post('/register', (req: Request, res: Response) => {
   const token = crypto.randomBytes(20).toString('hex');
   user.token = token;
   user.tokenExpires = new Date().setHours(new Date().getHours() + 24);
-  console.log(user);
   const REGISTER_URL: string = req.body.BASE_URL + '/auth/register/' + token;
   const subject = 'jindr - Register now!';
   const html =
@@ -229,7 +228,6 @@ app.post('/register', (req: Request, res: Response) => {
  *     }
  */
 app.get('/register/:token', (req: Request, res: Response) => {
-  console.log(req.params.token);
   User.findOne({
     token: req.params.token,
     tokenExpires: { $gt: Date.now() }
@@ -457,6 +455,21 @@ app.post('/new-message', async (req: Request, res: Response) => {
   });
 });
 
+/**
+ * @api {get} /message-wrapper-by-user/:userID Get all message wrappers from a user
+ * @apiName MessageWrappers
+ * @apiGroup Chat
+ *
+ * @apiDescription gets all message wrappers of a user by its user ID, returns an array of wrappers
+ *
+ * @apiParam {String} userID id of the requesting user
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": wrappers[]
+ *     }
+ */
 app.get(
   '/message-wrapper-by-user/:userID',
   async (req: Request, res: Response) => {
@@ -508,6 +521,7 @@ app.put('/update-wrapper', async (req: Request, res: Response) => {
     });
   }
 });
+
 /**
  * @api {put} /update-user Updated user in the Database
  * @apiName UpdateUser
