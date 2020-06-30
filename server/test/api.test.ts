@@ -116,14 +116,18 @@ describe('Register new User', () => {
     it("should verify user", async (done) => {
         const u = await request(app)
           .get("/user/" + USER_ONE._id)
-          .send();
+          .send({
+            isTester: true
+          });
         const res = await request(app)
           .get("/register/" + u.body.data.token)
           .send();
 
         const newU = await request(app)
           .get("/user/" + USER_ONE._id)
-          .send();
+          .send({
+            isTester: true
+          });
 
         USER_ONE = newU.body.data;
 
@@ -334,7 +338,9 @@ describe('Reset password', () => {
 
         const u = await request(app)
           .get("/user/" + USER_ONE._id)
-          .send();
+          .send({
+            isTester: true
+          });
 
         const res = await request(app)
           .post('/forgot-pw/' + u.body.data.token)
@@ -743,4 +749,21 @@ describe('test get wrapper', () => {
       .send();
     expect(res.body.data.length).toEqual(2);
   })
-})
+});
+
+describe('test update wrapper', () => {
+  it('should update a wrapper', async () => {
+    const now = Date.now();
+    WRAPPER_ONE.employerImage = './test/image.png';
+    WRAPPER_ONE.employeeLastViewed = now;
+    const res = await request(app)
+      .put('/update-wrapper')
+      .send({
+        wrapper: WRAPPER_ONE,
+        you: USER_ONE._id
+      });
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.data.employerImage).toEqual('./test/image.png');
+    expect(res.body.data.employeeLastViewed).toEqual(now);
+  });
+});

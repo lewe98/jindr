@@ -32,7 +32,7 @@
     <ion-card-subtitle *ngIf="data.homepage">Homepage</ion-card-subtitle>
     <ion-card-content>{{data?.homepage}}</ion-card-content>
 
-    <ion-card-subtitle *ngIf="data?.interests">Interests</ion-card-subtitle>
+    <ion-card-subtitle *ngIf="data.interests?.length > 0">Interests</ion-card-subtitle>
     <ion-card-content>
       <ion-chip *ngFor="let Interest of data?.interests;" color="medium" >
         <ion-label>{{interests[Interest.id]['title']}}</ion-label>

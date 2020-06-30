@@ -173,7 +173,6 @@ app.post('/register', (req: Request, res: Response) => {
   const token = crypto.randomBytes(20).toString('hex');
   user.token = token;
   user.tokenExpires = new Date().setHours(new Date().getHours() + 24);
-  console.log(user);
   const REGISTER_URL: string = req.body.BASE_URL + '/auth/register/' + token;
   const subject = 'jindr - Register now!';
   const html =
@@ -229,7 +228,6 @@ app.post('/register', (req: Request, res: Response) => {
  *     }
  */
 app.get('/register/:token', (req: Request, res: Response) => {
-  console.log(req.params.token);
   User.findOne({
     token: req.params.token,
     tokenExpires: { $gt: Date.now() }
@@ -457,6 +455,21 @@ app.post('/new-message', async (req: Request, res: Response) => {
   });
 });
 
+/**
+ * @api {get} /message-wrapper-by-user/:userID Get all message wrappers from a user
+ * @apiName MessageWrappers
+ * @apiGroup Chat
+ *
+ * @apiDescription gets all message wrappers of a user by its user ID, returns an array of wrappers
+ *
+ * @apiParam {String} userID id of the requesting user
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": wrappers[]
+ *     }
+ */
 app.get(
   '/message-wrapper-by-user/:userID',
   async (req: Request, res: Response) => {
@@ -477,6 +490,22 @@ app.get(
   }
 );
 
+/**
+ * @api {put} /update-wrapper Updates a messageWrapper
+ * @apiName UpdateWrapper
+ * @apiGroup Chat
+ *
+ * @apiDescription updates all fields of a messageWrapper that can be subject to change
+ *
+ * @apiParam {String} wrapper the message wrapper with updated values
+ * @apiParam {String} you the id of the user requesting the update
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": newWrapper
+ *     }
+ */
 app.put('/update-wrapper', async (req: Request, res: Response) => {
   const wrapper = req.body.wrapper;
   const you = req.body.you;
@@ -508,6 +537,7 @@ app.put('/update-wrapper', async (req: Request, res: Response) => {
     });
   }
 });
+
 /**
  * @api {put} /update-user Updated user in the Database
  * @apiName UpdateUser
@@ -599,6 +629,7 @@ app.put('/update-user', async (req: Request, res: Response) => {
  *     }
  */
 app.get('/user/:userID', (req: Request, res: Response) => {
+  const isTester = req.body.isTester;
   User.findOne({ _id: req.params.userID })
     .select('-password -deviceID')
     .exec((err, user) => {
@@ -610,7 +641,7 @@ app.get('/user/:userID', (req: Request, res: Response) => {
       } else {
         res.status(200).send({
           message: 'User retrieved',
-          data: user
+          data: isTester ? user : prepareUser(user)
         });
       }
     });
@@ -1117,6 +1148,7 @@ function prepareUser(user) {
   delete user.deviceID;
   delete user.token;
   delete user.tokenExpires;
+  delete user.notificationToken;
   return user;
 }
 
@@ -1127,6 +1159,7 @@ function prepareUser(user) {
  * @param message the message of the notification
  * @param link the link of the page to open when tapped on the notification
  */
+/* istanbul ignore next */
 async function sendPushNotification(
   userIDs: string[],
   title: string,

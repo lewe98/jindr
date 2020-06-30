@@ -4,7 +4,10 @@ import { ChatOverviewComponent } from './chat-overview/chat-overview.component';
 import { RouterModule, Routes } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ShellModule } from '../../shell/shell.module';
-import { ChatViewComponent } from './chat-view/chat-view.component';
+import {
+  ChatViewComponent,
+  PopoverComponent
+} from './chat-view/chat-view.component';
 import { GiphyModule } from './giphy/giphy';
 import { FormsModule } from '@angular/forms';
 
@@ -16,7 +19,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [ChatOverviewComponent, ChatViewComponent],
+  declarations: [ChatOverviewComponent, ChatViewComponent, PopoverComponent],
   imports: [
     CommonModule,
     IonicModule,
