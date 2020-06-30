@@ -61,6 +61,7 @@ ion-content {
     // box-shadow: var(--card-box-shadow);
     .stamp {
       position: absolute;
+      pointer-events: none;
       top: 20px;
       right: 10px;
       z-index: 300;

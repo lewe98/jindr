@@ -1,4 +1,7 @@
-<div class="swipe-card" (click)="handleViewInfo()">
+<div class="swipe-card">
+    <ion-col size="auto" *ngIf="!isPreview" class="button-info" (click)="handleViewInfo()">
+        <ion-icon name="information-circle" ></ion-icon>
+    </ion-col>
     <div class="image-container">
         <app-aspect-ratio [ratio]="{w: 1, h: 1}" style="overflow: visible">
             <app-image-shell animation="spinner" class="user-image" [src]="data?.image"></app-image-shell>

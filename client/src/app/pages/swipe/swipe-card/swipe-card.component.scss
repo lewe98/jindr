@@ -32,7 +32,7 @@
   }
 
   .job-icon-list{
-    margin-top: 7%;
+    margin-top: 5%;
   }
 
   .ion-items-job {
@@ -80,6 +80,11 @@
   }
 
   .button-info {
+    cursor: pointer;
+    z-index: 10;
+    position: absolute;
+    right: 10px;
+    top: 10px;
     font-size: 32px;
   }
 
@@ -94,7 +99,7 @@
   }
 }
 
-@media only screen and (max-device-height: 741px) {
+@media only screen and (max-device-height: 747px) {
   .job-creator {
     display: none;
   }
@@ -103,17 +108,29 @@
   }
 }
 
-@media only screen and (max-device-height: 666px) {
+@media only screen and (max-device-height: 693px) {
   .job-creator, .job-duration {
     display: none;
   }
-  .ion-items-job {
-    height: 25px;
+  .job-icon-list{
+    margin-top: 5%;
+  }
+}
+
+@media only screen and (max-device-height: 628px) {
+  .job-creator, .job-duration {
+    display: none;
+  }
+  .job-icon-list{
+    margin-top: 0 !important;
   }
 }
 
 @media only screen and (max-device-height: 550px) {
   .job-creator, .job-duration, .job-description, .job-location {
     display: none;
+  }
+  .job-icon-list{
+    margin-top: 5%;
   }
 }
