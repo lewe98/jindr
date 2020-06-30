@@ -1,4 +1,7 @@
 @import "../../../../sass/helper.scss";
+ion-content {
+  --background: url(../../../../assets/images/Background1024.svg) no-repeat center/cover fixed;
+}
 .map {
   width: 100%;
   height: 100%;
@@ -47,17 +50,18 @@
   }
 
   .card-item {
+    padding: 8px;
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    border-radius: var(--swipe-card-border);
+    // border-radius: var(--swipe-card-border);
     overflow: hidden;
-    box-shadow: var(--card-box-shadow);
-
+    // box-shadow: var(--card-box-shadow);
     .stamp {
       position: absolute;
+      pointer-events: none;
       top: 20px;
       right: 10px;
       z-index: 300;
