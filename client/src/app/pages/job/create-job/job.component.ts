@@ -85,6 +85,7 @@ export class JobComponent implements OnInit {
         .then((res) => {
 
           Object.assign(this.job, res);
+          this.date = this.job.date;
           this.tempInterests = this.assetService.getInterests();
           this.interests = this.tempInterests?.map((i) => {
             return i.title;
@@ -98,11 +99,19 @@ export class JobComponent implements OnInit {
           this.createForm.controls.homepage.reset(this.job.homepage);
           this.createForm.controls.interests.reset(this.jobInterests);
 
+          if(this.job.isHourly){
+            this.createForm.controls.selectedOption.reset('hourly');
+          }else{
+            this.createForm.controls.selectedOption.reset('total');
+          }
+          this.createForm.controls.time.reset(this.job.time);
+
+
           // TODO: - Werte werden nicht übernommen
           // this.createForm.controls.searchbar.reset(this.job.cityName);
           // this.createForm.controls.selectedOption.reset(this.job.isHourly);
           // this.createForm.controls.time.reset(this.job.time);
-          // this.date = this.job.date;
+
 
         })
         .catch((err) => {
