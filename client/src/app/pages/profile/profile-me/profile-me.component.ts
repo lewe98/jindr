@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ModalController, NavController } from '@ionic/angular';
 import { SettingsComponent } from '../settings/settings.component';
 import { User } from '../../../../../interfaces/user';
@@ -7,15 +7,17 @@ import { ImageService } from '../../../services/Image/image.service';
 import { ToastService } from '../../../services/Toast/toast.service';
 import { ProfileViewComponent } from '../profile-view/profile-view.component';
 import { LocationService } from '../../../services/Location/location.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-profile-me',
   templateUrl: './profile-me.component.html',
   styleUrls: ['./profile-me.component.scss']
 })
-export class ProfileMeComponent implements OnInit {
+export class ProfileMeComponent implements OnInit, OnDestroy {
   user: User = new User();
   location: string;
+  subscription: Subscription;
   constructor(
     private navCtrl: NavController,
     private modalCtrl: ModalController,
@@ -26,7 +28,9 @@ export class ProfileMeComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    Object.assign(this.user, this.authService.getUser());
+    this.subscription = this.authService.user$.subscribe((u) => {
+      this.user = u;
+    });
     this.location = this.locationService.location;
     if (history.state && history.state.location === 'Unknown') {
       this.location = history.state.location;
@@ -75,5 +79,11 @@ export class ProfileMeComponent implements OnInit {
       .catch((error) => {
         this.toastService.presentWarningToast(error, 'Error!');
       });
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 }

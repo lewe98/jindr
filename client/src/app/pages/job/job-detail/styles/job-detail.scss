@@ -1,0 +1,195 @@
+@import "../../../../../sass/scrollbars";
+:host {
+  --page-margin: var(--app-broad-margin);
+  --page-background: var(--app-background-shade);
+
+  --page-amenity-vertical-gutter: 2px;
+  --page-amenity-horizontal-gutter: 4px;
+
+  --page-color: #d9453a;
+}
+
+.job-details-content {
+  --background: var(--page-background);
+
+  .image-row {
+    --ion-grid-column-padding: 0px;
+    text-align: center;
+    margin-top: 24px;
+    margin-bottom: 16px;
+    .ratio {
+    border-radius: 50%;
+      width: 220px;
+      height: 220px;
+    }
+
+    .avatar {
+      height: 220px;
+      width: 220px;
+      margin: 0 auto;
+      display: inline-block;
+    }
+  }
+
+
+
+  .description-row {
+    --ion-grid-column-padding: 0px;
+
+    padding: var(--page-margin);
+
+    .details-price {
+      margin: 0px 0px calc(var(--page-margin) / 2);
+			font-size: 18px;
+			font-weight: 600;
+      color: var(--ion-color-dark-tint);
+      display: flex;
+
+      .price-icon {
+        margin-right: 5px;
+      }
+    }
+
+    .details-address {
+      margin: 0px;
+      font-size: 14px;
+      color: var(--ion-color-medium-tint);
+
+      & + .details-address {
+        margin-top: 5px;
+      }
+    }
+
+    .details-title {
+      margin-top: 20px;
+    }
+
+    .details-description {
+      margin: var(--page-margin) 0px 0px;
+      font-size: 14px;
+      color: var(--ion-color-medium-shade);
+    }
+  }
+
+  .detail-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ion-color-dark-tint);
+    margin: 0 0 var(--page-margin);
+  }
+
+
+  .facts-wrapper {
+    padding: var(--page-margin);
+    padding-top: calc(var(--page-margin) / 2);
+
+    .facts-row {
+      --ion-grid-column-padding: 0px;
+
+      align-items: center;
+
+      & + .facts-row {
+        padding-top: calc(var(--page-margin) / 2);
+      }
+
+      .icon-wrapper {
+        display: flex;
+        align-items: center;
+        flex-grow: 0;
+        padding-right: 20px;
+      }
+
+      .facts-icon {
+        font-size: 30px;
+        color: var(--ion-color-medium-shade);
+      }
+
+      .facts-name {
+        display: block;
+        font-size: 14px;
+        color: var(--ion-color-medium-tint);
+      }
+
+      .facts-value {
+        display: block;
+        font-size: 16px;
+        color: var(--ion-color-medium-tint);
+      }
+    }
+  }
+
+  .interests-wrapper {
+    padding: calc(var(--page-margin) / 2) var(--page-margin) var(--page-margin);
+
+    .interests-tags {
+      --ion-grid-column-padding: 0px;
+
+      justify-content: center;
+      margin-top: calc(var(--page-amenity-vertical-gutter) * -1);
+
+      .tag-wrapper {
+        padding: var(--page-amenity-vertical-gutter) var(--page-amenity-horizontal-gutter) var(--page-amenity-vertical-gutter) 0px;
+        flex-grow: 0;
+        min-width: fit-content;
+
+        &:last-child {
+          padding-right: 0px;
+        }
+      }
+
+      .interests-tag {
+        display: block;
+        border-radius: var(--app-narrow-radius);
+        border: 1px solid var(--ion-color-light-shade);
+        padding: var(--page-amenity-vertical-gutter) var(--page-amenity-horizontal-gutter);
+        font-size: 14px;
+        color: var(--ion-color-medium-tint);
+      }
+    }
+  }
+
+  .interested-users-wrapper {
+    padding: calc(var(--page-margin) / 2) var(--page-margin) var(--page-margin);
+    margin: calc(var(--page-margin) * 2) var(--page-margin) var(--page-margin);
+    .users-row {
+      --ion-grid-columns: 7;
+      --ion-grid-column-padding: 0px;
+
+      flex-wrap: nowrap;
+      overflow-x: scroll;
+      will-change: scroll-position;
+      margin-left: calc(var(--page-margin) * -1);
+      margin-right: calc(var(--page-margin) * -1);
+
+      @include hide-scrollbars();
+
+      &::before,
+      &::after {
+        content: '';
+        flex: 0 0 calc(var(--page-margin) - var(--page-friends-gutter));
+      }
+
+      .user-item {
+        padding: 0 var(--page-friends-gutter);
+        .image {
+          z-index: 0;
+        }
+        .info {
+          z-index: 100;
+          top: 35px;
+          position: relative;
+          font-size: 2em;
+          color: red;
+        }
+        .user-name {
+          display: block;
+          text-align: center;
+          margin: var(--page-margin) 0;
+          font-size: 14px;
+        }
+      }
+    }
+  }
+
+
+}

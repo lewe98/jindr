@@ -647,6 +647,21 @@ app.get('/user/:userID', (req: Request, res: Response) => {
     });
 });
 
+
+// TODO doku + tests
+app.put('/user-array', async (req: Request, res: Response) => {
+  const ids = req.body.ids;
+  try {
+    const users = await User.find().where('_id').in(ids).exec();
+    res.status(200).send({
+      data: users
+    });
+  } catch (e) {
+    res.status(400).send({
+      errors: e
+    });
+  }
+});
 /**
  * @api {post} /upload-image Uploads image to AWS and returns URL
  * @apiName UploadImage

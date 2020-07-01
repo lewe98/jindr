@@ -255,4 +255,14 @@ export class AuthService {
         });
     });
   }
+
+  getArrayOfUsers(ids): Promise<User[]> {
+    return new Promise<User[]>((resolve, reject) => {
+      this.databaseController
+        .putRequest('user-array', JSON.stringify({ ids }), User)
+        .then((res) => {
+          resolve(res.data);
+        });
+    });
+  }
 }
