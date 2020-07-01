@@ -8,7 +8,7 @@ import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
 import { ToastService } from '../../../services/Toast/toast.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { NavigationExtras, Router } from '@angular/router';
 import { ProfileResumeComponent } from '../profile-resume/profile-resume.component';
 import { AssetService } from '../../../services/Asset/asset.service';
 import { Interest } from '../../../../../interfaces/interest';
@@ -87,11 +87,11 @@ export class ProfileEditComponent implements OnInit {
         if (this.changedInterests) {
           this.swipeService.updateBacklog();
         }
-        this.toastService.presentToast('Profil updated.');
+        this.toastService.presentToast('Profile updated.');
         this.router.navigate(['pages/profile']);
       })
       .catch((err) => {
-        this.toastService.presentWarningToast(err.errors.email, 'Error!');
+        this.toastService.presentWarningToast(err.errors, 'Error!');
         this.user = this.authService.getUser();
       });
   }

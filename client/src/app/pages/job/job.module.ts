@@ -5,7 +5,10 @@ import { RouterModule, Routes } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ShellModule } from '../../shell/shell.module';
-import { JobDetailComponent } from './job-detail/job-detail.component';
+import {
+  InfoComponent,
+  JobDetailComponent
+} from './job-detail/job-detail.component';
 import { OffersComponent } from './offers/offers.component';
 
 const routes: Routes = [
@@ -20,7 +23,12 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [JobComponent, JobDetailComponent, OffersComponent],
+  declarations: [
+    JobComponent,
+    JobDetailComponent,
+    OffersComponent,
+    InfoComponent
+  ],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
