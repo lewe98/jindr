@@ -1,3 +1,4 @@
+/*
 .button {
   font-size: 11px;
   text-transform: uppercase;
@@ -13,7 +14,24 @@
   width: 17%;
   height: 17%;
 }
+*/
 
-ion-icon {
-  color: var(--ion-color-primary);
+ion-button{
+  width: 100%;
+}
+
+.interested{
+  --background: var(--color-jindr-stop3);
+  --background-color: var(--color-jindr-stop3);
+  --background-hover: var(--color-jindr-stop3);
+}
+
+.jobOnline{
+  --background: var(--color-jindr-stop3);
+  --background-color: var(--color-jindr-stop3);
+  --background-hover: var(--color-jindr-stop3);
+}
+
+ion-label{
+  margin-right: 3%;
 }

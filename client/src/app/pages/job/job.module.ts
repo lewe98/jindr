@@ -24,11 +24,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [
-    DisplayJobsComponent,
-    JobComponent,
-    JobDetailComponent
-  ],
+  declarations: [DisplayJobsComponent, JobComponent, JobDetailComponent],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),

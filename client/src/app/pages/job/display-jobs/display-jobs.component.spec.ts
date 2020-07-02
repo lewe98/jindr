@@ -11,7 +11,11 @@ describe('DisplayJobsComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [DisplayJobsComponent],
-      imports: [IonicModule.forRoot(), RouterTestingModule, HttpClientTestingModule]
+      imports: [
+        IonicModule.forRoot(),
+        RouterTestingModule,
+        HttpClientTestingModule
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(DisplayJobsComponent);

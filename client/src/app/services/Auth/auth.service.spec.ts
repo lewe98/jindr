@@ -33,7 +33,11 @@ describe('AuthService', () => {
   describe('get specific user', () => {
     it('should get a user by id', (done) => {
       service.getUserByID('test123').then(async () => {
-        expect(databaseSpy.getRequest).toHaveBeenCalledWith('user/test123', '', User);
+        expect(databaseSpy.getRequest).toHaveBeenCalledWith(
+          'user/test123',
+          '',
+          User
+        );
         done();
       });
     });

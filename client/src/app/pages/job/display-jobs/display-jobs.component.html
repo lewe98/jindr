@@ -1,18 +1,16 @@
-<ion-header class="ion-no-border">
-    <ion-toolbar class="toolbar-custom toolbar-no-border profile-toolbar">
-
+<ion-header>
+    <ion-toolbar class="toolbar-no-border">
         <ion-title>My Jobs</ion-title>
         <ion-buttons slot="start">
             <ion-back-button defaultHref="pages"></ion-back-button>
         </ion-buttons>
-
+<!--
         <ion-buttons slot="end">
             <app-image-shell class="img" [src]="user.image" (click)="viewProfile()"></app-image-shell>
         </ion-buttons>
-
+-->
         <ion-label *ngIf="jobs.length == 1" slot="end">{{jobs.length}} job online.</ion-label>
         <ion-label *ngIf="jobs.length > 1 || jobs.length == 0" slot="end">{{jobs.length}} jobs online.</ion-label>
-
     </ion-toolbar>
 </ion-header>
 
@@ -26,16 +24,18 @@
             </ion-card-header>
 
             <ion-item>
-                <ion-button [routerLink]="'/pages/job/edit/' + job._id" fill="outline" slot="end">
-                    <ion-icon name="create-outline"></ion-icon>
+                <ion-button color="warning" [routerLink]="'/pages/job/edit/' + job._id" fill="solid" slot="end">
+                  <!--  <ion-icon color="warning" name="create-outline"></ion-icon>-->
+                    edit
                 </ion-button>
 
-                <ion-button (click)="deleteJob(job._id)" fill="outline" slot="end">
-                    <ion-icon name="trash-outline"></ion-icon>
+                <ion-button color="danger" (click)="deleteJob(job._id)" fill="solid" slot="end">
+                 <!--   <ion-icon name="trash-outline"></ion-icon>-->
+                    delete
                 </ion-button>
 
-                <ion-button (click)="viewInterestedUsers(job)" [disabled]="!job.interestedUsers.length" fill="outline" slot="end">
-                    <ion-icon name="star-outline"></ion-icon>
+                <ion-button class="interested" (click)="viewInterestedUsers(job)" [disabled]="!job.interestedUsers.length" fill="solid"  slot="end">
+                   <ion-icon name="star-outline"></ion-icon>
                     {{job.interestedUsers.length}}</ion-button>
             </ion-item>
         </ion-card>

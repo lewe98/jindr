@@ -84,7 +84,11 @@ describe('JobService', () => {
     });
     it('should get all jobs from a specific user', (done) => {
       service.getJobs('test123').then(async () => {
-        expect(databaseSpy.getRequest).toHaveBeenCalledWith('get-jobs/test123', '', Job);
+        expect(databaseSpy.getRequest).toHaveBeenCalledWith(
+          'get-jobs/test123',
+          '',
+          Job
+        );
         done();
       });
     });

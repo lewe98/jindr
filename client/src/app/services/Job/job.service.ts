@@ -119,7 +119,7 @@ export class JobService {
           this.toastService.presentToast(res.message);
         })
         .catch((err) => {
-          this.toastService.presentWarningToast(err.message,  + 'Error: ');
+          this.toastService.presentWarningToast(err.message, +'Error: ');
           reject(err);
         });
     });

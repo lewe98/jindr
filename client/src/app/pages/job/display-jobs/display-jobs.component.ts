@@ -22,12 +22,12 @@ export class DisplayJobsComponent implements OnInit {
     private jobService: JobService,
     private toastService: ToastService,
     private modalCtrl: ModalController
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
-    this.jobService.getJobs(this.user._id)
+    this.jobService
+      .getJobs(this.user._id)
       .then((res) => {
         Object.assign(this.jobs, res);
       })
@@ -46,13 +46,12 @@ export class DisplayJobsComponent implements OnInit {
 
   async viewInterestedUsers(job: Job) {
     await job.interestedUsers.forEach((userID) => {
-      this.authService.getUserByID(userID)
-        .then((res) => {
-          if (!this.interestedUsers.includes(res)) {
-            // TODO: - AMK
-            this.interestedUsers.push(res);
-          }
-        });
+      this.authService.getUserByID(userID).then((res) => {
+        if (!this.interestedUsers.includes(res)) {
+          // TODO: - AMK
+          this.interestedUsers.push(res);
+        }
+      });
     });
 
     const modal = await this.modalCtrl.create({
@@ -65,5 +64,4 @@ export class DisplayJobsComponent implements OnInit {
   deleteJob(id: string) {
     this.jobService.deleteJob(id);
   }
-
 }

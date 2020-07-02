@@ -53,11 +53,9 @@ export class JobComponent implements OnInit {
     private imageService: ImageService,
     private assetService: AssetService,
     private activatedRoute: ActivatedRoute
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
-
     this.tempInterests = this.assetService.getInterests();
     this.interests = this.tempInterests?.map((i) => {
       return i.title;
@@ -78,13 +76,12 @@ export class JobComponent implements OnInit {
     });
 
     if (document.location.href.includes('/pages/job/edit/')) {
-
       this.edit = true;
       const id = this.activatedRoute.snapshot.paramMap.get('id');
 
-      this.jobService.getJobById(id)
+      this.jobService
+        .getJobById(id)
         .then((res) => {
-
           Object.assign(this.job, res);
           this.date = this.job.date;
           this.tempInterests = this.assetService.getInterests();
@@ -107,13 +104,10 @@ export class JobComponent implements OnInit {
           }
           this.createForm.controls.time.reset(this.job.time);
 
-
           // TODO: - Werte werden nicht übernommen
           // this.createForm.controls.searchbar.reset(this.job.cityName);
           // this.createForm.controls.selectedOption.reset(this.job.isHourly);
           // this.createForm.controls.time.reset(this.job.time);
-
-
         })
         .catch((err) => {
           this.toastService.presentWarningToast(err, 'Error!');
