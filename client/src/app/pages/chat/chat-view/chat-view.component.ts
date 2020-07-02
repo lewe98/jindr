@@ -199,10 +199,10 @@ export class ChatViewComponent implements OnInit, OnDestroy {
   /**
    * Opens job details
    */
-  async handleJobInfo(job) {
+  async handleJobInfo() {
     const modal = await this.modalCtrl.create({
       component: JobDetailComponent,
-      componentProps: { job }
+      componentProps: { job: this.job }
     });
     return await modal.present();
   }
