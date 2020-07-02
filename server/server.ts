@@ -648,11 +648,25 @@ app.get('/user/:userID', (req: Request, res: Response) => {
 });
 
 
-// TODO doku + tests
+/**
+ * @api {put} /user-array Returns an array of users by ids
+ * @apiName UserArray
+ * @apiGroup User
+ *
+ * @apiDescription pass an array of user IDs and it returns the corresponding user objects from the database
+ *
+ * @apiParam {String} ids an array of user ids
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": [users]
+ *     }
+ */
 app.put('/user-array', async (req: Request, res: Response) => {
   const ids = req.body.ids;
   try {
-    const users = await User.find().where('_id').in(ids).exec();
+    let users = await User.find().where('_id').in(ids).exec();
     res.status(200).send({
       data: users
     });
@@ -661,6 +675,33 @@ app.put('/user-array', async (req: Request, res: Response) => {
       errors: e
     });
   }
+});
+
+/**
+ * @api {post} /check-wrapper-exists returns a wrapper, if it already exists for this chat
+ * @apiName CheckWrapper
+ * @apiGroup Chat
+ *
+ * @apiDescription pass a jobID and a userID of the employee, and it will return a wrapper if it already
+ * exists. This is called if an employer starts a chat with a user from the job instead of the chat
+ * overview and prevents him from starting a second chat for the same job
+ *
+ * @apiParam {String} id id of the employee
+ * @apiParam {String} jobID id of the job
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": wrapper
+ *     }
+ */
+app.post('/check-wrapper-exists', async (req: Request, res: Response) => {
+  const id = req.body.userID;
+  const jobID = req.body.jobID;
+  const wrapper = await MessageWrapper.find({employee: id, jobID: jobID}).exec();
+  res.status(200).send({
+    data: wrapper
+  });
 });
 /**
  * @api {post} /upload-image Uploads image to AWS and returns URL
