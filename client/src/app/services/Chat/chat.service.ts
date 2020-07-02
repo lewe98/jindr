@@ -175,4 +175,18 @@ export class ChatService {
     this.countUnread();
     this.wrapperSubject.next(this.allChats);
   }
+
+  checkWrapperExists(userID, jobID): Promise<MessageWrapper> {
+    return new Promise<MessageWrapper>((resolve) => {
+      this.databaseController
+        .postRequest(
+          'check-wrapper-exists',
+          JSON.stringify({ userID, jobID }),
+          MessageWrapper
+        )
+        .then((res) => {
+          resolve(res.data);
+        });
+    });
+  }
 }

@@ -5,11 +5,9 @@ import { RouterModule, Routes } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ShellModule } from '../../shell/shell.module';
-import {
-  InfoComponent,
-  JobDetailComponent
-} from './job-detail/job-detail.component';
+import { JobDetailComponent } from './job-detail/job-detail.component';
 import { OffersComponent } from './offers/offers.component';
+import { InfoComponent } from './info/info.component';
 
 const routes: Routes = [
   {
