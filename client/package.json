@@ -14,7 +14,8 @@
     "prettier-format": "prettier --config .prettierrc **/*.ts --write",
     "karma": "ng test --progress false --watch false --browsers=ChromeHeadlessNoSandbox",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "compodoc": "./node_modules/.bin/compodoc -p tsconfig.json -w -s"
   },
   "private": true,
   "dependencies": {
@@ -57,6 +58,7 @@
     "@types/jasminewd2": "~2.0.3",
     "@types/lodash": "^4.14.155",
     "@types/node": "^12.11.1",
+    "@compodoc/compodoc": "^1.1.11",
     "codelyzer": "^5.1.2",
     "jasmine-core": "~3.5.0",
     "jasmine-spec-reporter": "~4.2.1",

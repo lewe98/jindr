@@ -27,6 +27,7 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 * [Tools](#tools)
 * [Prerequisites](#prerequisites)
 * [Folder Structure](#folder-structure)
+* [Client Documentatiob](#client-documentation)
 * [Pipelines and Deploy](#pipelines-and-deploy)
 * [Matching](#matching)
 
@@ -64,6 +65,12 @@ Navigate to Server folder and run
 
 Navigate to Client folder and run
 > ionic serve
+
+
+## Client Documentation
+To review the client documentation, navigate to the Client folder and run
+> npm run compodoc
+
 
 ## Folder Structure
 ```bash
