@@ -32,4 +32,5 @@ const routes: Routes = [
   exports: [],
   providers: []
 })
-export class PagesRoutingModule {}
+export class PagesRoutingModule {
+}
