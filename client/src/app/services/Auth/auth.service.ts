@@ -264,4 +264,27 @@ export class AuthService {
         });
     });
   }
+
+  getUserByID(id: string): Promise<User> {
+    return new Promise<User>((resolve, reject) => {
+      this.databaseController
+        .getRequest('user', id, User)
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
+
+  getArrayOfUsers(ids): Promise<User[]> {
+    return new Promise<User[]>((resolve, reject) => {
+      this.databaseController
+        .putRequest('user-array', JSON.stringify({ ids }), User)
+        .then((res) => {
+          resolve(res.data);
+        });
+    });
+  }
 }

@@ -1,0 +1,21 @@
+@import './chatui.scss';
+
+.header-custom {
+  ion-toolbar {
+    --min-height: 66px;
+  }
+}
+
+.job-name {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  text-decoration: underline;
+}
+
+.chat-item {
+  &:last-child {
+    .chat-item-status {
+      visibility: visible!important;
+    }
+  }
+}

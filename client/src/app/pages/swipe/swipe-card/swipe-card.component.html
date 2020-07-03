@@ -1,35 +1,75 @@
 <div class="swipe-card">
-<div class="image-container">
-  <app-aspect-ratio [ratio]="{w: 1, h: 1}" style="overflow: visible">
-    <app-image-shell animation="spinner" class="user-image" [src]="data?.image"></app-image-shell>
-  </app-aspect-ratio>
-</div>
-  <div class="card-caption">
-    <ion-row class="ion-justify-content-center ion-align-items-center">
-      <ion-col>
-        <div class="card-title">
+    <ion-col size="auto" *ngIf="!isPreview" class="button-info" (click)="handleViewInfo()">
+        <ion-icon name="information-circle" ></ion-icon>
+    </ion-col>
+    <div class="image-container">
+        <app-aspect-ratio [ratio]="{w: 1, h: 1}" style="overflow: visible">
+            <app-image-shell animation="spinner" class="user-image" [src]="data?.image"></app-image-shell>
+        </app-aspect-ratio>
+    </div>
+    <ion-item lines="none">
+        <ion-text slot="end">{{data?.payment}} € {{data?.isHourly ? '/h' : 'total'}}</ion-text>
+        <ion-label class="job-title">{{data?.title}}</ion-label>
+    </ion-item>
+    <hr>
+    <ion-card-content text-wrap class="job-description">
+        {{data?.description}}
+    </ion-card-content>
+    <div class="job-icon-list">
+    <ion-item lines="none" class="ion-items-job">
+        <ion-icon name="calendar-outline" slot="start"></ion-icon>
+        <ion-label>{{data?.date | date: 'dd.MM.yyyy'}}</ion-label>
+    </ion-item>
+    <ion-item *ngIf="data?.time" lines="none" class="ion-items-job job-duration">
+        <ion-icon name="time-outline" slot="start"></ion-icon>
+        <ion-label>{{data?.time}} hour{{data.time > 1 ? 's' : ''}}</ion-label>
+    </ion-item>
+    <ion-item lines="none" class="ion-items-job job-location">
+        <ion-icon name="pin" slot="start"></ion-icon>
+        <ion-label>{{data?.cityName}}</ion-label>
+    </ion-item>
+
+    <ion-item lines="none" class="ion-items-job job-creator">
+        <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+        <ion-label>{{data?.creator}}</ion-label>
+    </ion-item>
+    </div>
+
+    <!-- <div class="card-caption">
+        <ion-row class="ion-justify-content-center ion-align-items-center">
+            <ion-col>
+                <div class="card-title">
           <span class="card-user-name">
             {{data?.title}}
           </span>
 
-        </div>
-        <div class="card-user-info">
-          <div *ngIf="distance"><ion-icon name="location-outline"></ion-icon>
-            {{distance}} {{distance === 1 ? 'kilometer' : 'kilometers'}} away</div>
-          <div><ion-icon name="business-outline"></ion-icon>
-            {{data?.cityName}}</div>
-          <div><ion-icon name="calendar-outline"></ion-icon>
-            {{data?.date | date: 'dd.MM.yyyy'}}</div>
-          <div *ngIf="data?.time"><ion-icon name="time-outline"></ion-icon>
-            {{data.time}} hour{{data.time > 1 ? 's' : ''}} of work</div>
-          <div><ion-icon name="cash-outline"></ion-icon>
-            {{data?.payment}} € {{data?.isHourly ? '/h' : 'total'}}</div>
-          <div><ion-icon name="briefcase-outline"></ion-icon>{{description}}</div>
-        </div>
-      </ion-col>
-      <ion-col size="auto" *ngIf="!isPreview">
-        <ion-icon class="button-info" name="information-circle" (click)="handleViewInfo()"></ion-icon>
-      </ion-col>
-    </ion-row>
-  </div>
+                </div>
+                <div class="card-user-info">
+                    <div *ngIf="distance">
+                        <ion-icon name="location-outline"></ion-icon>
+                        {{distance}} {{distance === 1 ? 'kilometer' : 'kilometers'}} away
+                    </div>
+                    <div>
+                        <ion-icon name="business-outline"></ion-icon>
+                        {{data?.cityName}}</div>
+                    <div>
+                        <ion-icon name="calendar-outline"></ion-icon>
+                        {{data?.date | date: 'dd.MM.yyyy'}}</div>
+                    <div *ngIf="data?.time">
+                        <ion-icon name="time-outline"></ion-icon>
+                        {{data.time}} hour{{data.time > 1 ? 's' : ''}} of work
+                    </div>
+                    <div>
+                        <ion-icon name="cash-outline"></ion-icon>
+                        {{data?.payment}} € {{data?.isHourly ? '/h' : 'total'}}</div>
+                    <div>
+                        <ion-icon name="briefcase-outline"></ion-icon>
+                        {{description}}</div>
+                </div>
+            </ion-col>
+            <ion-col size="auto" *ngIf="!isPreview">
+                <ion-icon class="button-info" name="information-circle" (click)="handleViewInfo()"></ion-icon>
+            </ion-col>
+        </ion-row>
+    </div> -->
 </div>

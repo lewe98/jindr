@@ -1,0 +1,55 @@
+<ion-header class="header-custom">
+  <ion-toolbar class="toolbar-no-border">
+    <ion-buttons slot="start">
+        <ion-button (click)="presentPopover($event)" fill="clear">
+          <ion-icon slot="icon-only" name="ellipsis-vertical" class="text-2x" color="medium"></ion-icon>
+        </ion-button>
+    </ion-buttons>
+    <ion-title>
+      <div class="job-name" (click)="handleJobInfo()">{{job?.title}}</div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="danger" (click)="close()">
+        Done
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content #content class="ion-padding">
+
+  <div class="chat-list">
+    <div class="chat-item" *ngFor="let item of messageWrapper?.messages" [ngClass]="{'chat-item-sender': item.sender === you._id}">
+      <div class="chat-timestamp">
+        {{item.timeStamp | date: 'short'}}
+      </div>
+
+      <div class="chat-item-content">
+        <div class="chat-avatar" *ngIf="item.sender !== you._id">
+          <app-aspect-ratio class="rounded" [ratio]="{w: 1, h: 1}">
+            <app-image-shell  animation="spinner" [src]="he.image"></app-image-shell>
+          </app-aspect-ratio>
+        </div>
+
+        <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type == 'image'}">
+          <div class="chat-body" *ngIf="item.type !== 'image'" [innerHtml]="item.body | nlbr"></div>
+          <img [src]="item.body" *ngIf="item.type == 'image'">
+        </div>
+      </div>
+
+      <div style="visibility: hidden" class="chat-item-status" *ngIf="item.sender === you._id">
+        <ion-icon name="checkmark-circle" color="secondary"></ion-icon>
+        Sent
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar class="toolbar-no-border">
+    <app-input-with-giphy
+            (doSubmit)="onSubmitMessage($event)"
+            (doSizeChange)="onInputSizeChange()">
+    </app-input-with-giphy>
+  </ion-toolbar>
+</ion-footer>

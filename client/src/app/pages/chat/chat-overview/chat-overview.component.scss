@@ -1,0 +1,28 @@
+.message-list {
+  padding: 6px;
+
+  .message-item-text {
+    align-self: stretch;
+    padding-top: 16px;
+    border-bottom: 1px solid var(--border-color-rgb);
+
+    .user-name {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+  }
+}
+
+.entry {
+  border-bottom: 1px solid rgba(142, 142, 142, 0.18);
+  &:last-child {
+    border-bottom: none;
+  }
+
+}
+
+.timestamp {
+  font-size: 10px;
+  float: right;
+}

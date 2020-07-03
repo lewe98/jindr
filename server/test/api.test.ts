@@ -23,6 +23,7 @@ let JOB_ONE;
 let JOB_TWO;
 let JOBS_TO_LIKE;
 let GET_JOB_ID = '';
+let WRAPPER_ONE;
 /**
  * Connect to a new in-memory database before running any tests.
  */
@@ -115,15 +116,18 @@ describe('Register new User', () => {
     it("should verify user", async (done) => {
         const u = await request(app)
           .get("/user/" + USER_ONE._id)
-          .send();
-
+          .send({
+            isTester: true
+          });
         const res = await request(app)
           .get("/register/" + u.body.data.token)
           .send();
 
         const newU = await request(app)
           .get("/user/" + USER_ONE._id)
-          .send();
+          .send({
+            isTester: true
+          });
 
         USER_ONE = newU.body.data;
 
@@ -334,7 +338,9 @@ describe('Reset password', () => {
 
         const u = await request(app)
           .get("/user/" + USER_ONE._id)
-          .send();
+          .send({
+            isTester: true
+          });
 
         const res = await request(app)
           .post('/forgot-pw/' + u.body.data.token)
@@ -679,6 +685,145 @@ describe('interest add and backlog test', () => {
     done();
   });
 });
+
+describe('test chat', () => {
+  it('should start a new chat', async () => {
+    const wrapper = {
+      "employer": USER_ONE._id,
+      "employee": USER_TWO._id,
+      "employeeName": USER_TWO.firstName + ' ' + USER_TWO.lastName,
+      "employerName": USER_ONE.firstName + ' ' + USER_ONE.lastName,
+      "jobID": JOB_ONE,
+      "messages": {
+        "sender": USER_ONE._id,
+        "timeStamp": Date.now(),
+        "body": "Test Message",
+        "type":  "text"
+      }
+    }
+    const res = await request(app)
+      .post('/new-wrapper')
+      .send({
+        wrapper
+      });
+    expect(res.statusCode).toEqual(201);
+    WRAPPER_ONE = res.body.data;
+    expect(WRAPPER_ONE._id).not.toBe(null);
+    expect(WRAPPER_ONE.messages.length).toEqual(1);
+  });
+
+  it('should add a message to the chat', async () => {
+      const res = await request(app)
+        .post('/new-message')
+        .send({
+          wrapperID: WRAPPER_ONE._id,
+          message: {
+            "sender": USER_ONE._id,
+            "timeStamp": Date.now(),
+            "body": "Test Message 2",
+            "type":  "text"
+          }
+        });
+      expect(res.statusCode).toEqual(200);
+      const wrapper = await request(app)
+        .get('/message-wrapper-by-user/' + USER_ONE._id)
+        .send();
+      expect(wrapper.body.data.length).toEqual(1);
+      WRAPPER_ONE = wrapper.body.data[0];
+      expect(WRAPPER_ONE.messages.length).toEqual(2);
+  });
+});
+
+describe('test get wrapper', () => {
+  it ('should get all wrappers by userID', async () => {
+    const wrapper = {
+      "employer": USER_TWO._id,
+      "employee": USER_ONE._id,
+      "employeeName": USER_ONE.firstName + ' ' + USER_ONE.lastName,
+      "employerName": USER_TWO.firstName + ' ' + USER_TWO.lastName,
+      "jobID": JOB_TWO,
+      "messages": {
+        "sender": USER_TWO._id,
+        "timeStamp": Date.now(),
+        "body": "Test Message",
+        "type":  "text"
+      }
+    }
+    await request(app)
+      .post('/new-wrapper')
+      .send({
+        wrapper
+      });
+    const res = await request(app)
+      .get('/message-wrapper-by-user/' + USER_ONE._id)
+      .send();
+    expect(res.body.data.length).toEqual(2);
+  })
+});
+
+describe('test update wrapper', () => {
+  it('should update a wrapper', async () => {
+    const now = Date.now();
+    WRAPPER_ONE.employerImage = './test/image.png';
+    WRAPPER_ONE.employeeLastViewed = now;
+    const res = await request(app)
+      .put('/update-wrapper')
+      .send({
+        wrapper: WRAPPER_ONE,
+        you: USER_ONE._id
+      });
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.data.employerImage).toEqual('./test/image.png');
+    expect(res.body.data.employeeLastViewed).toEqual(now);
+  });
+});
+
+describe('test get many users', () => {
+  it ('should get an array of users', async () => {
+    const res = await request(app)
+      .put('/user-array')
+      .send({
+        ids : [USER_ONE._id, USER_TWO._id]
+      });
+    expect(res.body.data.length).toEqual(2);
+    expect(res.statusCode).toEqual(200);
+  });
+
+  it('should return an empty array if no users found', async () => {
+    const res = await request(app)
+      .put('/user-array')
+      .send({
+        ids : ['5ed27c926c31d33518cc81c2']
+      });
+    expect(res.body.data.length).toEqual(0);
+    expect(res.statusCode).toEqual(200);
+  });
+});
+
+describe('test check if wrapper exists', () => {
+  it ('should return a wrapper if it exists with this employeeID and jobID', async () => {
+    const res = await request(app)
+      .post('/check-wrapper-exists')
+      .send({
+        userID: USER_TWO._id,
+        jobID: JOB_ONE
+      });
+    expect(res.body.data.length).toEqual(1);
+    expect(res.body.data[0]._id).toEqual(WRAPPER_ONE._id);
+    expect(res.statusCode).toEqual(200);
+  });
+  it('should return an empty array if wrapper does not exist', async () => {
+    const res = await request(app)
+      .post('/check-wrapper-exists')
+      .send({
+        userID: USER_ONE._id,
+        jobID: JOB_ONE
+      });
+    expect(res.body.data.length).toEqual(0);
+    expect(res.body.data[0]).toEqual(undefined);
+    expect(res.statusCode).toEqual(200);
+  })
+})
 
 describe('delete job', () => {
   it('it should delete a specific job', async (done) => {

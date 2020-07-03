@@ -29,7 +29,7 @@
     <ion-card-content>{{user.aboutMe}}</ion-card-content>
   </ion-card>
 
-  <ion-card *ngIf="user.interest">
+  <ion-card *ngIf="user.interest.length > 0">
     <ion-card-subtitle>Interests</ion-card-subtitle>
     <ion-chip *ngFor="let Interest of user.interest;" color="medium" >
       <ion-label>{{interests[Interest.id]['title']}}</ion-label>

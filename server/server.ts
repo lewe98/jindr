@@ -21,8 +21,13 @@ const serviceAccount = require('./config/jindr-firebase-push.json');
 const nodemailerConfig = require('./config/nodemailerConfig');
 
 const User = require('./models/user');
+const MessageWrapper = require('./models/messageWrapper');
 const Job = require('./models/job');
 const JobStack = require('./models/jobStack');
+const connectedUsersByID: Map<string, string> = new Map<string, string>();
+const connectedUsersBySocket: Map<string, string> = new Map<string, string>();
+let server;
+let io;
 
 const MONGODB_URI: string = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.MONGODB_NAME;
@@ -68,7 +73,7 @@ const maxRadius = 50; // Max search radius users can set in the app
 app.set('port', process.env.PORT);
 /* istanbul ignore next */
 if (process.env.NODE_ENV.trim() !== 'test') {
-  app.listen(app.get('port'), () => {
+  server = app.listen(app.get('port'), () => {
     (async () => {
       // eslint-disable-next-line
       console.log('Server connected at: ' + app.get('port'));
@@ -76,6 +81,7 @@ if (process.env.NODE_ENV.trim() !== 'test') {
       rasterizeMap(maxRadius, southWest, northEast);
     })();
   });
+  io = require('socket.io')(server);
 }
 
 /* istanbul ignore next */
@@ -373,6 +379,166 @@ app.post('/logout', async (req: Request, res: Response) => {
 });
 
 /**
+ * @api {post} /new-wrapper Start a new chat
+ * @apiName NewWrapper
+ * @apiGroup Chat
+ *
+ * @apiDescription starts a new chat with a user and sends a socket message or
+ * push notification if user is not currently online
+ *
+ * @apiParam {String} wrapper a new messageWrapper
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       "data": wrapper
+ *     }
+ */
+app.post('/new-wrapper', async (req: Request, res: Response) => {
+  let wrapper = new MessageWrapper();
+  Object.assign(wrapper, req.body.wrapper);
+  wrapper = await wrapper.save({ new: true });
+  if (connectedUsersByID.get(wrapper.employee)) {
+    io.to(wrapper.employee.toString()).emit('new-wrapper', wrapper);
+  } else {
+    sendPushNotification(
+      [wrapper.employee],
+      'New Message!',
+      'You got a new message!',
+      'pages/chat'
+    );
+  }
+  res.status(201).send({
+    data: wrapper
+  });
+});
+
+/**
+ * @api {post} /new-message Send a new message to existing chat
+ * @apiName NewChat
+ * @apiGroup Chat
+ *
+ * @apiDescription sends a new message to an existing chat and sends a socket message or
+ * push notification if user is not currently online
+ *
+ * @apiParam {String} wrapperID id of the chat wrapper
+ * @apiParam {String} message the message to send
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": message
+ *     }
+ */
+app.post('/new-message', async (req: Request, res: Response) => {
+  const wrapperID = req.body.wrapperID;
+  const message = req.body.message;
+  const wrapper = await MessageWrapper.findOne({ _id: wrapperID });
+  wrapper.messages.push(message);
+  const receiver =
+    wrapper.employer.toString() === message.sender.toString()
+      ? wrapper.employee
+      : wrapper.employer;
+  await wrapper.save();
+  if (connectedUsersByID.get(receiver.toString())) {
+    io.to(receiver.toString()).emit('new-message', { message, wrapperID });
+  } else {
+    sendPushNotification(
+      [wrapper.employee],
+      'New Message!',
+      'You got a new message!',
+      'pages/chat'
+    );
+  }
+  res.status(200).send({
+    data: message
+  });
+});
+
+/**
+ * @api {get} /message-wrapper-by-user/:userID Get all message wrappers from a user
+ * @apiName MessageWrappers
+ * @apiGroup Chat
+ *
+ * @apiDescription gets all message wrappers of a user by its user ID, returns an array of wrappers
+ *
+ * @apiParam {String} userID id of the requesting user
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": wrappers[]
+ *     }
+ */
+app.get(
+  '/message-wrapper-by-user/:userID',
+  async (req: Request, res: Response) => {
+    const userID = req.params.userID;
+    try {
+      const wrappers = await MessageWrapper.find()
+        .or([{ employee: userID }, { employer: userID }])
+        .exec();
+      res.status(200).send({
+        data: wrappers
+      });
+    } catch (e) {
+      res.status(400).send({
+        message: 'Could not get chats',
+        errors: e
+      });
+    }
+  }
+);
+
+/**
+ * @api {put} /update-wrapper Updates a messageWrapper
+ * @apiName UpdateWrapper
+ * @apiGroup Chat
+ *
+ * @apiDescription updates all fields of a messageWrapper that can be subject to change
+ *
+ * @apiParam {String} wrapper the message wrapper with updated values
+ * @apiParam {String} you the id of the user requesting the update
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": newWrapper
+ *     }
+ */
+app.put('/update-wrapper', async (req: Request, res: Response) => {
+  const wrapper = req.body.wrapper;
+  const you = req.body.you;
+  let newWrapper;
+  try {
+    newWrapper = await MessageWrapper.findOneAndUpdate(
+      { _id: wrapper._id },
+      {
+        employeeName: wrapper.employeeName,
+        employeeImage: wrapper.employeeImage,
+        employerName: wrapper.employerName,
+        employerImage: wrapper.employerImage,
+        employeeLastViewed: wrapper.employeeLastViewed,
+        employerLastViewed: wrapper.employerLastViewed
+      },
+      { new: true }
+    );
+    const receiver =
+      wrapper.employer.toString() === you ? wrapper.employee : wrapper.employer;
+    if (connectedUsersByID.get(receiver.toString())) {
+      io.to(receiver).emit('update-wrapper', { wrapper: newWrapper });
+    }
+    res.status(200).send({
+      data: newWrapper
+    });
+  } catch (e) {
+    res.status(400).send({
+      errors: e
+    });
+  }
+});
+
+/**
  * @api {put} /update-user Updated user in the Database
  * @apiName UpdateUser
  * @apiGroup User
@@ -463,6 +629,7 @@ app.put('/update-user', async (req: Request, res: Response) => {
  *     }
  */
 app.get('/user/:userID', (req: Request, res: Response) => {
+  const isTester = req.body.isTester;
   User.findOne({ _id: req.params.userID })
     .select('-password -deviceID')
     .exec((err, user) => {
@@ -474,12 +641,68 @@ app.get('/user/:userID', (req: Request, res: Response) => {
       } else {
         res.status(200).send({
           message: 'User retrieved',
-          data: user
+          data: isTester ? user : prepareUser(user)
         });
       }
     });
 });
 
+
+/**
+ * @api {put} /user-array Returns an array of users by ids
+ * @apiName UserArray
+ * @apiGroup User
+ *
+ * @apiDescription pass an array of user IDs and it returns the corresponding user objects from the database
+ *
+ * @apiParam {String} ids an array of user ids
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": [users]
+ *     }
+ */
+app.put('/user-array', async (req: Request, res: Response) => {
+  const ids = req.body.ids;
+  try {
+    let users = await User.find().where('_id').in(ids).exec();
+    res.status(200).send({
+      data: users
+    });
+  } catch (e) {
+    res.status(400).send({
+      errors: e
+    });
+  }
+});
+
+/**
+ * @api {post} /check-wrapper-exists returns a wrapper, if it already exists for this chat
+ * @apiName CheckWrapper
+ * @apiGroup Chat
+ *
+ * @apiDescription pass a jobID and a userID of the employee, and it will return a wrapper if it already
+ * exists. This is called if an employer starts a chat with a user from the job instead of the chat
+ * overview and prevents him from starting a second chat for the same job
+ *
+ * @apiParam {String} id id of the employee
+ * @apiParam {String} jobID id of the job
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": wrapper
+ *     }
+ */
+app.post('/check-wrapper-exists', async (req: Request, res: Response) => {
+  const id = req.body.userID;
+  const jobID = req.body.jobID;
+  const wrapper = await MessageWrapper.find({employee: id, jobID: jobID}).exec();
+  res.status(200).send({
+    data: wrapper
+  });
+});
 /**
  * @api {post} /upload-image Uploads image to AWS and returns URL
  * @apiName UploadImage
@@ -741,6 +964,7 @@ app.put('/decision', async (req: Request, res: Response) => {
       likedJob.title +
       '. Check out now!';
     // TODO add link once page exists
+    // TODO add unread count
     sendPushNotification([likedJob.creator], 'Help offered!', message, '');
   }
   jobStack.markModified('swipedJobs');
@@ -1066,6 +1290,7 @@ function prepareUser(user) {
   delete user.deviceID;
   delete user.token;
   delete user.tokenExpires;
+  delete user.notificationToken;
   return user;
 }
 
@@ -1076,12 +1301,16 @@ function prepareUser(user) {
  * @param message the message of the notification
  * @param link the link of the page to open when tapped on the notification
  */
+/* istanbul ignore next */
 async function sendPushNotification(
   userIDs: string[],
   title: string,
   message: string,
   link: string
 ) {
+  if (process.env.NODE_ENV.trim() === 'test') {
+    return;
+  }
   const notificationOptions = {
     priority: 'high',
     timeToLive: 60 * 60 * 24
@@ -1096,7 +1325,7 @@ async function sendPushNotification(
   const users = await User.find().where('_id').in(userIDs).exec();
   if (users) {
     users.forEach((user) => {
-      if (user.allowNotifications) {
+      if (user.allowNotifications && user.notificationToken) {
         admin
           .messaging()
           .sendToDevice(user.notificationToken, payload, notificationOptions);
@@ -1482,6 +1711,27 @@ app.get('/jobstack/:userID', async (req: Request, res: Response) => {
     });
   }
 });
+
+/*****************************************************************************
+ ***  Handle IO-Socket requests                                              *
+ *****************************************************************************/
+/* istanbul ignore next */
+if (process.env.NODE_ENV.trim() !== 'test') {
+  io.on('connection', (soc) => {
+    soc.on('init', (userID) => {
+      soc.join(userID);
+      connectedUsersByID.set(userID, soc.id);
+      connectedUsersBySocket.set(soc.id, userID);
+    });
+
+    soc.on('disconnect', () => {
+      const tmp = connectedUsersBySocket.get(soc.id);
+      soc.leave(tmp);
+      connectedUsersBySocket.delete(soc.id);
+      connectedUsersByID.delete(tmp);
+    });
+  });
+}
 /**
  * Method to set nodemailer transporter, only used for testing purposes
  * @param transp transporter

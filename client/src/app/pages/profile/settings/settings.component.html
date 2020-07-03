@@ -38,7 +38,7 @@
     </ion-item>
     <ion-item lines="none">
       <ion-label>Allow Location Tracking</ion-label>
-      <ion-toggle color="primary" [(ngModel)]="user.locateMe"></ion-toggle>
+      <ion-toggle (ionChange)="allowChange()" color="primary" [(ngModel)]="user.locateMe"></ion-toggle>
     </ion-item>
     <ion-item lines="none" id="location">
       <ion-grid>

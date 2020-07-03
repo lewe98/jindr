@@ -20,6 +20,8 @@ import {
   Coords,
   LocationService
 } from '../../../services/Location/location.service';
+import { AuthService } from '../../../services/Auth/auth.service';
+import { User } from '../../../../../interfaces/user';
 
 @Component({
   selector: 'app-explore',
@@ -37,10 +39,12 @@ export class ExploreComponent implements OnInit, OnDestroy {
   coordsSub: Subscription;
   coords: Coords;
   interval;
+  user: User;
   constructor(
     private routerService: RouterService,
     private swipeService: SwipeService,
-    private locationService: LocationService
+    private locationService: LocationService,
+    private authService: AuthService
   ) {
     this.stackConfig = {
       allowedDirections: [Direction.LEFT, Direction.RIGHT],
@@ -77,6 +81,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
    * Gets jobs from the server to show to the user
    */
   ngOnInit() {
+    this.user = this.authService.user;
     this.coordsSub = this.locationService.coordsSubscription.subscribe(
       (sub) => {
         this.coords = sub;
