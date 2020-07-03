@@ -99,7 +99,7 @@
   }
 }
 
-@media only screen and (max-device-height: 747px) {
+@media (max-height: 750px) {
   .job-creator {
     display: none;
   }
@@ -108,7 +108,7 @@
   }
 }
 
-@media only screen and (max-device-height: 693px) {
+@media (max-height: 693px) {
   .job-creator, .job-duration {
     display: none;
   }
@@ -117,7 +117,7 @@
   }
 }
 
-@media only screen and (max-device-height: 628px) {
+@media (max-height: 628px) {
   .job-creator, .job-duration {
     display: none;
   }
@@ -126,7 +126,16 @@
   }
 }
 
-@media only screen and (max-device-height: 550px) {
+@media (max-height: 605px) {
+  .job-creator, .job-duration, .job-description {
+    display: none;
+  }
+  .job-icon-list{
+    margin-top: 0;
+  }
+}
+
+@media (max-height: 550px) {
   .job-creator, .job-duration, .job-description, .job-location {
     display: none;
   }
