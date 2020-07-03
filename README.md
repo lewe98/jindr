@@ -27,7 +27,7 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 * [Tools](#tools)
 * [Prerequisites](#prerequisites)
 * [Folder Structure](#folder-structure)
-* [Client Documentatiob](#client-documentation)
+* [Client Documentation](#client-documentation)
 * [Pipelines and Deploy](#pipelines-and-deploy)
 * [Matching](#matching)
 
