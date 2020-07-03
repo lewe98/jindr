@@ -79,7 +79,7 @@
       </ion-col>
       <ion-col size="4">
         <span class="facts-value">
-          <app-text-shell [data]="data.payment"></app-text-shell>
+          {{data.payment}} €
         </span>
       </ion-col>
     </ion-row>
@@ -115,7 +115,7 @@
           <app-image-shell class="user-picture" [src]="user.image"></app-image-shell>
         </app-aspect-ratio>
         <span class="user-name">
-          <app-text-shell [data]="user.firstName"></app-text-shell>
+          {{user.firstName}} {{user.lastName.charAt(0)}}.
         </span>
       </ion-col>
     </ion-row>

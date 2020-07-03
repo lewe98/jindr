@@ -82,7 +82,7 @@ export class ChatService {
    */
   sortWrapper() {
     this.allChats.sort((a, b) =>
-      a.messages[a.messages.length - 1].timeStamp <
+      a.messages[a.messages.length - 1].timeStamp >
       b.messages[b.messages.length - 1].timeStamp
         ? -1
         : 1
@@ -174,5 +174,19 @@ export class ChatService {
     this.allChats[idx].employerLastViewed = wrapper.employerLastViewed;
     this.countUnread();
     this.wrapperSubject.next(this.allChats);
+  }
+
+  checkWrapperExists(userID, jobID): Promise<MessageWrapper> {
+    return new Promise<MessageWrapper>((resolve) => {
+      this.databaseController
+        .postRequest(
+          'check-wrapper-exists',
+          JSON.stringify({ userID, jobID }),
+          MessageWrapper
+        )
+        .then((res) => {
+          resolve(res.data);
+        });
+    });
   }
 }

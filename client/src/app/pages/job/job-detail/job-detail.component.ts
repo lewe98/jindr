@@ -6,11 +6,7 @@ import { AssetService } from '../../../services/Asset/asset.service';
 import { Interest } from '../../../../../interfaces/interest';
 import { JobService } from '../../../services/Job/job.service';
 import { User } from '../../../../../interfaces/user';
-import { ProfileViewComponent } from '../../profile/profile-view/profile-view.component';
-import {
-  ChatViewComponent,
-  PopoverComponent
-} from '../../chat/chat-view/chat-view.component';
+import { InfoComponent } from '../info/info.component';
 
 @Component({
   selector: 'app-job-detail',
@@ -64,45 +60,14 @@ export class JobDetailComponent implements OnInit {
       cssClass: 'my-custom-class',
       event: ev,
       showBackdrop: true,
-      componentProps: { profile, job: this.data }
+      componentProps: {
+        profile,
+        job: this.data,
+        onClick: () => {
+          popover.dismiss();
+        }
+      }
     });
     return await popover.present();
-  }
-}
-
-@Component({
-  template: `
-    <ion-list>
-      <ion-item (click)="handleProfileInfo()">View Profile</ion-item>
-      <ion-item (click)="handleChatInfo()">Start Chat</ion-item>
-    </ion-list>
-  `
-})
-export class InfoComponent {
-  profile;
-  job;
-  constructor(public modalCtrl: ModalController, public navParams: NavParams) {
-    this.profile = this.navParams.get('profile');
-    this.job = this.navParams.get('job');
-  }
-
-  close() {
-    this.modalCtrl.dismiss();
-  }
-
-  async handleChatInfo() {
-    const modal = await this.modalCtrl.create({
-      component: ChatViewComponent,
-      componentProps: { user: this.profile._id, job: this.job }
-    });
-    return await modal.present();
-  }
-
-  async handleProfileInfo() {
-    const modal = await this.modalCtrl.create({
-      component: ProfileViewComponent,
-      componentProps: { user: this.profile }
-    });
-    return await modal.present();
   }
 }

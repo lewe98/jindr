@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   IonContent,
   ModalController,
@@ -13,8 +13,8 @@ import { Job } from '../../../../../interfaces/job';
 import { ChatService } from '../../../services/Chat/chat.service';
 import { JobService } from '../../../services/Job/job.service';
 import { Subscription } from 'rxjs';
-import { JobDetailComponent } from '../../job/job-detail/job-detail.component';
 import { ProfileViewComponent } from '../../profile/profile-view/profile-view.component';
+import { JobDetailComponent } from '../../job/job-detail/job-detail.component';
 
 @Component({
   selector: 'app-chat-view',
@@ -65,6 +65,13 @@ export class ChatViewComponent implements OnInit, OnDestroy {
         this.he = res;
       });
       this.job = this.navParams.get('job');
+      this.chatService
+        .checkWrapperExists(this.navParams.get('user'), this.job?._id)
+        .then((res) => {
+          if (res[0]) {
+            this.messageWrapper = res[0];
+          }
+        });
     }
     this.scrollToBottom(null, true);
     this.subscriptions.push(
@@ -171,12 +178,14 @@ export class ChatViewComponent implements OnInit, OnDestroy {
   close() {
     this.modalCtrl.dismiss();
     this.chatService.activeChat = null;
-    if (this.you._id.toString() === this.messageWrapper.employer.toString()) {
-      this.messageWrapper.employerLastViewed = Date.now();
-    } else {
-      this.messageWrapper.employeeLastViewed = Date.now();
+    if (this.messageWrapper) {
+      if (this.you._id.toString() === this.messageWrapper.employer.toString()) {
+        this.messageWrapper.employerLastViewed = Date.now();
+      } else {
+        this.messageWrapper.employeeLastViewed = Date.now();
+      }
+      this.chatService.updateWrapper(this.messageWrapper, this.you._id);
     }
-    this.chatService.updateWrapper(this.messageWrapper, this.you._id);
   }
 
   ngOnDestroy(): void {
@@ -204,7 +213,13 @@ export class ChatViewComponent implements OnInit, OnDestroy {
       cssClass: 'my-custom-class',
       event: ev,
       showBackdrop: true,
-      componentProps: { job: this.job, profile: this.he }
+      componentProps: {
+        job: this.job,
+        profile: this.he,
+        onClick: () => {
+          popover.dismiss();
+        }
+      }
     });
     return await popover.present();
   }
@@ -221,13 +236,19 @@ export class ChatViewComponent implements OnInit, OnDestroy {
 export class PopoverComponent {
   job;
   profile;
+  @Input() public onClick = () => {};
   constructor(public modalCtrl: ModalController, public navParams: NavParams) {
     this.job = this.navParams.get('job');
     this.profile = this.navParams.get('profile');
   }
 
   close() {
+    this.onClick();
     this.modalCtrl.dismiss();
+  }
+
+  afterClick() {
+    this.onClick();
   }
 
   async handleJobInfo() {
@@ -235,6 +256,7 @@ export class PopoverComponent {
       component: JobDetailComponent,
       componentProps: { job: this.job }
     });
+    this.close();
     return await modal.present();
   }
 
@@ -243,6 +265,7 @@ export class PopoverComponent {
       component: ProfileViewComponent,
       componentProps: { user: this.profile }
     });
+    this.close();
     return await modal.present();
   }
 }
