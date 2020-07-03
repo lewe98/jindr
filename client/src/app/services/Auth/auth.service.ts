@@ -6,6 +6,7 @@ import { set, remove } from '../storage';
 import { Router } from '@angular/router';
 import { ToastService } from '../Toast/toast.service';
 import { BehaviorSubject } from 'rxjs';
+import { Job } from '../../../../interfaces/job';
 
 const { Device } = Plugins;
 
@@ -30,13 +31,13 @@ export class AuthService {
     return info.model + info.uuid + info.platform;
   }
 
-  getUser(): User {
-    return this.user;
-  }
-
   registerPushNotifications(token: string) {
     this.user.notificationToken = token;
     this.updateUser(this.user);
+  }
+
+  getUser(): User {
+    return this.user;
   }
 
   /**
@@ -242,7 +243,7 @@ export class AuthService {
         });
     });
   }
-
+  /*
   getUserByID(id: string): Promise<User> {
     return new Promise<User>((resolve, reject) => {
       this.databaseController
@@ -251,6 +252,27 @@ export class AuthService {
           resolve(res.data);
         })
         .catch((err) => {
+          reject(err);
+        });
+    });
+  }
+*/
+  /**
+   * Method to get one specific user
+   * @param userID id of the user
+   * error message is reported by ToastService
+   * resolves if the user could be obtained successfully
+   * rejects if an error occurred
+   */
+  getUserByID(userID: string): Promise<User> {
+    return new Promise<User>((resolve, reject) => {
+      this.databaseController
+        .getRequest('user/' + userID, '', User)
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err.errors, err.message + ': ');
           reject(err);
         });
     });

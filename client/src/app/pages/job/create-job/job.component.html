@@ -1,6 +1,9 @@
 <ion-header>
     <ion-toolbar class="toolbar-no-border">
-        <ion-title>Create Job</ion-title>
+
+        <ion-title *ngIf="edit">Edit Job</ion-title>
+        <ion-title *ngIf="!edit">Create Job</ion-title>
+
         <ion-buttons slot="start">
             <ion-back-button defaultHref="pages"></ion-back-button>
         </ion-buttons>
@@ -19,21 +22,29 @@
         </ion-avatar>
     </div>
 
+    <ion-item *ngIf="edit" lines="none">
+        <ion-label>Mark job as finished</ion-label>
+        <ion-toggle color="primary" [(ngModel)]="job.isFinished"></ion-toggle>
+    </ion-item>
+
+    <ion-list class="list-custom list-general">
     <form [formGroup]="createForm">
-        <ion-list class="list-custom list-general">
             <ion-list-header>
                 <ion-label>What needs to be done?</ion-label>
             </ion-list-header>
+
             <ion-item lines="none">
                 <ion-label>Title</ion-label>
                 <ion-input formControlName="title" class="right" slot="end"></ion-input>
             </ion-item>
+
             <ion-list-header>
                 <ion-label>Describe the job</ion-label>
             </ion-list-header>
             <ion-item lines="none">
                 <ion-textarea maxlength="600" rows="3" auto-grow="true" type="text" spellcheck="true" autocapitalize="on" formControlName="description"></ion-textarea>
             </ion-item>
+
             <ion-item lines="none" *ngIf="createForm.controls.description.value">
                 <ion-note slot="end">
                     {{ 600 - createForm.controls.description.value.length }}
@@ -42,6 +53,7 @@
             <ion-list-header>
                 <ion-label>How much money do you offer?</ion-label>
             </ion-list-header>
+
             <ion-item lines="none">
                 <ion-label>Payment</ion-label>
                 <ion-input min="0" type="number" formControlName="payment" class="right" slot="end"></ion-input>
@@ -65,6 +77,7 @@
                 <ion-label>Homepage</ion-label>
                 <ion-input formControlName="homepage" type="url" autocomplete="url" class="right" slot="end"></ion-input>
             </ion-item>
+
             <ion-list-header>
                 <ion-grid>
                     <ion-row>
@@ -77,14 +90,16 @@
                     </ion-row>
                 </ion-grid>
             </ion-list-header>
-            <ion-item lines="none" id="skills">
-                <ion-label>Skill</ion-label>
-                <!--ngfor-->
-                <ion-select formControlName="interests"  multiple="true" cancelText="cancel" okText="ok">
-                    <ion-select-option *ngFor="let interest of interests;" value="{{interest }}">{{interest}}</ion-select-option>
-                </ion-select>
-            </ion-item>
-            <ion-list-header>
+
+        <ion-item lines="none" id="skills">
+            <ion-label>Skill</ion-label>
+            <!--ngfor-->
+            <ion-select formControlName="interests" (ionChange)="changedInterest()"   multiple="true" cancelText="cancel" okText="ok">
+                <ion-select-option *ngFor="let interest of interests;" value="{{interest }}">{{interest}}</ion-select-option>
+            </ion-select>
+        </ion-item>
+
+        <ion-list-header>
                 <ion-grid>
                     <ion-row>
                         <ion-col class="ion-no-padding" size="12">
@@ -96,6 +111,7 @@
                     </ion-row>
                 </ion-grid>
             </ion-list-header>
+
             <ion-item lines="none" id="location">
                 <ion-grid>
                     <ion-row>
@@ -112,18 +128,8 @@
                         </ion-col>
                     </ion-row>
                 </ion-grid>
-
-
             </ion-item>
-            <ion-list-header>
-                <ion-label>When does it start?</ion-label>
-            </ion-list-header>
-                <!--Enddatum/Zeit datepicker/picker-->
-                <ion-item lines="none" id="startDate">
-                    <ion-label>Date</ion-label>
-                    <ion-datetime (click)="scrollToTop('startDate')" [value]="job.date | date: 'dd.MM.yyyy'" (ionChange)="selectDOB($event)"
-                                  displayFormat="DD.MM.YYYY" placeholder="Select Date"></ion-datetime>
-                </ion-item>
+
             <ion-list-header>
                 <ion-label>How many hours?</ion-label>
             </ion-list-header>
@@ -133,12 +139,27 @@
                         <ion-select-option *ngFor="let number of [1,2,3,4,5,6,7,8,9,10,11,12]" value="{{number}}">{{number}} h</ion-select-option>
                     </ion-select>
                 </ion-item>
-        </ion-list>
     </form>
+
+        <ion-list-header>
+            <ion-label>When does it start?</ion-label>
+        </ion-list-header>
+        <!--Enddatum/Zeit datepicker/picker-->
+        <ion-item lines="none" id="startDate">
+            <ion-label>Date</ion-label>
+            <ion-datetime [ngModelOptions]="{standalone: true}" (click)="scrollToTop('startDate')" [ngModel]="job.date" (ionChange)="selectDate($event)"
+                          displayFormat="DD.MM.YYYY" placeholder="Select Date"></ion-datetime>
+        </ion-item>
+
+    </ion-list>
 </ion-content>
 
 <ion-footer>
-    <ion-button [disabled]="!createForm.valid || !coords || !date" type="button" expand="full" fill="solid" color="primary"
-                (click)="createJob()">RELEASE
+    <ion-button *ngIf="edit" [disabled]="!createForm.valid || !coords || !date" type="button" expand="full" fill="solid"
+                color="primary" (click)="editJob()">SUBMIT CHANGES
+    </ion-button>
+
+    <ion-button *ngIf="!edit" [disabled]="!createForm.valid || !coords || !date" type="button" expand="full"
+                fill="solid" color="primary" (click)="createJob()">RELEASE
     </ion-button>
 </ion-footer>

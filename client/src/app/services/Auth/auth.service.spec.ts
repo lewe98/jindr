@@ -4,6 +4,8 @@ import { DatabaseControllerService } from '../DatabaseController/database-contro
 import { RouterTestingModule } from '@angular/router/testing';
 import { User } from '../../../../interfaces/user';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { Job } from '../../../../interfaces/job';
+import { Coords } from '../../../../../server/models/tile';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -26,6 +28,19 @@ describe('AuthService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  describe('get specific user', () => {
+    it('should get a user by id', (done) => {
+      service.getUserByID('test123').then(async () => {
+        expect(databaseSpy.getRequest).toHaveBeenCalledWith(
+          'user/test123',
+          '',
+          User
+        );
+        done();
+      });
+    });
   });
 
   describe('login', () => {
