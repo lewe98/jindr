@@ -82,7 +82,7 @@ export class ChatService {
    */
   sortWrapper() {
     this.allChats.sort((a, b) =>
-      a.messages[a.messages.length - 1].timeStamp <
+      a.messages[a.messages.length - 1].timeStamp >
       b.messages[b.messages.length - 1].timeStamp
         ? -1
         : 1

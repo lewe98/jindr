@@ -8,6 +8,10 @@ import { SharedModule } from '../../shared/shared.module';
 import { SwingModule } from 'angular2-swing';
 import { SwipeCardComponent } from './swipe-card/swipe-card.component';
 import { ShellModule } from '../../shell/shell.module';
+import { CHAT_VIEW_TOKEN } from '../chat/chat-view/chat-view-token';
+import { ChatViewComponent } from '../chat/chat-view/chat-view.component';
+import { JOB_DETAIL_TOKEN } from '../job/job-detail/job-detail-token';
+import { JobDetailComponent } from '../job/job-detail/job-detail.component';
 
 const swipeRoutes: Routes = [
   {
@@ -26,6 +30,10 @@ const swipeRoutes: Routes = [
     SwingModule,
     ShellModule
   ],
-  exports: [RippleLoaderComponent, SwipeCardComponent]
+  exports: [RippleLoaderComponent, SwipeCardComponent],
+  providers: [
+    { provide: CHAT_VIEW_TOKEN, useValue: ChatViewComponent },
+    { provide: JOB_DETAIL_TOKEN, useValue: JobDetailComponent }
+  ]
 })
 export class SwipeModule {}

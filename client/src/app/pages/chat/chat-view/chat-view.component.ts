@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   IonContent,
   ModalController,
@@ -213,7 +213,13 @@ export class ChatViewComponent implements OnInit, OnDestroy {
       cssClass: 'my-custom-class',
       event: ev,
       showBackdrop: true,
-      componentProps: { job: this.job, profile: this.he }
+      componentProps: {
+        job: this.job,
+        profile: this.he,
+        onClick: () => {
+          popover.dismiss();
+        }
+      }
     });
     return await popover.present();
   }
@@ -230,13 +236,19 @@ export class ChatViewComponent implements OnInit, OnDestroy {
 export class PopoverComponent {
   job;
   profile;
+  @Input() public onClick = () => {};
   constructor(public modalCtrl: ModalController, public navParams: NavParams) {
     this.job = this.navParams.get('job');
     this.profile = this.navParams.get('profile');
   }
 
   close() {
+    this.onClick();
     this.modalCtrl.dismiss();
+  }
+
+  afterClick() {
+    this.onClick();
   }
 
   async handleJobInfo() {
