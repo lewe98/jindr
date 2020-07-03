@@ -41,27 +41,6 @@ export class AuthService {
   }
 
   /**
-   * Method to get one specific user
-   * @param userID id of the user
-   * error message is reported by ToastService
-   * resolves if the user could be obtained successfully
-   * rejects if an error occurred
-   */
-  getUserByID(userID: string): Promise<User> {
-    return new Promise<User>((resolve, reject) => {
-      this.databaseController
-        .getRequest('user/' + userID, '', User)
-        .then((res) => {
-          resolve(res.data);
-        })
-        .catch((err) => {
-          this.toastService.presentWarningToast(err.errors, err.message + ': ');
-          reject(err);
-        });
-    });
-  }
-
-  /**
    * Method to start the registration of a new user
    * @param firstName of the user
    * @param lastName of the user
@@ -264,7 +243,7 @@ export class AuthService {
         });
     });
   }
-
+  /*
   getUserByID(id: string): Promise<User> {
     return new Promise<User>((resolve, reject) => {
       this.databaseController
@@ -273,6 +252,27 @@ export class AuthService {
           resolve(res.data);
         })
         .catch((err) => {
+          reject(err);
+        });
+    });
+  }
+*/
+  /**
+   * Method to get one specific user
+   * @param userID id of the user
+   * error message is reported by ToastService
+   * resolves if the user could be obtained successfully
+   * rejects if an error occurred
+   */
+  getUserByID(userID: string): Promise<User> {
+    return new Promise<User>((resolve, reject) => {
+      this.databaseController
+        .getRequest('user/' + userID, '', User)
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err.errors, err.message + ': ');
           reject(err);
         });
     });
