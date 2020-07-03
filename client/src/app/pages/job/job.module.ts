@@ -8,6 +8,9 @@ import { ShellModule } from '../../shell/shell.module';
 import { JobDetailComponent } from './job-detail/job-detail.component';
 import { OffersComponent } from './offers/offers.component';
 import { InfoComponent } from './info/info.component';
+import { CHAT_VIEW_TOKEN } from '../chat/chat-view/chat-view-token';
+import { ChatViewComponent } from '../chat/chat-view/chat-view.component';
+import { JOB_DETAIL_TOKEN } from './job-detail/job-detail-token';
 
 const routes: Routes = [
   {
@@ -34,6 +37,10 @@ const routes: Routes = [
     ReactiveFormsModule,
     FormsModule,
     ShellModule
+  ],
+  providers: [
+    { provide: CHAT_VIEW_TOKEN, useValue: ChatViewComponent },
+    { provide: JOB_DETAIL_TOKEN, useValue: JobDetailComponent }
   ]
 })
 export class JobModule {}

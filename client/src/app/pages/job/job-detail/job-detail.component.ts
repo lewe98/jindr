@@ -60,7 +60,13 @@ export class JobDetailComponent implements OnInit {
       cssClass: 'my-custom-class',
       event: ev,
       showBackdrop: true,
-      componentProps: { profile, job: this.data }
+      componentProps: {
+        profile,
+        job: this.data,
+        onClick: () => {
+          popover.dismiss();
+        }
+      }
     });
     return await popover.present();
   }
