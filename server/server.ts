@@ -1299,7 +1299,7 @@ app.put('/make-jobOffer/', (req: Request, res: Response) => {
           }
         }
       );
-      const job = await Job.findOne({_id: jobId})
+      const job = await Job.findOne({_id: jobId});
       if (connectedUsersByID.get(userId)) {
         console.log(job);
         io.to(userId).emit('get-offer', { job, wrapperId });
