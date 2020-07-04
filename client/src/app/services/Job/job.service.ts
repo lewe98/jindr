@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { DatabaseControllerService } from '../DatabaseController/database-controller.service';
 import { ToastService } from '../Toast/toast.service';
 import { Job } from '../../../../interfaces/job';
@@ -7,6 +7,9 @@ import { Job } from '../../../../interfaces/job';
   providedIn: 'root'
 })
 export class JobService {
+
+  public $newJobOffer: EventEmitter<any> = new EventEmitter();
+
   constructor(
     private databaseController: DatabaseControllerService,
     private toastService: ToastService
@@ -124,4 +127,39 @@ export class JobService {
         });
     });
   }
+
+  /**
+   * Method to make a JobOffer
+   * @param jobId Id of the Job which get updated
+   * @param userId userId from the user who gets the JobOffer
+   * @param wrapperId the Id of the actual wrapper
+   */
+  makeOffer(jobId, userId, wrapperId){
+    return new Promise<any>((resolve, reject) => {
+      const data = JSON.stringify({
+        jobId: jobId.toString(),
+        userId: userId.toString(),
+        wrapperId: wrapperId.toString()
+      });
+      this.databaseController
+        .putRequest('make-jobOffer', data)
+        .then((res) => {
+          this.toastService.presentToast(res.message);
+          console.log(res.data);
+          resolve(res.data);
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(
+            err.message,
+            'An error occurred: '
+          );
+          reject(err);
+        });
+    });
+  }
+
+  updateJob(job){
+    this.$newJobOffer.emit(job);
+  }
+
 }

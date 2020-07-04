@@ -1278,6 +1278,47 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
   });
 });
 
+
+
+app.put('/make-jobOffer/', (req: Request, res: Response) => {
+  const jobId = req.body.jobId;
+  const userId = req.body.userId;
+  const wrapperId = req.body.wrapperId;
+
+  Job.findOne({ _id: jobId }).exec(async (err) => {
+    if (err) {
+      res.status(404).send({
+        message: 'Job could not be found.'
+      });
+    } else {
+      await Job.findOneAndUpdate(
+        { _id: jobId },
+        {
+          jobOffer: {
+            user: userId
+          }
+        }
+      );
+      const job = await Job.findOne({_id: jobId})
+      if (connectedUsersByID.get(userId)) {
+        console.log(job);
+        io.to(userId).emit('get-offer', { job, wrapperId });
+      } else {
+        sendPushNotification(
+          [userId],
+          'New joboffer!',
+          'You got a new joboffer!',
+          'pages/chat'
+        );
+      }
+      res.status(200).send({
+        message: 'Successfully updated job.',
+        data: await Job.findOne({_id: jobId})
+      });
+    }
+  });
+});
+
 /**
  * Prepares user to be sent to client
  * Removes password and deviceID

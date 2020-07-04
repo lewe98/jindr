@@ -15,6 +15,7 @@ import { JobService } from '../../../services/Job/job.service';
 import { Subscription } from 'rxjs';
 import { ProfileViewComponent } from '../../profile/profile-view/profile-view.component';
 import { JobDetailComponent } from '../../job/job-detail/job-detail.component';
+import { JobOffer } from '../../../../../interfaces/jobOffer';
 
 @Component({
   selector: 'app-chat-view',
@@ -29,15 +30,17 @@ export class ChatViewComponent implements OnInit, OnDestroy {
   he: User = new User();
   job: Job = new Job();
   subscriptions: Subscription[] = [];
+  jobOffer: JobOffer = new JobOffer();
 
   constructor(
     private navParams: NavParams,
     private authService: AuthService,
     private chatService: ChatService,
-    private jobService: JobService,
+    public jobService: JobService,
     private modalCtrl: ModalController,
     public popoverController: PopoverController
-  ) {}
+  ) {
+  }
 
   ngOnInit() {
     /**
@@ -59,6 +62,7 @@ export class ChatViewComponent implements OnInit, OnDestroy {
       });
       this.jobService.getJobById(this.messageWrapper.jobID).then((res) => {
         this.job = res;
+        this.setJobOffer(this.job);
       });
     } else {
       this.authService.getUserByID(this.navParams.get('user')).then((res) => {
@@ -73,6 +77,13 @@ export class ChatViewComponent implements OnInit, OnDestroy {
           }
         });
     }
+    this.jobService.$newJobOffer.subscribe((sub) => {
+      if (sub) {
+        this.job = sub;
+        this.setJobOffer(this.job);
+      }
+    });
+
     this.scrollToBottom(null, true);
     this.subscriptions.push(
       this.chatService.$newMessage.subscribe((sub) => {
@@ -97,6 +108,19 @@ export class ChatViewComponent implements OnInit, OnDestroy {
     } else {
       this.content.scrollToBottom(duration);
     }
+  }
+
+  /**
+   *
+   * @param jobId Id of the Job which get updated
+   * @param userId userId from the user who gets the JobOffer
+   * @param wrapperId the Id of the actual wrapper
+   */
+  makeOffer(jobId, userId, wrapperId) {
+    this.jobService.makeOffer(jobId, userId, wrapperId).then((res) => {
+      this.job = res;
+      this.setJobOffer(this.job);
+    });
   }
 
   /**
@@ -207,6 +231,14 @@ export class ChatViewComponent implements OnInit, OnDestroy {
     return await modal.present();
   }
 
+  setJobOffer(job: Job) {
+    for (const jobOffer of job.jobOffer) {
+      if (this.you._id || this.he._id === jobOffer.user) {
+        this.jobOffer = jobOffer;
+      }
+    }
+  }
+
   async presentPopover(ev: any) {
     const popover = await this.popoverController.create({
       component: PopoverComponent,
@@ -227,16 +259,18 @@ export class ChatViewComponent implements OnInit, OnDestroy {
 
 @Component({
   template: `
-    <ion-list>
-      <ion-item (click)="handleJobInfo()">View Job</ion-item>
-      <ion-item (click)="handleProfileInfo()">View Profile</ion-item>
-    </ion-list>
+      <ion-list>
+          <ion-item (click)="handleJobInfo()">View Job</ion-item>
+          <ion-item (click)="handleProfileInfo()">View Profile</ion-item>
+      </ion-list>
   `
 })
 export class PopoverComponent {
   job;
   profile;
-  @Input() public onClick = () => {};
+  @Input() public onClick = () => {
+  }
+
   constructor(public modalCtrl: ModalController, public navParams: NavParams) {
     this.job = this.navParams.get('job');
     this.profile = this.navParams.get('profile');
