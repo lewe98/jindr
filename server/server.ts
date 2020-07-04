@@ -398,7 +398,7 @@ app.post('/new-wrapper', async (req: Request, res: Response) => {
   let wrapper = new MessageWrapper();
   Object.assign(wrapper, req.body.wrapper);
   wrapper = await wrapper.save({ new: true });
-  if (connectedUsersByID.get(wrapper.employee)) {
+  if (connectedUsersByID.get(wrapper.employee.toString())) {
     io.to(wrapper.employee.toString()).emit('new-wrapper', wrapper);
   } else {
     sendPushNotification(
@@ -647,7 +647,6 @@ app.get('/user/:userID', (req: Request, res: Response) => {
     });
 });
 
-
 /**
  * @api {put} /user-array Returns an array of users by ids
  * @apiName UserArray
@@ -666,7 +665,7 @@ app.get('/user/:userID', (req: Request, res: Response) => {
 app.put('/user-array', async (req: Request, res: Response) => {
   const ids = req.body.ids;
   try {
-    let users = await User.find().where('_id').in(ids).exec();
+    const users = await User.find().where('_id').in(ids).exec();
     res.status(200).send({
       data: users
     });
@@ -698,7 +697,10 @@ app.put('/user-array', async (req: Request, res: Response) => {
 app.post('/check-wrapper-exists', async (req: Request, res: Response) => {
   const id = req.body.userID;
   const jobID = req.body.jobID;
-  const wrapper = await MessageWrapper.find({employee: id, jobID: jobID}).exec();
+  const wrapper = await MessageWrapper.find({
+    employee: id,
+    jobID: jobID
+  }).exec();
   res.status(200).send({
     data: wrapper
   });

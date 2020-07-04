@@ -147,7 +147,7 @@
         <!--Enddatum/Zeit datepicker/picker-->
         <ion-item lines="none" id="startDate">
             <ion-label>Date</ion-label>
-            <ion-datetime [ngModelOptions]="{standalone: true}" (click)="scrollToTop('startDate')" [ngModel]="job.date" (ionChange)="selectDate($event)"
+            <ion-datetime [max]="max" [min]="today" [ngModelOptions]="{standalone: true}" (click)="scrollToTop('startDate')" [ngModel]="job.date" (ionChange)="selectDate($event)"
                           displayFormat="DD.MM.YYYY" placeholder="Select Date"></ion-datetime>
         </ion-item>
 
