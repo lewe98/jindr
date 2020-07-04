@@ -8,7 +8,7 @@ import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
 import { ToastService } from '../../../services/Toast/toast.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { NavigationExtras, Router } from '@angular/router';
+import {  Router } from '@angular/router';
 import { ProfileResumeComponent } from '../profile-resume/profile-resume.component';
 import { AssetService } from '../../../services/Asset/asset.service';
 import { Interest } from '../../../../../interfaces/interest';
@@ -28,6 +28,8 @@ export class ProfileEditComponent implements OnInit {
   userInterests = [];
   tempInterests: Interest[] = [];
   changedInterests = false;
+  today = new Date().toISOString().slice(0, 10);
+  maxDate: string;
 
   constructor(
     private modalCtrl: ModalController,
@@ -41,6 +43,8 @@ export class ProfileEditComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    const tmpDate = Number(this.today.substring(0, 4)) - 16;
+    this.maxDate = tmpDate + this.today.substring(4, 10);
     Object.assign(this.user, this.authService.getUser());
     this.userBirthday = this.user.dateOfBirth;
     this.tempInterests = this.assetService.getInterests();
