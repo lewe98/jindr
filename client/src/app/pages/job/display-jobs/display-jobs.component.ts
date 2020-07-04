@@ -30,7 +30,6 @@ export class DisplayJobsComponent implements OnInit {
       .getJobs(this.user._id)
       .then((res) => {
         Object.assign(this.jobs, res);
-        console.log(res);
       })
       .catch((err) => {
         this.toastService.presentWarningToast(err, 'Error!');

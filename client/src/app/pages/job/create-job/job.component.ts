@@ -58,7 +58,6 @@ export class JobComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    console.log(this.today);
     this.tempInterests = this.assetService.getInterests();
     this.interests = this.tempInterests?.map((i) => {
       return i.title;
