@@ -53,6 +53,7 @@ export class SocketService {
      * Listens for new message wrappers
      */
     this.socket.on('new-wrapper', (wrapper: MessageWrapper) => {
+      console.log(wrapper);
       this.chatService.addWrapperAndSort(wrapper);
       if (this.chatService.activeChat !== wrapper._id) {
         this.toastService.presentNotification(

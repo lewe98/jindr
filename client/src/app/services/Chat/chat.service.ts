@@ -97,6 +97,7 @@ export class ChatService {
    * @param wrapper the wrapper to add to the list
    */
   addWrapperAndSort(wrapper: MessageWrapper) {
+    console.log(this.allChats);
     this.allChats.unshift(wrapper);
     this.countUnread();
     this.wrapperSubject.next(this.allChats);
@@ -113,8 +114,12 @@ export class ChatService {
         MessageWrapper
       )
       .then((res) => {
-        this.allChats = res.data;
-        this.sortWrapper();
+        if (res.data.length > 0) {
+          this.allChats = res.data;
+          this.sortWrapper();
+        } else {
+          this.allChats = [];
+        }
       });
   }
 
