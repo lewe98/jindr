@@ -1,16 +1,16 @@
 <app-gif-search *ngIf="showGiphy" (doSelect)="sendGif($event)" (doClose)="toggleGiphy()"></app-gif-search>
 
 <ion-toolbar class="has-elastic-input toolbar-no-border" *ngIf="!showGiphy">
-  <ion-buttons slot="start" align-self-bottom class="stick-bottom">
+  <ion-buttons slot="start" class="stick-bottom">
     <ion-button fill="solid" color="light" shape="round" class="button-gif" (click)="toggleGiphy()">
       GIF
     </ion-button>
   </ion-buttons>
   <div class="input-block">
     <ion-textarea #messageInput auto-resize [(ngModel)]="typingMessage" rows="1" placeholder="Type a message"></ion-textarea>
-    <ion-buttons right class="stick-bottom button-submit">
+    <ion-buttons class="stick-bottom button-submit">
       <ion-button type="submit" [disabled]="typingMessage.length === 0" fill="clear" size="small" color="medium" (click)="sendText(typingMessage)">
-        Send
+        <ion-icon name="send"></ion-icon>
       </ion-button>
     </ion-buttons>
   </div>
