@@ -7,7 +7,6 @@ import { Job } from '../../../../interfaces/job';
   providedIn: 'root'
 })
 export class JobService {
-
   public $newJobOffer: EventEmitter<any> = new EventEmitter();
 
   constructor(
@@ -134,7 +133,7 @@ export class JobService {
    * @param userId userId from the user who gets the JobOffer
    * @param wrapperId the Id of the actual wrapper
    */
-  makeOffer(jobId, userId, wrapperId){
+  makeOffer(jobId, userId, wrapperId) {
     return new Promise<any>((resolve, reject) => {
       const data = JSON.stringify({
         jobId: jobId.toString(),
@@ -144,7 +143,6 @@ export class JobService {
       this.databaseController
         .putRequest('make-jobOffer', data)
         .then((res) => {
-          this.toastService.presentToast(res.message);
           resolve(res.data);
         })
         .catch((err) => {
@@ -160,22 +158,22 @@ export class JobService {
   /**
    *
    * @param jobId Id of the Job which get updated
-   * @param userId userId from the user who made the JobOffer
+   * @param userId userId of the employer
    * @param wrapperId the Id of the actual wrapper
    * @param reaction boolean: (true= JobOffer accepted, false= JobOffer denied)
    */
-  reactOffer(jobId, userId, wrapperId, reaction){
+  reactOffer(jobId, userId, wrapperId, reaction, offerID) {
     return new Promise<any>((resolve, reject) => {
       const data = JSON.stringify({
         jobId: jobId.toString(),
-        userId: userId.toString(),
+        userId,
         wrapperId: wrapperId.toString(),
-        jobOfferAccepted: reaction
+        jobOfferAccepted: reaction,
+        offerID: offerID.toString()
       });
       this.databaseController
         .putRequest('reaction-jobOffer', data)
         .then((res) => {
-          this.toastService.presentToast(res.message);
           resolve(res.data);
         })
         .catch((err) => {
@@ -194,17 +192,16 @@ export class JobService {
    * @param userId userId from the user of the JobOffer
    * @param wrapperId the Id of the actual wrapper
    */
-  rejectOffer(jobId, userId, wrapperId){
+  rejectOffer(jobId, userId, wrapperId) {
     return new Promise<any>((resolve, reject) => {
       const data = JSON.stringify({
         jobId: jobId.toString(),
         userId: userId.toString(),
-        wrapperId: wrapperId.toString(),
+        wrapperId: wrapperId.toString()
       });
       this.databaseController
         .putRequest('reject-jobOffer', data)
         .then((res) => {
-          this.toastService.presentToast(res.message);
           resolve(res.data);
         })
         .catch((err) => {
@@ -217,8 +214,7 @@ export class JobService {
     });
   }
 
-  updateJob(job){
+  updateJob(job) {
     this.$newJobOffer.emit(job);
   }
-
 }

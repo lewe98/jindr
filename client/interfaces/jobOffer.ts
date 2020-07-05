@@ -3,4 +3,6 @@ export class JobOffer {
   accepted: boolean;
   dateRequested: number;
   dateReaction: number;
+  // tslint:disable-next-line:variable-name
+  _id: string;
 }

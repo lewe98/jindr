@@ -92,12 +92,12 @@ export class SocketService {
      */
     this.socket.on('update-job', (data) => {
       this.jobService.updateJob(data.job);
-      if (this.chatService.activeChat !== data.wrapperID) {
+      if (this.chatService.activeChat !== data.wrapperId) {
         this.toastService.presentNotification(
           data.notification.header,
           data.notification.message,
           data.notification.link,
-          data.wrapperID
+          data.wrapperId
         );
       }
     });

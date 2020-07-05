@@ -1280,148 +1280,145 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
   });
 });
 
-
 /**
  *  pushs an jobOffer into an existing Job
  *  Uses socket to inform the user about the jobOffer
  */
-app.put('/make-jobOffer/', (req: Request, res: Response) => {
+app.put('/make-jobOffer/', async (req: Request, res: Response) => {
   const jobId = req.body.jobId;
   const userId = req.body.userId;
   const wrapperId = req.body.wrapperId;
-  const notification = { header: 'New joboffer!', message: 'You got a new joboffer!', link: 'pages/chat' };
+  const notification = {
+    header: 'New Job Offer!',
+    message: 'You got a new Job Offer!',
+    link: 'pages/chat'
+  };
 
-  Job.findOne({ _id: jobId }).exec(async (err) => {
-    if (err) {
-      res.status(404).send({
-        message: 'Job could not be found.'
-      });
-    } else {
-      const theJob = await Job.findOne({ _id: jobId });
-      const jobOffers = theJob.jobOffer;
-      jobOffers.push({user: userId, accepted: false, dateRequest: Date.now(), dateReaction: 0, });
-      await Job.findOneAndUpdate(
-        { _id: jobId },
-        {
-          jobOffer: jobOffers
+  try {
+    const job = await Job.findOneAndUpdate(
+      { _id: jobId },
+      {
+        $push: {
+          jobOffer: {
+            user: userId,
+            accepted: false,
+            dateRequest: Date.now(),
+            dateReaction: 0
+          }
         }
+      },
+      { new: true }
+    ).exec();
+    if (connectedUsersByID.get(userId)) {
+      io.to(userId).emit('update-job', { job, wrapperId, notification });
+    } else {
+      sendPushNotification(
+        [userId],
+        notification.header,
+        notification.message,
+        notification.link
       );
-      const job = await Job.findOne({ _id: jobId });
-      if (connectedUsersByID.get(userId)) {
-        io.to(userId).emit('update-job', { job, wrapperId, notification });
-      } else {
-        sendPushNotification(
-          [userId],
-          notification.header,
-          notification.message,
-          notification.link
-        );
-      }
-      res.status(200).send({
-        message: 'Successfully updated job.',
-        data: await Job.findOne({ _id: jobId })
-      });
     }
-  });
+    res.status(200).send({
+      message: 'Successfully updated job.',
+      data: job
+    });
+  } catch (e) {
+    res.status(500).send({
+      errors: e
+    });
+  }
 });
 
-app.put('/reject-jobOffer/', (req: Request, res: Response) => {
+app.put('/reject-jobOffer/', async (req: Request, res: Response) => {
   const jobId = req.body.jobId;
   const userId = req.body.userId;
   const wrapperId = req.body.wrapperId;
-  const notification = { header: 'JobOffer rejected!', message: 'Your JobOffer got rejected!', link: 'pages/chat' };
-
-  Job.findOne({ _id: jobId, jobOffer: { user: userId } }).exec(async (err) => {
-    if (err) {
-      res.status(404).send({
-        message: 'JobOffer could not be found.'
+  const notification = {
+    header: 'JobOffer rejected!',
+    message: 'Your JobOffer got rejected!',
+    link: 'pages/chat'
+  };
+  try {
+    const job = await Job.findOne({ _id: jobId }).exec();
+    _.remove(job.jobOffer, (offer) => {
+      return offer.user.toString() === userId;
+    });
+    job.markModified('jobOffer');
+    const newJob = await job.save({ new: true });
+    if (connectedUsersByID.get(userId)) {
+      io.to(userId).emit('update-job', {
+        job: newJob,
+        wrapperId,
+        notification
       });
     } else {
-      const theJob = await Job.findOne({ _id: jobId });
-      const jobOffers = theJob.jobOffer;
-      const newJobOffers = [];
-      for (let i = 0; i < jobOffers.length; i++) {
-        if (jobOffers[i].user != userId) {
-          newJobOffers.push(jobOffers[i]);
-        }
-      }
-      await Job.findOneAndUpdate(
-        { _id: jobId },
-        {
-          jobOffer: newJobOffers
-        });
-      const job = await Job.findOne({ _id: jobId });
-      if (connectedUsersByID.get(userId)) {
-        io.to(userId).emit('update-job', { job, wrapperId, notification });
-      } else {
-        sendPushNotification(
-          [userId],
-          notification.header,
-          notification.message,
-          notification.link
-        );
-      }
-      res.status(200).send({
-        message: 'Successfully deleted the JobOffer',
-        data: await Job.findOne({ _id: jobId })
-      });
+      sendPushNotification(
+        [userId],
+        notification.header,
+        notification.message,
+        notification.link
+      );
     }
-  });
+    res.status(200).send({
+      message: 'Successfully deleted the JobOffer',
+      data: newJob
+    });
+  } catch (e) {
+    res.status(400).send({
+      errors: e
+    });
+  }
 });
 
 /**
  *  updates the jobOffer with the reaction of the employee
  *  Uses socket to inform the employer about the reaction
  */
-app.put('/reaction-jobOffer/', (req: Request, res: Response) => {
+app.put('/reaction-jobOffer/', async (req: Request, res: Response) => {
   const jobId = req.body.jobId;
   const userId = req.body.userId;
   const wrapperId = req.body.wrapperId;
   const jobOfferAccepted = req.body.jobOfferAccepted;
-
-  Job.findOne({ _id: jobId, jobOffer: { user: userId } }).exec(async (err) => {
-    if (err) {
-      res.status(404).send({
-        message: 'JobOffer could not be found.'
+  const offerID = req.body.offerID;
+  try {
+    const job = await Job.findOne({ _id: jobId }).exec();
+    job.jobOffer.forEach((o) => {
+      if (o._id.toString() === offerID) {
+        o.accepted = jobOfferAccepted;
+        o.dateReaction = Date.now();
+        return;
+      }
+    });
+    await job.save();
+    const notification = {
+      header: 'New JobOffer Reaction!',
+      message: 'You got a new reaction to an JobOffer!',
+      link: 'pages/chat'
+    };
+    if (connectedUsersByID.get(userId.toString())) {
+      io.to(userId.toString()).emit('update-job', {
+        job,
+        wrapperId,
+        notification
       });
     } else {
-      const theJob = await Job.findOne({ _id: jobId });
-      const jobOffers = theJob.jobOffer;
-      for (let i = 0; i < jobOffers.length; i++) {
-        if (jobOffers[i].user == userId) {
-          jobOffers[i].dateReaction = Date.now();
-          jobOffers[i].accepted = jobOfferAccepted;
-        }
-      }
-      await Job.findOneAndUpdate(
-        { _id: jobId },
-        {
-          jobOffer: jobOffers
-        });
-      const notification = {
-        header: 'New JobOffer Reaction!',
-        message: 'You got a new reaction to an JobOffer!',
-        link: 'pages/chat'
-      };
-      const job = await Job.findOne({ _id: jobId });
-      if (connectedUsersByID.get(userId)) {
-        io.to(userId).emit('update-job', { job, wrapperId, notification });
-      } else {
-        sendPushNotification(
-          [userId],
-          notification.header,
-          notification.message,
-          notification.link
-        );
-      }
-      res.status(200).send({
-        message: 'Successfully accepted the job.',
-        data: await Job.findOne({ _id: jobId })
-      });
+      sendPushNotification(
+        [userId],
+        notification.header,
+        notification.message,
+        notification.link
+      );
     }
-  });
+    res.status(200).send({
+      data: job
+    });
+  } catch (e) {
+    res.status(500).send({
+      errors: e
+    });
+  }
 });
-
 
 /**
  * Prepares user to be sent to client
