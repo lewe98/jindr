@@ -1,11 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Job } from '../../../../../interfaces/job';
-import { User } from '../../../../../interfaces/user';
-import { AuthService } from '../../../services/Auth/auth.service';
 import { JobService } from '../../../services/Job/job.service';
-import { ToastService } from '../../../services/Toast/toast.service';
-import { ProfileViewComponent } from '../../profile/profile-view/profile-view.component';
 import { ModalController } from '@ionic/angular';
+import { JobDetailComponent } from '../job-detail/job-detail.component';
 
 @Component({
   selector: 'app-display-jobs',
@@ -13,50 +10,19 @@ import { ModalController } from '@ionic/angular';
   styleUrls: ['./display-jobs.component.scss']
 })
 export class DisplayJobsComponent implements OnInit {
-  user: User = new User();
-  interestedUsers: User[] = [];
-  jobs: Job[] = [];
+  @Input() job: Job;
 
   constructor(
-    private authService: AuthService,
     private jobService: JobService,
-    private toastService: ToastService,
     private modalCtrl: ModalController
   ) {}
 
-  ngOnInit() {
-    Object.assign(this.user, this.authService.getUser());
-    this.jobService
-      .getJobs(this.user._id)
-      .then((res) => {
-        Object.assign(this.jobs, res);
-      })
-      .catch((err) => {
-        this.toastService.presentWarningToast(err, 'Error!');
-      });
-  }
+  ngOnInit() {}
 
-  async viewProfile() {
+  async viewJob() {
     const modal = await this.modalCtrl.create({
-      component: ProfileViewComponent,
-      componentProps: { user: this.user }
-    });
-    return await modal.present();
-  }
-
-  async viewInterestedUsers(job: Job) {
-    await job.interestedUsers.forEach((userID) => {
-      this.authService.getUserByID(userID).then((res) => {
-        if (!this.interestedUsers.includes(res)) {
-          // TODO: - AMK
-          this.interestedUsers.push(res);
-        }
-      });
-    });
-
-    const modal = await this.modalCtrl.create({
-      component: ProfileViewComponent,
-      componentProps: { user: this.interestedUsers[0] }
+      component: JobDetailComponent,
+      componentProps: { job: this.job }
     });
     return await modal.present();
   }

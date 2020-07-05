@@ -110,15 +110,15 @@
     <h3 class="detail-title">Interested Users</h3>
     <ion-row class="users-row">
       <ion-col class="user-item" size="2" *ngFor="let user of interestedUsers">
-        <ion-icon (click)="presentPopover($event, user)" class="info" name="information-circle" ></ion-icon>
+        <div (click)="presentPopover($event, user)">
         <app-aspect-ratio class="image" [ratio]="{w: 1, h: 1}">
           <app-image-shell class="user-picture" [src]="user.image"></app-image-shell>
         </app-aspect-ratio>
         <span class="user-name">
           {{user.firstName}} {{user.lastName.charAt(0)}}.
         </span>
+        </div>
       </ion-col>
     </ion-row>
   </div>
-
 </ion-content>

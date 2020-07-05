@@ -1,43 +1,59 @@
-<ion-header>
-    <ion-toolbar class="toolbar-no-border">
-        <ion-title>My Jobs</ion-title>
-        <ion-buttons slot="start">
-            <ion-back-button defaultHref="pages"></ion-back-button>
-        </ion-buttons>
-<!--
-        <ion-buttons slot="end">
-            <app-image-shell class="img" [src]="user.image" (click)="viewProfile()"></app-image-shell>
-        </ion-buttons>
--->
-        <ion-label *ngIf="jobs.length == 1" slot="end">{{jobs.length}} job online.</ion-label>
-        <ion-label *ngIf="jobs.length > 1 || jobs.length == 0" slot="end">{{jobs.length}} jobs online.</ion-label>
-    </ion-toolbar>
-</ion-header>
+<ng-container *ngIf="job">
+    <div class="listing-item">
+        <div class="clickable" (click)="viewJob()">
+        <div class="cover-wrapper">
+            <a class="cover-anchor">
+                <app-image-shell class="cover-image add-overlay" animation="spinner" [display]="'cover'" [src]="job.image">
+                    <app-aspect-ratio [ratio]="{w:35, h:15}">
+                    </app-aspect-ratio>
+                </app-image-shell>
+            </a>
+        </div>
+        <ion-row class="info-row">
+            <ion-col class="description-col">
+                <ion-row class="description-wrapper">
+                    <h3 class="item-name">
+                        <a class="name-anchor">
+                            <app-text-shell [data]="job.title"></app-text-shell>
+                        </a>
+                    </h3>
+                    <p class="item-address">
+                        <app-text-shell [data]="job.cityName"></app-text-shell>
+                        {{job.date | date: 'dd.MM.yyyy'}}
+                    </p>
+                    <ion-row class="item-tags">
+                        <ion-col class="tag-wrapper" *ngFor="let tag of job.interests">
+                <span class="item-tag">
+                  <app-text-shell [data]="tag.title"></app-text-shell>
+                </span>
+                        </ion-col>
+                    </ion-row>
+                </ion-row>
+            </ion-col>
+            <ion-col class="stats-col" size="3">
+          <span class="item-interested">
+              <ion-icon name="star-outline"></ion-icon>
+              {{job.interestedUsers.length}}
+          </span>
+                <div class="item-price-range">
+                    <span class="price">{{job.payment}}€ {{job.isHourly ? '/hour' : 'total'}}</span>
+                </div>
+            </ion-col>
+        </ion-row>
+        </div>
+        <ion-row class="actions-row">
+            <ion-col size="6">
+                <ion-button color="warning" [routerLink]="'/pages/job/edit/' + job._id" expand="full">
 
-<ion-content>
-    <div *ngFor="let job of jobs">
-        <ion-card>
-            <ion-card-header>
-                <ion-card-title>{{job.title}}</ion-card-title>
-
-                <ion-card-subtitle>{{job.date | date: 'dd.MM.yyyy'}}</ion-card-subtitle>
-            </ion-card-header>
-
-            <ion-item>
-                <ion-button color="warning" [routerLink]="'/pages/job/edit/' + job._id" fill="solid" slot="end">
-                  <!--  <ion-icon color="warning" name="create-outline"></ion-icon>-->
                     edit
                 </ion-button>
+            </ion-col>
+           <ion-col size="6">
+               <ion-button color="danger" (click)="deleteJob(job._id)" expand="full">
 
-                <ion-button color="danger" (click)="deleteJob(job._id)" fill="solid" slot="end">
-                 <!--   <ion-icon name="trash-outline"></ion-icon>-->
-                    delete
-                </ion-button>
-
-                <ion-button class="interested" (click)="viewInterestedUsers(job)" [disabled]="!job.interestedUsers.length" fill="solid"  slot="end">
-                   <ion-icon name="star-outline"></ion-icon>
-                    {{job.interestedUsers.length}}</ion-button>
-            </ion-item>
-        </ion-card>
+                   delete
+               </ion-button>
+           </ion-col>
+        </ion-row>
     </div>
-</ion-content>
+</ng-container>

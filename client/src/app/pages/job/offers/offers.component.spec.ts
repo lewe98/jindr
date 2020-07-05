@@ -3,6 +3,8 @@ import { IonicModule } from '@ionic/angular';
 
 import { OffersComponent } from './offers.component';
 import { UrlSerializer } from '@angular/router';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('OffersComponent', () => {
   let component: OffersComponent;
@@ -11,7 +13,7 @@ describe('OffersComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [OffersComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [IonicModule.forRoot(), HttpClientTestingModule, RouterTestingModule],
       providers: [{ provide: UrlSerializer }]
     }).compileComponents();
 

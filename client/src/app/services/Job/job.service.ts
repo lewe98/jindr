@@ -66,8 +66,8 @@ export class JobService {
    * resolves if the jobs could be obtained successfully
    * rejects if an error occurred
    */
-  getJobs(id: string): Promise<Job> {
-    return new Promise<Job>((resolve, reject) => {
+  getJobs(id: string): Promise<Job[]> {
+    return new Promise<Job[]>((resolve, reject) => {
       this.databaseController
         .getRequest('get-jobs/' + id, '', Job)
         .then((res) => {

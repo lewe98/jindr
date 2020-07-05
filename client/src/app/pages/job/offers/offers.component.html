@@ -4,6 +4,7 @@
       <ion-back-button defaultHref="pages/profile"></ion-back-button>
     </ion-buttons>
     <ion-title>My Offers</ion-title>
+    <ion-label slot="end">{{allJobs.length}} job{{allJobs.length === 0 || allJobs.length > 1 ? 's' : ''}} online.</ion-label>
   </ion-toolbar>
   <ion-toolbar>
     <ion-segment [value]="segmentValue" class="segment-changer" (ionChange)="segmentChanged($event)">
@@ -17,11 +18,11 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="offer-content">
+<ion-content class="offer-content job-listing-content">
   <ion-searchbar class="offer-searchbar" animated [(ngModel)]="searchQuery" (ionChange)="search()"></ion-searchbar>
 
   <ng-template #offerItem let-offers="offers">
-    <!-- z.B. <app-offer-item [offer]="offers"></app-offer-item> -->
+    <app-display-jobs style="width: 100%" [job]="offers"></app-display-jobs>
   </ng-template>
 
 

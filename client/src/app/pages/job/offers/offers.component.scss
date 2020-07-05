@@ -21,6 +21,14 @@
   }
 }
 
+.job-listing-content {
+  --background: var(--page-background);
+  --padding-start: var(--page-margin);
+  --padding-end: var(--page-margin);
+  --padding-top: var(--page-margin);
+  --padding-bottom: var(--page-margin);
+}
+
 .segment-changer {
   width: 100%;
   --background: var(--page-segment-background);
