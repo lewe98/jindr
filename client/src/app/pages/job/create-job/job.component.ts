@@ -39,6 +39,8 @@ export class JobComponent implements OnInit {
   jobInterests = [];
   changedInterests = false;
   cityName: string;
+  today = new Date().toISOString().slice(0, 10);
+  max = new Date().getFullYear() + 10;
 
   constructor(
     private modalCtrl: ModalController,

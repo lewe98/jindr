@@ -113,8 +113,12 @@ export class ChatService {
         MessageWrapper
       )
       .then((res) => {
-        this.allChats = res.data;
-        this.sortWrapper();
+        if (res.data.length > 0) {
+          this.allChats = res.data;
+          this.sortWrapper();
+        } else {
+          this.allChats = [];
+        }
       });
   }
 
