@@ -1297,12 +1297,13 @@ app.put('/make-jobOffer/', (req: Request, res: Response) => {
         message: 'Job could not be found.'
       });
     } else {
+      const theJob = await Job.findOne({ _id: jobId });
+      const jobOffers = theJob.jobOffer;
+      jobOffers.push({user: userId, accepted: false, dateRequest: Date.now(), dateReaction: 0, });
       await Job.findOneAndUpdate(
         { _id: jobId },
         {
-          jobOffer: {
-            user: userId
-          }
+          jobOffer: jobOffers
         }
       );
       const job = await Job.findOne({ _id: jobId });
@@ -1340,8 +1341,6 @@ app.put('/reject-jobOffer/', (req: Request, res: Response) => {
       const jobOffers = theJob.jobOffer;
       const newJobOffers = [];
       for (let i = 0; i < jobOffers.length; i++) {
-        console.log(jobOffers[i].user);
-        console.log(userId);
         if (jobOffers[i].user != userId) {
           newJobOffers.push(jobOffers[i]);
         }
