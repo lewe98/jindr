@@ -145,7 +145,6 @@ export class JobService {
         .putRequest('make-jobOffer', data)
         .then((res) => {
           this.toastService.presentToast(res.message);
-          console.log(res.data);
           resolve(res.data);
         })
         .catch((err) => {
@@ -158,6 +157,13 @@ export class JobService {
     });
   }
 
+  /**
+   *
+   * @param jobId Id of the Job which get updated
+   * @param userId userId from the user who made the JobOffer
+   * @param wrapperId the Id of the actual wrapper
+   * @param reaction boolean: (true= JobOffer accepted, false= JobOffer denied)
+   */
   reactOffer(jobId, userId, wrapperId, reaction){
     return new Promise<any>((resolve, reject) => {
       const data = JSON.stringify({
@@ -170,7 +176,35 @@ export class JobService {
         .putRequest('reaction-jobOffer', data)
         .then((res) => {
           this.toastService.presentToast(res.message);
-          console.log(res.data);
+          resolve(res.data);
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(
+            err.message,
+            'An error occurred: '
+          );
+          reject(err);
+        });
+    });
+  }
+
+  /**
+   *
+   * @param jobId Id of the Job which get updated
+   * @param userId userId from the user of the JobOffer
+   * @param wrapperId the Id of the actual wrapper
+   */
+  rejectOffer(jobId, userId, wrapperId){
+    return new Promise<any>((resolve, reject) => {
+      const data = JSON.stringify({
+        jobId: jobId.toString(),
+        userId: userId.toString(),
+        wrapperId: wrapperId.toString(),
+      });
+      this.databaseController
+        .putRequest('reject-jobOffer', data)
+        .then((res) => {
+          this.toastService.presentToast(res.message);
           resolve(res.data);
         })
         .catch((err) => {

@@ -123,11 +123,31 @@ export class ChatViewComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   *
+   * @param jobId Id of the Job which get updated
+   * @param userId userId from the user who made the JobOffer
+   * @param wrapperId the Id of the actual wrapper
+   * @param reaction boolean: (true= JobOffer accepted, false= JobOffer denied)
+   */
   reactOffer(jobId, userId, wrapperId, reaction) {
     this.jobService.reactOffer(jobId, userId, wrapperId, reaction).then((res) => {
       this.job = res;
       this.setJobOffer(this.job);
     });
+  }
+
+  /**
+   *
+   * @param jobId Id of the Job which get updated
+   * @param userId userId from the user of the JobOffer
+   * @param wrapperId the Id of the actual wrapper
+   */
+  rejectOffer(jobId, userId, wrapperId){
+    this.jobService.rejectOffer(jobId, userId, wrapperId).then((res) => {
+      this.job = res;
+      this.setJobOffer(this.job);
+  });
   }
 
   /**

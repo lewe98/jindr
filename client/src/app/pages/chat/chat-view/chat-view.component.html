@@ -13,7 +13,7 @@
       <ion-button *ngIf="jobOffer.user !== he._id" (click)="makeOffer(job?._id, he?._id, messageWrapper._id)">
         {{he?.firstName}} {{he?.lastName}} einen Job anbieten
       </ion-button>
-      <ion-button *ngIf="jobOffer.user === he._id">Jobangebot zurückziehen</ion-button>
+      <ion-button *ngIf="jobOffer.user === he._id" (click)="rejectOffer(job?._id, he?._id, messageWrapper._id)">Jobangebot zurückziehen</ion-button>
       <ion-chip color="success" *ngIf="jobOffer.user === he?._id && jobOffer.accepted === true"><ion-label>{{he?.firstName}} {{he?.lastName}} hat den Job angenommen</ion-label></ion-chip>
     </div>
     <div *ngIf="job?.creator !== you?._id">

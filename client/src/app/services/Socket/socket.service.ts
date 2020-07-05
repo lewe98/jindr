@@ -90,28 +90,13 @@ export class SocketService {
     /**
      * Listens for a JobOffer
      */
-    this.socket.on('make-offer', (data) => {
+    this.socket.on('update-job', (data) => {
       this.jobService.updateJob(data.job);
       if (this.chatService.activeChat !== data.wrapperID) {
         this.toastService.presentNotification(
-          'New joboffer',
-          'You got a new joboffer!',
-          'pages/chat',
-          data.wrapperID
-        );
-      }
-    });
-
-    /**
-     * Listens for a updated JobOffer
-     */
-    this.socket.on('get-reactionJobOffer', (data) => {
-      this.jobService.updateJob(data.job);
-      if (this.chatService.activeChat !== data.wrapperId) {
-        this.toastService.presentNotification(
-          'New JobOffer Reaction!',
-          'You got a new reaction to an JobOffer!',
-          'pages/chat',
+          data.notification.header,
+          data.notification.message,
+          data.notification.link,
           data.wrapperID
         );
       }
