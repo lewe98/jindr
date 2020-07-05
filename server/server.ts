@@ -1302,7 +1302,7 @@ app.put('/make-jobOffer/', (req: Request, res: Response) => {
           }
         }
       );
-     const job = await Job.findOne({ _id: jobId });
+      const job = await Job.findOne({ _id: jobId });
       if (connectedUsersByID.get(userId)) {
         console.log(job);
         io.to(userId).emit('get-offer', { job, wrapperId });
@@ -1340,8 +1340,8 @@ app.put('/reaction-jobOffer/', (req: Request, res: Response) => {
     } else {
       const jobe = await Job.findOne({ _id: jobId });
       const jobOffers = jobe.jobOffer;
-      for(let i = 0; i<jobOffers.length; i++){
-        if(jobOffers[i].user == userId){
+      for (let i = 0; i < jobOffers.length; i++) {
+        if (jobOffers[i].user == userId) {
           jobOffers[i].dateReaction = Date.now();
           jobOffers[i].accepted = jobOfferAccepted;
         }
