@@ -21,8 +21,8 @@
         <p *ngIf="jobOffer.accepted">Du hast den Job!</p>
         <p *ngIf="!jobOffer.accepted && jobOffer.dateReaction !== 0">Du hast das Jobangebot abgelehnt</p>
         <p *ngIf="!jobOffer.accepted && jobOffer.dateReaction === 0">{{he?.firstName}} {{he?.lastName}} bietet dir den Job an:</p>
-        <ion-button color="danger" *ngIf="!jobOffer.accepted && jobOffer.dateReaction === 0" >ablehnen</ion-button>
-        <ion-button color="success" *ngIf="!jobOffer.accepted && jobOffer.dateReaction === 0" >annehmem</ion-button>
+        <ion-button color="danger" *ngIf="!jobOffer.accepted && jobOffer.dateReaction === 0" (click)="reactOffer(job?._id, you?._id, messageWrapper._id, false)">ablehnen</ion-button>
+        <ion-button color="success" *ngIf="!jobOffer.accepted && jobOffer.dateReaction === 0" (click)="reactOffer(job?._id, you?._id, messageWrapper._id, true)" >annehmem</ion-button>
       </div>
     </div>
 

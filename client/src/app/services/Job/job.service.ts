@@ -158,6 +158,31 @@ export class JobService {
     });
   }
 
+  reactOffer(jobId, userId, wrapperId, reaction){
+    return new Promise<any>((resolve, reject) => {
+      const data = JSON.stringify({
+        jobId: jobId.toString(),
+        userId: userId.toString(),
+        wrapperId: wrapperId.toString(),
+        jobOfferAccepted: reaction
+      });
+      this.databaseController
+        .putRequest('reaction-jobOffer', data)
+        .then((res) => {
+          this.toastService.presentToast(res.message);
+          console.log(res.data);
+          resolve(res.data);
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(
+            err.message,
+            'An error occurred: '
+          );
+          reject(err);
+        });
+    });
+  }
+
   updateJob(job){
     this.$newJobOffer.emit(job);
   }

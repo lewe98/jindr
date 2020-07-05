@@ -123,6 +123,13 @@ export class ChatViewComponent implements OnInit, OnDestroy {
     });
   }
 
+  reactOffer(jobId, userId, wrapperId, reaction) {
+    this.jobService.reactOffer(jobId, userId, wrapperId, reaction).then((res) => {
+      this.job = res;
+      this.setJobOffer(this.job);
+    });
+  }
+
   /**
    * Updates the values in messageWrapper that are subject to change, to improve data integrity
    * @param wrapper the wrapper to update

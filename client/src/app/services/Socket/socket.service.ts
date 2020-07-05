@@ -87,8 +87,11 @@ export class SocketService {
       this.chatService.putUpdatedWrapper(data.wrapper);
     });
 
+    /**
+     * Listens for a JobOffer
+     */
     this.socket.on('make-offer', (data) => {
-      this.chatService.addMessageAndSort(data.message, data.wrapperID);
+      this.jobService.updateJob(data.job);
       if (this.chatService.activeChat !== data.wrapperID) {
         this.toastService.presentNotification(
           'New joboffer',
@@ -100,14 +103,14 @@ export class SocketService {
     });
 
     /**
-     * Listens for a JobOffer
+     * Listens for a updated JobOffer
      */
-    this.socket.on('get-offer', (data) => {
+    this.socket.on('get-reactionJobOffer', (data) => {
       this.jobService.updateJob(data.job);
       if (this.chatService.activeChat !== data.wrapperId) {
         this.toastService.presentNotification(
-          'New joboffer',
-          'You got a new joboffer!',
+          'New JobOffer Reaction!',
+          'You got a new reaction to an JobOffer!',
           'pages/chat',
           data.wrapperID
         );

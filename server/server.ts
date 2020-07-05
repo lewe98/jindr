@@ -698,7 +698,7 @@ app.put('/user-array', async (req: Request, res: Response) => {
 app.post('/check-wrapper-exists', async (req: Request, res: Response) => {
   const id = req.body.userID;
   const jobID = req.body.jobID;
-  const wrapper = await MessageWrapper.find({employee: id, jobID: jobID}).exec();
+  const wrapper = await MessageWrapper.find({ employee: id, jobID: jobID }).exec();
   res.status(200).send({
     data: wrapper
   });
@@ -1279,7 +1279,10 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
 });
 
 
-
+/**
+ *  pushs an jobOffer into an existing Job
+ *  Uses socket to inform the user about the jobOffer
+ */
 app.put('/make-jobOffer/', (req: Request, res: Response) => {
   const jobId = req.body.jobId;
   const userId = req.body.userId;
@@ -1299,7 +1302,7 @@ app.put('/make-jobOffer/', (req: Request, res: Response) => {
           }
         }
       );
-      const job = await Job.findOne({_id: jobId});
+     const job = await Job.findOne({ _id: jobId });
       if (connectedUsersByID.get(userId)) {
         console.log(job);
         io.to(userId).emit('get-offer', { job, wrapperId });
@@ -1313,11 +1316,62 @@ app.put('/make-jobOffer/', (req: Request, res: Response) => {
       }
       res.status(200).send({
         message: 'Successfully updated job.',
-        data: await Job.findOne({_id: jobId})
+        data: await Job.findOne({ _id: jobId })
       });
     }
   });
 });
+
+/**
+ *  updates the jobOffer with the reaction of the employee
+ *  Uses socket to inform the employer about the reaction
+ */
+app.put('/reaction-jobOffer/', (req: Request, res: Response) => {
+  const jobId = req.body.jobId;
+  const userId = req.body.userId;
+  const wrapperId = req.body.wrapperId;
+  const jobOfferAccepted = req.body.jobOfferAccepted;
+
+  Job.findOne({ _id: jobId, jobOffer: { user: userId } }).exec(async (err) => {
+    if (err) {
+      res.status(404).send({
+        message: 'JobOffer could not be found.'
+      });
+    } else {
+      const jobe = await Job.findOne({ _id: jobId });
+      const jobOffers = jobe.jobOffer;
+      for(let i = 0; i<jobOffers.length; i++){
+        if(jobOffers[i].user == userId){
+          jobOffers[i].dateReaction = Date.now();
+          jobOffers[i].accepted = jobOfferAccepted;
+        }
+      }
+      await Job.findOneAndUpdate(
+        { _id: jobId },
+        {
+          jobOffer: jobOffers
+        });
+
+      const job = await Job.findOne({ _id: jobId });
+      if (connectedUsersByID.get(userId)) {
+        console.log(job);
+        io.to(userId).emit('get-reactionJobOffer', { job, wrapperId });
+      } else {
+        sendPushNotification(
+          [userId],
+          'New JobOffer Reaction!',
+          'You got a new reaction to an JobOffer!',
+          'pages/chat'
+        );
+      }
+      res.status(200).send({
+        message: 'Successfully accepted the job.',
+        data: await Job.findOne({ _id: jobId })
+      });
+    }
+  });
+});
+
 
 /**
  * Prepares user to be sent to client
@@ -1342,6 +1396,7 @@ function prepareUser(user) {
  * @param message the message of the notification
  * @param link the link of the page to open when tapped on the notification
  */
+
 /* istanbul ignore next */
 async function sendPushNotification(
   userIDs: string[],
@@ -1380,6 +1435,7 @@ async function sendPushNotification(
  * @param file the file as base64 string
  * @param name the image name in the bucket. Should be UNIQUE! e.g. use Timestamp
  */
+
 /* istanbul ignore next */
 function uploadFile(file, name): Promise<string> {
   return new Promise<string>((resolve, reject) => {
@@ -1624,6 +1680,7 @@ async function getJobArray(jobStack) {
     .equals(false)
     .exec();
 }
+
 /**
  * Method to rasterize the the map into equal rectangles
  * @param radius the approx. size of each tile. This value should equal the maximum search radius specified in the client
@@ -1725,9 +1782,9 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2): number {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(deg2rad(lat1)) *
-      Math.cos(deg2rad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in km
 }
@@ -1773,6 +1830,7 @@ if (process.env.NODE_ENV.trim() !== 'test') {
     });
   });
 }
+
 /**
  * Method to set nodemailer transporter, only used for testing purposes
  * @param transp transporter
@@ -1780,6 +1838,7 @@ if (process.env.NODE_ENV.trim() !== 'test') {
 function setTransporter(transp) {
   transporter = transp;
 }
+
 /**
  * Exports for testing
  * add every method like this: {app: app, method1: method1, method2: method2}
