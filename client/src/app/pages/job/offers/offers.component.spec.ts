@@ -13,7 +13,11 @@ describe('OffersComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [OffersComponent],
-      imports: [IonicModule.forRoot(), HttpClientTestingModule, RouterTestingModule],
+      imports: [
+        IonicModule.forRoot(),
+        HttpClientTestingModule,
+        RouterTestingModule
+      ],
       providers: [{ provide: UrlSerializer }]
     }).compileComponents();
 

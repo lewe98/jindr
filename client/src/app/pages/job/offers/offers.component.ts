@@ -4,6 +4,7 @@ import { JobService } from '../../../services/Job/job.service';
 import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
 import { ToastService } from '../../../services/Toast/toast.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-offers',
@@ -17,6 +18,7 @@ export class OffersComponent implements OnInit {
   user: User = new User();
   segmentValue = 'active';
   searchQuery = '';
+  subscriptions: Subscription[] = [];
   constructor(
     private jobService: JobService,
     private authService: AuthService,
@@ -25,22 +27,21 @@ export class OffersComponent implements OnInit {
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
-    this.jobService
-      .getJobs(this.user._id)
-      .then((res) => {
-        this.allJobs = res;
+    this.jobService.getJobs(this.user._id);
+    this.subscriptions.push(
+      this.jobService.$allJobs.subscribe((sub) => {
+        this.allJobs = sub;
         this.allJobs.forEach((job) => {
+          this.finishedOffers = [];
+          this.activeOffers = [];
           if (job.isFinished) {
             this.finishedOffers.push(job);
           } else {
             this.activeOffers.push(job);
           }
         });
-        console.log(this.activeOffers);
       })
-      .catch((err) => {
-        this.toastService.presentWarningToast(err, 'Error!');
-      });
+    );
   }
 
   search() {}

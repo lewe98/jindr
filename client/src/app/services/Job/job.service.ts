@@ -2,12 +2,18 @@ import { EventEmitter, Injectable } from '@angular/core';
 import { DatabaseControllerService } from '../DatabaseController/database-controller.service';
 import { ToastService } from '../Toast/toast.service';
 import { Job } from '../../../../interfaces/job';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class JobService {
   public $newJobOffer: EventEmitter<any> = new EventEmitter();
+  allJobs: Job[] = [];
+  private allJobsSub: BehaviorSubject<Job[]> = new BehaviorSubject<Job[]>(
+    this.allJobs
+  );
+  $allJobs = this.allJobsSub.asObservable();
 
   constructor(
     private databaseController: DatabaseControllerService,
@@ -71,6 +77,8 @@ export class JobService {
       this.databaseController
         .getRequest('get-jobs/' + id, '', Job)
         .then((res) => {
+          console.log(res.data);
+          this.allJobsSub.next(res.data);
           resolve(res.data);
         })
         .catch((err) => {
@@ -87,13 +95,14 @@ export class JobService {
    * resolves if the job is successfully updated in database
    * rejects if an error occurred
    */
-  editJob(job: Job): Promise<Job> {
+  editJob(job: Job, userID: string): Promise<Job> {
     return new Promise<Job>((resolve, reject) => {
       const data = { job };
       this.databaseController
         .putRequest('edit-job/' + job._id, JSON.stringify(data), Job)
         .then((res) => {
           this.toastService.presentToast(res.message);
+          this.getJobs(userID);
           resolve(res.data);
         })
         .catch((err) => {
@@ -113,11 +122,12 @@ export class JobService {
    * resolves if the job is successfully removed from database
    * rejects if an error occurred
    */
-  deleteJob(id: string): Promise<Job> {
+  deleteJob(id: string, userID: string): Promise<Job> {
     return new Promise<Job>((resolve, reject) => {
       this.databaseController
         .getRequest('delete-job/' + id, '', Job)
         .then((res) => {
+          this.getJobs(userID);
           this.toastService.presentToast(res.message);
         })
         .catch((err) => {

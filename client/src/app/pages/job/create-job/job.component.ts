@@ -235,7 +235,7 @@ export class JobComponent implements OnInit {
     });
 
     this.jobService
-      .editJob(this.job)
+      .editJob(this.job, this.authService.user._id)
       .then(() => {
         this.toastService.presentToast('Job updated.');
         this.router.navigate(['pages']);
