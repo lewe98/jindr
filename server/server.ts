@@ -175,11 +175,20 @@ app.post('/register', (req: Request, res: Response) => {
   user.tokenExpires = new Date().setHours(new Date().getHours() + 24);
   const REGISTER_URL: string = req.body.BASE_URL + '/auth/register/' + token;
   const subject = 'jindr - Register now!';
-  const text = 'Welcome to jindr! Press the button below to confirm your registration.';
+  const text =
+    'Welcome to jindr! Press the button below to confirm your registration.';
   const buttonText = 'Click here to register.';
   const footNote = 'Don\'t want to register?';
 
-  const html = renderMail(subject, text, REGISTER_URL, user.email, buttonText, footNote, req.body.BASE_URL);
+  const html = renderMail(
+    subject,
+    text,
+    REGISTER_URL,
+    user.email,
+    buttonText,
+    footNote,
+    req.body.BASE_URL
+  );
 
   user.save(async (err) => {
     if (err) {
@@ -780,11 +789,20 @@ app.post('/sendmail', (req: Request, res: Response) => {
   const BASE_URL: string = req.body.user.BASE_URL;
   const RESET_URL: string = BASE_URL + '/auth/forgot-pw/' + token;
   const subject = 'jindr - Reset password';
-  const text = 'We received a request to change the password of your jindr account.';
+  const text =
+    'We received a request to change the password of your jindr account.';
   const buttonText = 'Click here to reset your password.';
   const footNote = 'Don\'t want to reset your password?';
 
-  const html = renderMail(subject, text, RESET_URL, email, buttonText, footNote, BASE_URL);
+  const html = renderMail(
+    subject,
+    text,
+    RESET_URL,
+    email,
+    buttonText,
+    footNote,
+    BASE_URL
+  );
 
   User.findOne({ email: email })
     .select('+password')
@@ -1896,11 +1914,22 @@ function setTransporter(transp) {
  *
  * @return a HTML string containing the email
  */
-function renderMail(subject: string, text: string, actionURL: string, email: string, buttonText: string, footNote: string, BASE_URL: string): string {
-  return '<head>\n' +
+function renderMail(
+  subject: string,
+  text: string,
+  actionURL: string,
+  email: string,
+  buttonText: string,
+  footNote: string,
+  BASE_URL: string
+): string {
+  return (
+    '<head>\n' +
     '    <meta name="viewport" content="width=device-width" />\n' +
     '    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />\n' +
-    '    <title>' + subject + '</title>\n' +
+    '    <title>' +
+    subject +
+    '</title>\n' +
     '    <style>\n' +
     '      /* -------------------------------------\n' +
     '          GLOBAL RESETS\n' +
@@ -2226,7 +2255,9 @@ function renderMail(subject: string, text: string, actionURL: string, email: str
     '    </style>\n' +
     '  </head>\n' +
     '  <body class="">\n' +
-    '    <span class="preheader">' + subject + '</span>\n' +
+    '    <span class="preheader">' +
+    subject +
+    '</span>\n' +
     '    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">\n' +
     '      <tr>\n' +
     '        <td>&nbsp;</td>\n' +
@@ -2243,7 +2274,9 @@ function renderMail(subject: string, text: string, actionURL: string, email: str
     '                    <tr>\n' +
     '                      <td>\n' +
     '                        <p>Hey there!</p>\n' +
-    '                        <p>' + text + '</p>\n' +
+    '                        <p>' +
+    text +
+    '</p>\n' +
     '                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">\n' +
     '                          <tbody>\n' +
     '                            <tr>\n' +
@@ -2251,7 +2284,11 @@ function renderMail(subject: string, text: string, actionURL: string, email: str
     '                                <table role="presentation" border="0" cellpadding="0" cellspacing="0">\n' +
     '                                  <tbody>\n' +
     '                                    <tr>\n' +
-    '                                      <td> <a href="' + actionURL + '" target="_blank">' + buttonText + '</a></td>\n' +
+    '                                      <td> <a href="' +
+    actionURL +
+    '" target="_blank">' +
+    buttonText +
+    '</a></td>\n' +
     '                                    </tr>\n' +
     '                                  </tbody>\n' +
     '                                </table>\n' +
@@ -2259,7 +2296,9 @@ function renderMail(subject: string, text: string, actionURL: string, email: str
     '                            </tr>\n' +
     '                          </tbody>\n' +
     '                        </table>\n' +
-    '                        <p>This link expires in 24 hours. This email was sent to ' + email + '.</p>\n' +
+    '                        <p>This link expires in 24 hours. This email was sent to ' +
+    email +
+    '.</p>\n' +
     '                        <p>If you did not request this mail, just ignore it.</p>\n' +
     '                      </td>\n' +
     '                    </tr>\n' +
@@ -2277,7 +2316,11 @@ function renderMail(subject: string, text: string, actionURL: string, email: str
     '                <tr>\n' +
     '                  <td class="content-block">\n' +
     '                    <span class="apple-link">jindr, Wiesenstraße 14, 35394 Gießen, Germany</span>\n' +
-    '                    <br> ' + footNote + ' <a href="' + BASE_URL + '/auth/login">Login</a>.\n' +
+    '                    <br> ' +
+    footNote +
+    ' <a href="' +
+    BASE_URL +
+    '/auth/login">Login</a>.\n' +
     '                  </td>\n' +
     '                </tr>\n' +
     '                <tr>\n' +
@@ -2294,7 +2337,8 @@ function renderMail(subject: string, text: string, actionURL: string, email: str
     '        <td>&nbsp;</td>\n' +
     '      </tr>\n' +
     '    </table>\n' +
-    '  </body>';
+    '  </body>'
+  );
 }
 
 /**
