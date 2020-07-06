@@ -2,16 +2,25 @@ import { EventEmitter, Injectable } from '@angular/core';
 import { DatabaseControllerService } from '../DatabaseController/database-controller.service';
 import { ToastService } from '../Toast/toast.service';
 import { Job } from '../../../../interfaces/job';
+import { BehaviorSubject } from 'rxjs';
+import { AlertController } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
 })
 export class JobService {
   public $newJobOffer: EventEmitter<any> = new EventEmitter();
-
+  allJobs: Job[] = [];
+  private allJobsSub: BehaviorSubject<Job[]> = new BehaviorSubject<Job[]>(
+    this.allJobs
+  );
+  $allJobs = this.allJobsSub.asObservable();
+  unreadSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+  unread$ = this.unreadSubject.asObservable();
   constructor(
     private databaseController: DatabaseControllerService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private alertController: AlertController
   ) {}
 
   /**
@@ -66,11 +75,13 @@ export class JobService {
    * resolves if the jobs could be obtained successfully
    * rejects if an error occurred
    */
-  getJobs(id: string): Promise<Job> {
-    return new Promise<Job>((resolve, reject) => {
+  getJobs(id: string): Promise<Job[]> {
+    return new Promise<Job[]>((resolve, reject) => {
       this.databaseController
         .getRequest('get-jobs/' + id, '', Job)
         .then((res) => {
+          this.allJobs = res.data;
+          this.countUnread();
           resolve(res.data);
         })
         .catch((err) => {
@@ -81,19 +92,39 @@ export class JobService {
   }
 
   /**
+   * Counts all unseen likes of each job
+   */
+  countUnread() {
+    let unreadCount = 0;
+    if (this.allJobs?.length) {
+      this.allJobs.map((c) => {
+        const tmp = c.interestedUsers.filter((m) => m.time > c.lastViewed);
+        c.unread = tmp.length;
+        unreadCount += tmp.length;
+      });
+      this.unreadSubject.next(unreadCount);
+      this.allJobsSub.next(this.allJobs);
+    } else {
+      this.allJobs = [];
+      this.allJobsSub.next(this.allJobs);
+      this.unreadSubject.next(0);
+    }
+  }
+
+  /**
    * Method to send a put request to the server to update a job
    * @param job job to be updated
    * status message is reported by ToastService
    * resolves if the job is successfully updated in database
    * rejects if an error occurred
    */
-  editJob(job: Job): Promise<Job> {
+  editJob(job: Job, userID: string): Promise<Job> {
     return new Promise<Job>((resolve, reject) => {
       const data = { job };
       this.databaseController
         .putRequest('edit-job/' + job._id, JSON.stringify(data), Job)
         .then((res) => {
-          this.toastService.presentToast(res.message);
+          this.getJobs(userID);
           resolve(res.data);
         })
         .catch((err) => {
@@ -113,11 +144,12 @@ export class JobService {
    * resolves if the job is successfully removed from database
    * rejects if an error occurred
    */
-  deleteJob(id: string): Promise<Job> {
+  deleteJob(id: string, userID: string): Promise<Job> {
     return new Promise<Job>((resolve, reject) => {
       this.databaseController
         .getRequest('delete-job/' + id, '', Job)
         .then((res) => {
+          this.getJobs(userID);
           this.toastService.presentToast(res.message);
         })
         .catch((err) => {
@@ -216,5 +248,30 @@ export class JobService {
 
   updateJob(job) {
     this.$newJobOffer.emit(job);
+  }
+
+  async markAsFinished(job: Job, userID: string) {
+    const alert = await this.alertController.create({
+      cssClass: '',
+      header: 'Mark as finished?',
+      message:
+        'Do you really want to mark this job as <strong>finished</strong>? ' +
+        'People will no longer see this job in their feed and you wont get any new help requests.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary'
+        },
+        {
+          text: 'Okay',
+          handler: () => {
+            job.isFinished = true;
+            this.editJob(job, userID);
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 }

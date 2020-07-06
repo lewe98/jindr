@@ -3,16 +3,15 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="pages/profile"></ion-back-button>
     </ion-buttons>
-    <ion-title>My Offers</ion-title>
-    <ion-label slot="end">{{allJobs.length}} job{{allJobs.length === 0 || allJobs.length > 1 ? 's' : ''}} online.</ion-label>
+    <ion-title>My Jobs</ion-title>
   </ion-toolbar>
   <ion-toolbar>
     <ion-segment [value]="segmentValue" class="segment-changer" (ionChange)="segmentChanged($event)">
-      <ion-segment-button value="active">
-        <ion-label>Active</ion-label>
+      <ion-segment-button value="liked">
+        <ion-label>Liked</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="finished">
-        <ion-label>Finished</ion-label>
+      <ion-segment-button value="accepted">
+        <ion-label>Accepted</ion-label>
       </ion-segment-button>
     </ion-segment>
   </ion-toolbar>
@@ -26,25 +25,25 @@
   </ng-template>
 
 
-  <section [hidden]="segmentValue !== 'active'">
-    <ion-list class="offer-list" *ngIf="activeOffers.length > 0">
-      <ion-item class="offer-item" *ngFor="let offer of activeFiltered">
+  <section [hidden]="segmentValue !== 'liked'">
+    <ion-list class="offer-list" *ngIf="likedJobs.length > 0">
+      <ion-item class="offer-item" *ngFor="let offer of likedFiltered">
         <ng-container *ngTemplateOutlet="offerItem; context: { offers: offer }"></ng-container>
       </ion-item>
     </ion-list>
-    <ng-container *ngIf="activeOffers.length <= 0">
-      <h3 class="empty-list-message">No Offers</h3>
+    <ng-container *ngIf="likedJobs.length <= 0">
+      <h3 class="empty-list-message">No liked jobs</h3>
     </ng-container>
   </section>
 
-  <section [hidden]="segmentValue !== 'finished'">
-    <ion-list class="offer-list" *ngIf="finishedOffers.length > 0">
-      <ion-item class="offer-item" *ngFor="let offer of finishedFiltered">
+  <section [hidden]="segmentValue !== 'accepted'">
+    <ion-list class="offer-list" *ngIf="acceptedJobs.length > 0">
+      <ion-item class="offer-item" *ngFor="let offer of acceptedFiltered">
         <ng-container *ngTemplateOutlet="offerItem; context: { offers: offer }"></ng-container>
       </ion-item>
     </ion-list>
-    <ng-container *ngIf="finishedOffers.length <= 0">
-      <h3 class="empty-list-message">No Offers</h3>
+    <ng-container *ngIf="acceptedJobs.length <= 0">
+      <h3 class="empty-list-message">No accepted job offers</h3>
     </ng-container>
   </section>
 </ion-content>

@@ -1,27 +1,25 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { OffersComponent } from './offers.component';
-import { UrlSerializer } from '@angular/router';
+import { ApplicationsComponent } from './applications.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 
-describe('OffersComponent', () => {
-  let component: OffersComponent;
-  let fixture: ComponentFixture<OffersComponent>;
+describe('ApplicationsComponent', () => {
+  let component: ApplicationsComponent;
+  let fixture: ComponentFixture<ApplicationsComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [OffersComponent],
+      declarations: [ApplicationsComponent],
       imports: [
         IonicModule.forRoot(),
         HttpClientTestingModule,
         RouterTestingModule
-      ],
-      providers: [{ provide: UrlSerializer }]
+      ]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(OffersComponent);
+    fixture = TestBed.createComponent(ApplicationsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

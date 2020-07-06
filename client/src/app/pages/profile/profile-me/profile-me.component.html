@@ -59,9 +59,8 @@
 
     <div class="section-lower has-oval">
       <div class="ion-text-center jind-btn">
-        <app-jindr-button [routerLink]="'/pages/job'" [text]="'My Job Offers'"></app-jindr-button>
-        <app-jindr-button [text]="'Job Applications'"></app-jindr-button>
-       <!-- <app-jindr-button [routerLink]="['/pages/job/offers']" [text]="'My Job Offers'"></app-jindr-button> -->
+        <app-jindr-button [badgeCount]="unreadJobs" [routerLink]="'/pages/job/offers'" [text]="'My offered jobs'"></app-jindr-button>
+        <app-jindr-button [routerLink]="'/pages/job/applications'" [text]="'My liked jobs'"></app-jindr-button>
       </div>
     </div>
   </div>

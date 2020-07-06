@@ -1,11 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Job } from '../../../../../interfaces/job';
-import { User } from '../../../../../interfaces/user';
-import { AuthService } from '../../../services/Auth/auth.service';
 import { JobService } from '../../../services/Job/job.service';
-import { ToastService } from '../../../services/Toast/toast.service';
-import { ProfileViewComponent } from '../../profile/profile-view/profile-view.component';
-import { ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
+import { JobDetailComponent } from '../job-detail/job-detail.component';
+import { User } from '../../../../../interfaces/user';
 
 @Component({
   selector: 'app-display-jobs',
@@ -13,55 +11,52 @@ import { ModalController } from '@ionic/angular';
   styleUrls: ['./display-jobs.component.scss']
 })
 export class DisplayJobsComponent implements OnInit {
-  user: User = new User();
-  interestedUsers: User[] = [];
-  jobs: Job[] = [];
+  @Input() job: Job;
+  @Input() user: User;
 
   constructor(
-    private authService: AuthService,
     private jobService: JobService,
-    private toastService: ToastService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private alertController: AlertController
   ) {}
 
-  ngOnInit() {
-    Object.assign(this.user, this.authService.getUser());
-    this.jobService
-      .getJobs(this.user._id)
-      .then((res) => {
-        Object.assign(this.jobs, res);
-      })
-      .catch((err) => {
-        this.toastService.presentWarningToast(err, 'Error!');
-      });
-  }
+  ngOnInit() {}
 
-  async viewProfile() {
+  async viewJob() {
     const modal = await this.modalCtrl.create({
-      component: ProfileViewComponent,
-      componentProps: { user: this.user }
-    });
-    return await modal.present();
-  }
-
-  async viewInterestedUsers(job: Job) {
-    await job.interestedUsers.forEach((userID) => {
-      this.authService.getUserByID(userID).then((res) => {
-        if (!this.interestedUsers.includes(res)) {
-          // TODO: - AMK
-          this.interestedUsers.push(res);
-        }
-      });
-    });
-
-    const modal = await this.modalCtrl.create({
-      component: ProfileViewComponent,
-      componentProps: { user: this.interestedUsers[0] }
+      component: JobDetailComponent,
+      componentProps: { job: this.job }
     });
     return await modal.present();
   }
 
   deleteJob(id: string) {
-    this.jobService.deleteJob(id);
+    this.jobService.deleteJob(id, this.user._id);
+  }
+
+  async presentConfirm(id: string) {
+    const alert = await this.alertController.create({
+      cssClass: '',
+      header: 'Delete job',
+      message: 'Do you really want to <strong>delete</strong> this job?',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary'
+        },
+        {
+          text: 'Okay',
+          handler: () => {
+            this.deleteJob(id);
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  presentConfirmFinish(job: Job) {
+    this.jobService.markAsFinished(job, this.user._id);
   }
 }
