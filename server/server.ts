@@ -1281,8 +1281,24 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
 });
 
 /**
- *  pushs an jobOffer into an existing Job
- *  Uses socket to inform the user about the jobOffer
+ * @api {put} /make-jobOffer/ updates a job
+ * @apiName MakeJobOffer
+ * @apiGroup JobOffer
+ *
+ * @apiDescription Pushs an JobOffer into an existing Job
+ *
+ * @apiParam {Job} job an object with the job
+ * @apiParam {ID} jobId of a job passed in the req.body
+ * @apiParam {ID} userId of the user who gets the jobOffer passed in req.body
+ * @apiParam {ID} wrapperId of the chatWrapper where the jobOffer is made passed in req.body
+ * @apiParam {String} notification with the notification on success in it
+ *
+ * @apiSuccess {String} message SuccessMessage jobOffer is updated in the Job
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 Created
+ *     {
+ *       "message": "Successfully updated job."
+ *     }
  */
 app.put('/make-jobOffer/', async (req: Request, res: Response) => {
   const jobId = req.body.jobId;
@@ -1325,11 +1341,32 @@ app.put('/make-jobOffer/', async (req: Request, res: Response) => {
     });
   } catch (e) {
     res.status(500).send({
-      errors: e
+      errors: e,
+      message: 'Internal server error.'
     });
   }
 });
 
+/**
+ * @api {put} /reject-jobOffer/ updates a job
+ * @apiName RejectJobOffer
+ * @apiGroup JobOffer
+ *
+ * @apiDescription Removes an JobOffer from an existing Job
+ *
+ * @apiParam {Job} job an object with the job
+ * @apiParam {ID} jobId of a job passed in the req.body
+ * @apiParam {ID} userId of the user who gets the jobOffer rejected passed in req.body
+ * @apiParam {ID} wrapperId of the chatWrapper where the rejection is made passed in req.body
+ * @apiParam {String} notification with the notification on success in it
+ *
+ * @apiSuccess {String} message SuccessMessage jobOffer is updated in the Job
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 Created
+ *     {
+ *       "message": "Successfully deleted the JobOffer."
+ *     }
+ */
 app.put('/reject-jobOffer/', async (req: Request, res: Response) => {
   const jobId = req.body.jobId;
   const userId = req.body.userId;
@@ -1361,7 +1398,7 @@ app.put('/reject-jobOffer/', async (req: Request, res: Response) => {
       );
     }
     res.status(200).send({
-      message: 'Successfully deleted the JobOffer',
+      message: 'Successfully deleted the JobOffer.',
       data: newJob
     });
   } catch (e) {
@@ -1372,8 +1409,24 @@ app.put('/reject-jobOffer/', async (req: Request, res: Response) => {
 });
 
 /**
- *  updates the jobOffer with the reaction of the employee
- *  Uses socket to inform the employer about the reaction
+ * @api {put} /reaction-jobOffer/ updates a job
+ * @apiName ReactionJobOffer
+ * @apiGroup JobOffer
+ *
+ * @apiDescription Removes an JobOffer from an existing Job
+ *
+ * @apiParam {Job} job an object with the job
+ * @apiParam {ID} jobId id of a job passed in the req.body
+ * @apiParam {ID} userId  id of the user who gets the JobOffer rejected passed in req.body
+ * @apiParam {Boolean} jobOfferAccepted Boolean which is true if JobOffer is accepted and false if not passed in req.body
+ * @apiParam {ID} offerID id of the JobOffer passed in req.body
+ *
+ * @apiSuccess {String} message SuccessMessage jobOffer is updated in the Job
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 Created
+ *     {
+ *       "message": "Successfully reacted to the JobOffer."
+ *     }
  */
 app.put('/reaction-jobOffer/', async (req: Request, res: Response) => {
   const jobId = req.body.jobId;
@@ -1411,7 +1464,8 @@ app.put('/reaction-jobOffer/', async (req: Request, res: Response) => {
       );
     }
     res.status(200).send({
-      data: job
+      data: job,
+      message: 'Successfully reacted to the JobOffer.'
     });
   } catch (e) {
     res.status(500).send({
@@ -1829,9 +1883,9 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2): number {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(deg2rad(lat1)) *
-      Math.cos(deg2rad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in km
 }

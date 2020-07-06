@@ -156,11 +156,12 @@ export class JobService {
   }
 
   /**
-   *
+   * Method to react to the JobOffer
    * @param jobId Id of the Job which get updated
    * @param userId userId of the employer
    * @param wrapperId the Id of the actual wrapper
    * @param reaction boolean: (true= JobOffer accepted, false= JobOffer denied)
+   * @param offerID the Id of the JobOffer
    */
   reactOffer(jobId, userId, wrapperId, reaction, offerID) {
     return new Promise<any>((resolve, reject) => {
@@ -187,7 +188,7 @@ export class JobService {
   }
 
   /**
-   *
+   * Method to reject the JobOffer
    * @param jobId Id of the Job which get updated
    * @param userId userId from the user of the JobOffer
    * @param wrapperId the Id of the actual wrapper
@@ -214,6 +215,10 @@ export class JobService {
     });
   }
 
+  /**
+   * updates the job at the client
+   * @param job updated job
+   */
   updateJob(job) {
     this.$newJobOffer.emit(job);
   }
