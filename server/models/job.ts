@@ -59,6 +59,26 @@ const jobSchema = mongoose.Schema({
   },
   cityName: {
     type: String
+  },
+  jobOffer: {
+    type: [{
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      accepted: {
+        type: Boolean,
+        default: false
+      },
+      dateRequested: {
+        type: Number,
+        default: Date.now()
+      },
+      dateReaction: {
+        type: Number,
+        default: 0
+      }
+    }]
   }
 });
 

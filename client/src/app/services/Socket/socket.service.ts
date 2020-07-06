@@ -3,6 +3,7 @@ import { Socket } from 'ngx-socket-io';
 import { ChatService } from '../Chat/chat.service';
 import { ToastService } from '../Toast/toast.service';
 import { MessageWrapper } from '../../../../interfaces/messageWrapper';
+import { JobService } from '../Job/job.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ export class SocketService {
   constructor(
     private socket: Socket,
     private chatService: ChatService,
+    private jobService: JobService,
     private toastService: ToastService
   ) {
     this.initResponses();
@@ -83,6 +85,21 @@ export class SocketService {
      */
     this.socket.on('update-wrapper', (data) => {
       this.chatService.putUpdatedWrapper(data.wrapper);
+    });
+
+    /**
+     * Listens for a JobOffer
+     */
+    this.socket.on('update-job', (data) => {
+      this.jobService.updateJob(data.job);
+      if (this.chatService.activeChat !== data.wrapperId) {
+        this.toastService.presentNotification(
+          data.notification.header,
+          data.notification.message,
+          data.notification.link,
+          data.wrapperId
+        );
+      }
     });
   }
 }

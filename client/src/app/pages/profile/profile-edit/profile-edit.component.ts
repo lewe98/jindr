@@ -8,7 +8,7 @@ import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
 import { ToastService } from '../../../services/Toast/toast.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import {  Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { ProfileResumeComponent } from '../profile-resume/profile-resume.component';
 import { AssetService } from '../../../services/Asset/asset.service';
 import { Interest } from '../../../../../interfaces/interest';
