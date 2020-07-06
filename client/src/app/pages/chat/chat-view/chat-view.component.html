@@ -28,8 +28,8 @@
         <p class="desc ion-align-items-center" *ngIf="jobOffer.accepted"> <ion-icon class="icon" color="success" name="checkmark-done-outline"></ion-icon>You accepted this job offer on {{jobOffer.dateReaction | date: 'short'}}</p>
         <p class="desc ion-align-items-center" *ngIf="!jobOffer.accepted && jobOffer.dateReaction !== 0"><ion-icon class="icon" color="danger" name="close-outline"></ion-icon>You declined this job offer on {{jobOffer.dateReaction | date: 'short'}}</p>
         <p class="desc" *ngIf="!jobOffer.accepted && jobOffer.dateReaction === 0">{{he?.firstName}} {{he?.lastName}} has offered you this job</p>
-        <ion-button size="small" class="uBtn" expand="full" color="success" *ngIf="!jobOffer.accepted && jobOffer.dateReaction === 0" (click)="reactOffer(job?._id, messageWrapper.employer, messageWrapper._id, true, jobOffer._id)" >accept</ion-button>
         <ion-button size="small" class="uBtn" expand="full" color="danger" *ngIf="!jobOffer.accepted && jobOffer.dateReaction === 0" (click)="reactOffer(job?._id, messageWrapper.employer, messageWrapper._id, false, jobOffer._id)">decline</ion-button>
+        <ion-button size="small" class="uBtn" expand="full" color="success" *ngIf="!jobOffer.accepted && jobOffer.dateReaction === 0" (click)="reactOffer(job?._id, messageWrapper.employer, messageWrapper._id, true, jobOffer._id)" >accept</ion-button>
       </div>
     </div>
   </ion-toolbar>
