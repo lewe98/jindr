@@ -178,7 +178,7 @@ app.post('/register', (req: Request, res: Response) => {
   const text =
     'Welcome to jindr! Press the button below to confirm your registration.';
   const buttonText = 'Click here to register.';
-  const footNote = 'Don\'t want to register?';
+  const footNote = 'You do not want to register?';
 
   const html = renderMail(
     subject,
@@ -754,7 +754,8 @@ app.post('/upload-image', (req: Request, res: Response) => {
 
 /**
  * @api {post} /sendmail sends mail containing a link to reset password
- * @apiName SendMail
+ * @apiName ResetPassword
+ * @apiGroup User
  *
  * @apiDescription Pass mail in request body.
  * The configured mail client sends a mail to the users mailing address that includes a link, to reset the user's password.
@@ -792,7 +793,7 @@ app.post('/sendmail', (req: Request, res: Response) => {
   const text =
     'We received a request to change the password of your jindr account.';
   const buttonText = 'Click here to reset your password.';
-  const footNote = 'Don\'t want to reset your password?';
+  const footNote = 'You do not want to reset your password?';
 
   const html = renderMail(
     subject,
@@ -842,6 +843,7 @@ app.post('/sendmail', (req: Request, res: Response) => {
 /**
  * @api {post} /forgot-pw/:token route to reset the users password
  * @apiName ForgotPassword
+ * @apiGroup User
  *
  * @apiDescription checks if token is valid and not expired yet.
  *
@@ -1533,7 +1535,7 @@ function uploadFile(file, name): Promise<string> {
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 function sendMail(userMail: string, template: string, subject: string) {
   const mailOptions = {
-    from: '"Jindr Support" <noreply.jindr@gmail.com>',
+    from: '"jindr Support" <noreply.jindr@gmail.com>',
     to: userMail,
     subject: subject,
     html: template

@@ -1,35 +1,41 @@
-# Integrationsprojekt 2
-### JINDR, die Jobbörse für die Hosentasche
+## jindr - your mobile job market
+###### *GEN1003 Integrationsprojekt (Vertiefungsphase) - Sommersemester 2020*
 
-> Eine junge Generation von Schülern, Studenten oder Auszubildenden, dabei zu unterstützten einen
-  Nebenjob zu finden – Das ist das Ziel von Jindr.
-  Als Arbeitssuchender erhält man die Möglichkeit, sich schnell ein aussagekräftiges Profil zu erstellen,
-  Interessen zu hinterlegen und anhand derer passende, offene Stellenangebote vorgeschlagen zu
-  bekommen. Den registrierten Nebenjobanbietern wird es durch Jindr ermöglicht, passende Jobber,
-  abseits der klassischen Massen- und Printmedien, direkt an ihrem Smartphone zu erreichen. Sie
-  können selbst aktiv Jobber suchen, sich deren Profile ansehen und mit ihnen in Kontakt treten oder
-  sich lediglich selbst suchen lassen.
+> Supporting a young generation of pupils, students or trainees to
+  find a part-time job - that's jindr's goal.
+>
+> As a job seeker you get the opportunity to quickly create a meaningful profile and
+  deposit interests to explore suitable job offers.
+>
+> The registered employers get the opportunity to find motivated jobbers,
+  beyond the old-fashioned mass and print media - directly accessible on their smartphone. Employers
+  can actively search for jobbers, look at their profiles and get in touch with them or
+  can alternatively be found through jinder's swiping system.
 
-### Members
 
+## Members
 * Julian Hermanspahn
 * Valentin Laucht
 * Lewe Lorenzen
 * Pascal Block
 * Leo Barnikol
 
+
 ## Live Versions
 The staging branch can be found at ``https://jindr-staging.herokuapp.com``
 
 The master branch can be found at ``https://jindr.herokuapp.com``
+
 
 ## Content
 * [Tools](#tools)
 * [Prerequisites](#prerequisites)
 * [Folder Structure](#folder-structure)
 * [Client Documentation](#client-documentation)
+* [Server Documentation](#server-documentation)
 * [Pipelines and Deploy](#pipelines-and-deploy)
 * [Matching](#matching)
+
 
 ## Tools
 Tool | Usage
@@ -37,6 +43,7 @@ Tool | Usage
 [Ionic](https://ionicframework.com/) | Frontend Development
 [Node.js](https://nodejs.org/en/) | Server Development
 [Express.js](https://expressjs.com/de/) | Server Development
+[Nodemailer](https://nodemailer.com/about/) | Server Development
 [Socket.io](https://socket.io/) | Client-Server Communication
 [Capacitor](https://capacitor.ionicframework.com/) | Plugins and access to system resources
 [AWS S3](https://aws.amazon.com/de/s3/) | Image storage
@@ -46,6 +53,8 @@ Tool | Usage
 [Heroku](https://heroku.com/) | Hosting Platform
 [Jest](https://jestjs.io/) | Server side testing
 [MapBox](https://www.mapbox.com/) | Map API
+[apiDoc](https://apidocjs.com) | Server Documentation
+[Compodoc](https://compodoc.app) | Client Documentation
 
 
 ## Prerequisites
@@ -70,6 +79,15 @@ Navigate to Client folder and run
 ## Client Documentation
 To review the client documentation, navigate to the Client folder and run
 > npm run compodoc
+
+Afterwards, open the link displayed in the terminal.
+
+
+## Server Documentation
+To review the server documentation, navigate to the Server folder and run
+> npm run apidoc
+
+Afterwards, navigate to ``server/apidoc`` and open the ``index.html`` file.
 
 
 ## Folder Structure
@@ -112,6 +130,7 @@ To review the client documentation, navigate to the Client folder and run
 ├── README.md
 ```
 
+
 ## Pipelines and Deploy
 1. Before you start implementing functionalities, create a branch from ``staging``
 and name it after the functionality you are going to implement.
@@ -124,6 +143,7 @@ and name it after the functionality you are going to implement.
 8. Commit and push and wait for pipelines to finish
 9. Once everything is tested and works, make merge request to ``staging``
 
+
 ## Emulate on Android
 1. Download [Android Studio](https://developer.android.com/studio/)
 2. localhost (127.0.0.1) is your emulator not your local computer, so to access the node backend, you need to change
@@ -133,6 +153,7 @@ the environment file to point to ``apiUrl: 'http://10.0.2.2:8080'`` instead
 3. Run ``npx cap open android`` to open android studio
 4. Setup a device emulator in ``AVD Manager``
 5. Run ``ionic capacitor run android`` to start in emulator
+
 
 ## Matching
 If a User moves to another location or changes his search criteria, the server
@@ -179,6 +200,7 @@ So instead of looking for jobs in entire germany, it would only look up jobs in 
 8 surrounding tiles (even less, if the tile is a border tile and has no neighbors in some directions).
 This would reduce the amount of jobs that need to be searched by ~96%.
 
+
 ## Job Stacks
 The aim is to continuously display jobs to the customer, while fetching new jobs seamlessly in the background.
 To achieve this, the jobs are divided into different stacks.
@@ -192,4 +214,3 @@ once, to guarantee data integrity in case a job is edited or deleted. If the cli
 serverStack will be moved to the clientStack and new jobs from the backlog will be moved to the Serverstack.
 If the user changes his position or search criteria, the backlog will be updated, but the user will always have
 enough cards to swipe through without having to wait for the search to finish.
-
