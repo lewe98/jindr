@@ -1278,6 +1278,146 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
 });
 
 /**
+ *  pushs an jobOffer into an existing Job
+ *  Uses socket to inform the user about the jobOffer
+ */
+app.put('/make-jobOffer/', async (req: Request, res: Response) => {
+  const jobId = req.body.jobId;
+  const userId = req.body.userId;
+  const wrapperId = req.body.wrapperId;
+  const notification = {
+    header: 'New Job Offer!',
+    message: 'You got a new Job Offer!',
+    link: 'pages/chat'
+  };
+
+  try {
+    const job = await Job.findOneAndUpdate(
+      { _id: jobId },
+      {
+        $push: {
+          jobOffer: {
+            user: userId,
+            accepted: false,
+            dateRequest: Date.now(),
+            dateReaction: 0
+          }
+        }
+      },
+      { new: true }
+    ).exec();
+    if (connectedUsersByID.get(userId)) {
+      io.to(userId).emit('update-job', { job, wrapperId, notification });
+    } else {
+      sendPushNotification(
+        [userId],
+        notification.header,
+        notification.message,
+        notification.link
+      );
+    }
+    res.status(200).send({
+      message: 'Successfully updated job.',
+      data: job
+    });
+  } catch (e) {
+    res.status(500).send({
+      errors: e
+    });
+  }
+});
+
+app.put('/reject-jobOffer/', async (req: Request, res: Response) => {
+  const jobId = req.body.jobId;
+  const userId = req.body.userId;
+  const wrapperId = req.body.wrapperId;
+  const notification = {
+    header: 'JobOffer rejected!',
+    message: 'Your JobOffer got rejected!',
+    link: 'pages/chat'
+  };
+  try {
+    const job = await Job.findOne({ _id: jobId }).exec();
+    _.remove(job.jobOffer, (offer) => {
+      return offer.user.toString() === userId;
+    });
+    job.markModified('jobOffer');
+    const newJob = await job.save({ new: true });
+    if (connectedUsersByID.get(userId)) {
+      io.to(userId).emit('update-job', {
+        job: newJob,
+        wrapperId,
+        notification
+      });
+    } else {
+      sendPushNotification(
+        [userId],
+        notification.header,
+        notification.message,
+        notification.link
+      );
+    }
+    res.status(200).send({
+      message: 'Successfully deleted the JobOffer',
+      data: newJob
+    });
+  } catch (e) {
+    res.status(400).send({
+      errors: e
+    });
+  }
+});
+
+/**
+ *  updates the jobOffer with the reaction of the employee
+ *  Uses socket to inform the employer about the reaction
+ */
+app.put('/reaction-jobOffer/', async (req: Request, res: Response) => {
+  const jobId = req.body.jobId;
+  const userId = req.body.userId;
+  const wrapperId = req.body.wrapperId;
+  const jobOfferAccepted = req.body.jobOfferAccepted;
+  const offerID = req.body.offerID;
+  try {
+    const job = await Job.findOne({ _id: jobId }).exec();
+    job.jobOffer.forEach((o) => {
+      if (o._id.toString() === offerID) {
+        o.accepted = jobOfferAccepted;
+        o.dateReaction = Date.now();
+        return;
+      }
+    });
+    await job.save();
+    const notification = {
+      header: 'New JobOffer Reaction!',
+      message: 'You got a new reaction to an JobOffer!',
+      link: 'pages/chat'
+    };
+    if (connectedUsersByID.get(userId.toString())) {
+      io.to(userId.toString()).emit('update-job', {
+        job,
+        wrapperId,
+        notification
+      });
+    } else {
+      sendPushNotification(
+        [userId],
+        notification.header,
+        notification.message,
+        notification.link
+      );
+    }
+    res.status(200).send({
+      data: job
+    });
+  } catch (e) {
+    res.status(500).send({
+      errors: e
+    });
+  }
+});
+
+/**
  * Prepares user to be sent to client
  * Removes password and deviceID
  * @param user to be prepared
@@ -1300,6 +1440,7 @@ function prepareUser(user) {
  * @param message the message of the notification
  * @param link the link of the page to open when tapped on the notification
  */
+
 /* istanbul ignore next */
 async function sendPushNotification(
   userIDs: string[],
@@ -1338,6 +1479,7 @@ async function sendPushNotification(
  * @param file the file as base64 string
  * @param name the image name in the bucket. Should be UNIQUE! e.g. use Timestamp
  */
+
 /* istanbul ignore next */
 function uploadFile(file, name): Promise<string> {
   return new Promise<string>((resolve, reject) => {
@@ -1582,6 +1724,7 @@ async function getJobArray(jobStack) {
     .equals(false)
     .exec();
 }
+
 /**
  * Method to rasterize the the map into equal rectangles
  * @param radius the approx. size of each tile. This value should equal the maximum search radius specified in the client

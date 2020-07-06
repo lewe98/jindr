@@ -1,5 +1,6 @@
 import { Coords } from '../src/app/services/Location/location.service';
 import { Interest } from './interest';
+import { JobOffer } from './jobOffer';
 
 export class Job {
   // tslint:disable-next-line:variable-name
@@ -18,4 +19,5 @@ export class Job {
   public interests: Interest[];
   public isHourly: boolean;
   public cityName: string;
+  public jobOffer: JobOffer[];
 }
