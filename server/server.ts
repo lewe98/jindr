@@ -958,16 +958,26 @@ app.put('/decision', async (req: Request, res: Response) => {
     jobStack.markModified('likedJobs');
     const likedJob = await Job.findOneAndUpdate(
       { _id: jobID },
-      { $push: { interestedUsers: user._id } },
+      { $push: { interestedUsers: { user: user._id } } },
       { new: true }
     );
     const message =
       'Someone is interested in your Job ' +
       likedJob.title +
       '. Check out now!';
-    // TODO add link once page exists
-    // TODO add unread count
-    sendPushNotification([likedJob.creator], 'Help offered!', message, '');
+    if (connectedUsersByID.get(likedJob.creator.toString())) {
+      io.to(likedJob.creator.toString()).emit('new-like', {
+        job: likedJob,
+        link: 'pages/job/offers'
+      });
+    } else {
+      sendPushNotification(
+        [likedJob.creator],
+        'Help offered!',
+        message,
+        'pages/job/offers'
+      );
+    }
   }
   jobStack.markModified('swipedJobs');
   jobStack.markModified('clientStack');
@@ -1269,7 +1279,8 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
           location: job.location,
           cityName: job.cityName,
           date: job.date,
-          time: job.time
+          time: job.time,
+          lastViewed: job.lastViewed
         }
       );
       res.status(200).send({

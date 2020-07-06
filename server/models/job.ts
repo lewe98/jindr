@@ -31,8 +31,16 @@ const jobSchema = mongoose.Schema({
     type: Number
   },
   interestedUsers: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: 'User',
+    type: [{
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      time: {
+        type: Number,
+        default: Date.now()
+      }
+    }],
     default: []
   },
   location: {
@@ -79,6 +87,10 @@ const jobSchema = mongoose.Schema({
         default: 0
       }
     }]
+  },
+  lastViewed: {
+    type: Number,
+    default: Date.now()
   }
 });
 

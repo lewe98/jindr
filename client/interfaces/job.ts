@@ -11,7 +11,7 @@ export class Job {
   public date: Date;
   public time: number;
   public payment: number;
-  public interestedUsers: string[];
+  public interestedUsers: { user: string; time: number }[];
   public location: Coords;
   public isFinished: boolean;
   public image: string;
@@ -20,4 +20,6 @@ export class Job {
   public isHourly: boolean;
   public cityName: string;
   public jobOffer: JobOffer[];
+  public lastViewed: number;
+  public unread: number;
 }

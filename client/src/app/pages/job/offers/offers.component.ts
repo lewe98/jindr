@@ -27,7 +27,9 @@ export class OffersComponent implements OnInit {
 
   ngOnInit() {
     Object.assign(this.user, this.authService.getUser());
-    this.jobService.getJobs(this.user._id);
+    if (this.jobService.allJobs.length === 0) {
+      this.jobService.getJobs(this.user._id);
+    }
     this.subscriptions.push(
       this.jobService.$allJobs.subscribe((sub) => {
         this.allJobs = sub;

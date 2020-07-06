@@ -12,7 +12,11 @@ describe('ApplicationsComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ApplicationsComponent],
-      imports: [IonicModule.forRoot(), HttpClientTestingModule, RouterTestingModule]
+      imports: [
+        IonicModule.forRoot(),
+        HttpClientTestingModule,
+        RouterTestingModule
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ApplicationsComponent);

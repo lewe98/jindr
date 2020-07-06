@@ -15,7 +15,8 @@ export class JobService {
     this.allJobs
   );
   $allJobs = this.allJobsSub.asObservable();
-
+  unreadSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+  unread$ = this.unreadSubject.asObservable();
   constructor(
     private databaseController: DatabaseControllerService,
     private toastService: ToastService,
@@ -79,8 +80,8 @@ export class JobService {
       this.databaseController
         .getRequest('get-jobs/' + id, '', Job)
         .then((res) => {
-          console.log(res.data);
-          this.allJobsSub.next(res.data);
+          this.allJobs = res.data;
+          this.countUnread();
           resolve(res.data);
         })
         .catch((err) => {
@@ -88,6 +89,26 @@ export class JobService {
           reject(err);
         });
     });
+  }
+
+  /**
+   * Counts all unseen likes of each job
+   */
+  countUnread() {
+    let unreadCount = 0;
+    if (this.allJobs?.length) {
+      this.allJobs.map((c) => {
+        const tmp = c.interestedUsers.filter((m) => m.time > c.lastViewed);
+        c.unread = tmp.length;
+        unreadCount += tmp.length;
+      });
+      this.unreadSubject.next(unreadCount);
+      this.allJobsSub.next(this.allJobs);
+    } else {
+      this.allJobs = [];
+      this.allJobsSub.next(this.allJobs);
+      this.unreadSubject.next(0);
+    }
   }
 
   /**
@@ -103,7 +124,6 @@ export class JobService {
       this.databaseController
         .putRequest('edit-job/' + job._id, JSON.stringify(data), Job)
         .then((res) => {
-          this.toastService.presentToast(res.message);
           this.getJobs(userID);
           resolve(res.data);
         })

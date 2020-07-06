@@ -101,5 +101,18 @@ export class SocketService {
         );
       }
     });
+
+    this.socket.on('new-like', (data) => {
+      this.jobService.getJobs(data.job.creator);
+      console.log(data);
+      this.toastService.presentNotification(
+        'New Like!',
+        'Someone is interested in your Job ' +
+          data.job.title +
+          '. Check out now!',
+        data.link,
+        data.job._id
+      );
+    });
   }
 }

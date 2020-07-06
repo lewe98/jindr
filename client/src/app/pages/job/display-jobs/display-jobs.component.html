@@ -34,6 +34,7 @@
           <span class="item-interested">
               <ion-icon name="star-outline"></ion-icon>
               {{job.interestedUsers.length}}
+              <ion-badge mode="ios" *ngIf="job.unread > 0" class="badge" color="secondary">{{job.unread}}</ion-badge>
           </span>
                 <div class="item-price-range">
                     <span class="price">{{job.payment}}€ {{job.isHourly ? '/hour' : 'total'}}</span>

@@ -104,12 +104,10 @@ export class JobComponent implements OnInit {
           } else {
             this.createForm.controls.selectedOption.reset('total');
           }
-          this.createForm.controls.time.reset(this.job.time);
-
-          // TODO: - Werte werden nicht übernommen
-          // this.createForm.controls.searchbar.reset(this.job.cityName);
-          // this.createForm.controls.selectedOption.reset(this.job.isHourly);
-          // this.createForm.controls.time.reset(this.job.time);
+          this.createForm.controls.time.setValue(this.job.time);
+          this.createForm.controls.searchbar.setValue(this.job.cityName);
+          this.coords = this.job.location;
+          this.cityName = this.job.cityName;
         })
         .catch((err) => {
           this.toastService.presentWarningToast(err, 'Error!');
