@@ -55,4 +55,8 @@ export class DisplayJobsComponent implements OnInit {
     });
     await alert.present();
   }
+
+  presentConfirmFinish(job: Job) {
+    this.jobService.markAsFinished(job, this.user._id);
+  }
 }

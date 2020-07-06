@@ -3,7 +3,6 @@ import { Job } from '../../../../../interfaces/job';
 import { JobService } from '../../../services/Job/job.service';
 import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
-import { ToastService } from '../../../services/Toast/toast.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -14,6 +13,8 @@ import { Subscription } from 'rxjs';
 export class OffersComponent implements OnInit {
   activeOffers: Job[] = [];
   finishedOffers: Job[] = [];
+  activeFiltered: Job[] = [];
+  finishedFiltered: Job[] = [];
   allJobs: Job[] = [];
   user: User = new User();
   segmentValue = 'active';
@@ -21,8 +22,7 @@ export class OffersComponent implements OnInit {
   subscriptions: Subscription[] = [];
   constructor(
     private jobService: JobService,
-    private authService: AuthService,
-    private toastService: ToastService
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -39,12 +39,21 @@ export class OffersComponent implements OnInit {
           } else {
             this.activeOffers.push(job);
           }
+          this.activeFiltered = this.activeOffers;
+          this.finishedFiltered = this.finishedOffers;
         });
       })
     );
   }
 
-  search() {}
+  search() {
+    this.activeFiltered = this.activeOffers.filter((o) =>
+      o.title.toLowerCase().includes(this.searchQuery.toLowerCase())
+    );
+    this.finishedFiltered = this.finishedOffers.filter((o) =>
+      o.title.toLowerCase().includes(this.searchQuery.toLowerCase())
+    );
+  }
 
   segmentChanged(ev): void {
     this.segmentValue = ev.detail.value;

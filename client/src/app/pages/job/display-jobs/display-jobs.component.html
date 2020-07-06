@@ -41,18 +41,22 @@
             </ion-col>
         </ion-row>
         </div>
-        <ion-row class="actions-row">
-            <ion-col size="6">
+        <ion-row class="actions-row" *ngIf="user._id === job.creator">
+            <ion-col size="4">
                 <ion-button color="warning" [routerLink]="'/pages/job/edit/' + job._id" expand="full">
-
                     edit
                 </ion-button>
             </ion-col>
-           <ion-col size="6">
+           <ion-col size="4">
                <ion-button color="danger" (click)="presentConfirm(job._id)" expand="full">
                    delete
                </ion-button>
            </ion-col>
+            <ion-col size="4">
+                <ion-button [disabled]="job.isFinished" color="danger" (click)="presentConfirmFinish(job)" expand="full">
+                    finish
+                </ion-button>
+            </ion-col>
         </ion-row>
     </div>
 </ng-container>

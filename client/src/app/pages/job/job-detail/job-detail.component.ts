@@ -70,4 +70,8 @@ export class JobDetailComponent implements OnInit {
     });
     return await popover.present();
   }
+
+  markFinished() {
+    this.jobService.markAsFinished(this.data, this.authService.user._id);
+  }
 }

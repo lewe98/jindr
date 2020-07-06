@@ -99,7 +99,7 @@ describe('JobService', () => {
       service.editJob(editedJob, '74387523').then(async () => {
         expect(databaseSpy.putRequest).toHaveBeenCalledWith(
           'edit-job/' + editedJob._id,
-          JSON.stringify({ job: editedJob}),
+          JSON.stringify({ job: editedJob }),
           Job
         );
         done();

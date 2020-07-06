@@ -3,6 +3,7 @@ import { DatabaseControllerService } from '../DatabaseController/database-contro
 import { ToastService } from '../Toast/toast.service';
 import { Job } from '../../../../interfaces/job';
 import { BehaviorSubject } from 'rxjs';
+import { AlertController } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,8 @@ export class JobService {
 
   constructor(
     private databaseController: DatabaseControllerService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private alertController: AlertController
   ) {}
 
   /**
@@ -226,5 +228,30 @@ export class JobService {
 
   updateJob(job) {
     this.$newJobOffer.emit(job);
+  }
+
+  async markAsFinished(job: Job, userID: string) {
+    const alert = await this.alertController.create({
+      cssClass: '',
+      header: 'Mark as finished?',
+      message:
+        'Do you really want to mark this job as <strong>finished</strong>? ' +
+        'People will no longer see this job in their feed and you wont get any new help requests.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary'
+        },
+        {
+          text: 'Okay',
+          handler: () => {
+            job.isFinished = true;
+            this.editJob(job, userID);
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 }

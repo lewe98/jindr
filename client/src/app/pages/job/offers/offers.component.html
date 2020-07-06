@@ -22,13 +22,13 @@
   <ion-searchbar class="offer-searchbar" animated [(ngModel)]="searchQuery" (ionChange)="search()"></ion-searchbar>
 
   <ng-template #offerItem let-offers="offers">
-    <app-display-jobs style="width: 100%" [job]="offers"></app-display-jobs>
+    <app-display-jobs style="width: 100%" [job]="offers" [user]="user"></app-display-jobs>
   </ng-template>
 
 
   <section [hidden]="segmentValue !== 'active'">
     <ion-list class="offer-list" *ngIf="activeOffers.length > 0">
-      <ion-item class="offer-item" *ngFor="let offer of activeOffers">
+      <ion-item class="offer-item" *ngFor="let offer of activeFiltered">
         <ng-container *ngTemplateOutlet="offerItem; context: { offers: offer }"></ng-container>
       </ion-item>
     </ion-list>
@@ -39,7 +39,7 @@
 
   <section [hidden]="segmentValue !== 'finished'">
     <ion-list class="offer-list" *ngIf="finishedOffers.length > 0">
-      <ion-item class="offer-item" *ngFor="let offer of finishedOffers">
+      <ion-item class="offer-item" *ngFor="let offer of finishedFiltered">
         <ng-container *ngTemplateOutlet="offerItem; context: { offers: offer }"></ng-container>
       </ion-item>
     </ion-list>

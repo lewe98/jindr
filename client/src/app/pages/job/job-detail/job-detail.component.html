@@ -122,3 +122,6 @@
     </ion-row>
   </div>
 </ion-content>
+<ion-footer *ngIf="authService.user?._id === data.creator && !data.isFinished">
+  <ion-button type="button" expand="full" fill="solid" color="primary" (click)="markFinished()">Mark job as finished</ion-button>
+</ion-footer>
