@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Job } from '../../../../../interfaces/job';
 import { User } from '../../../../../interfaces/user';
 import { AuthService } from '../../../services/Auth/auth.service';
+import { JobService } from '../../../services/Job/job.service';
 
 @Component({
   selector: 'app-applications',
@@ -16,10 +17,18 @@ export class ApplicationsComponent implements OnInit {
   likedFiltered: Job[] = [];
   acceptedFiltered: Job[] = [];
   user: User = new User();
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService,
+              private jobService: JobService) {}
 
   ngOnInit() {
     this.user = this.authService.getUser();
+    this.jobService.getLikedAcceptedJobs(this.user?._id).then(
+      data => {
+        this.likedJobs = data.likedJobs.map(o => Object.assign(new Job(), o));
+        this.likedFiltered = this.likedJobs;
+        this.acceptedJobs = data.acceptedJobs.map(o => Object.assign(new Job(), o));
+        this.acceptedFiltered = this.acceptedJobs;
+      });
   }
 
   segmentChanged(ev): void {

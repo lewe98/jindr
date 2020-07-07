@@ -1613,6 +1613,53 @@ function sendMail(userMail: string, template: string, subject: string) {
   });
 }
 
+
+/**
+ * @api {get} /get-liked-jobs/:_id Gets all liked unfinished jobs from a user
+ * @apiName GetLikedJobs
+ * @apiGroup Job
+ *
+ * @apiDescription Pass the creator's id to get all of her/his liked unfinished jobs
+ *
+ * @apiParam {String} _id user id
+ *
+ * @apiSuccess {Job} message success message and liked jobs are included in response body
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *      message: 'Liked jobs found.',
+ *      data: likedJobs
+ *     }
+ *
+ * @apiError NoLikedJobsFound error message, if no jobs could be found
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Bad Request
+ *     {
+ *       "message: "No Jobs found."
+ *     }
+ *
+ */
+app.get('/get-liked-jobs/:_id', async (req: Request, res: Response) => {
+  const _id: string = req.params._id;
+  const jobstack = await JobStack.findOne({ userID: _id });
+  if (jobstack && jobstack.likedJobs) {
+    const likedJobs = await  Job.find().where('_id').in(jobstack.likedJobs)
+      .where('isFinished').equals(false).exec();
+    const acceptedJobs = likedJobs.filter(job => job.jobOffer.filter(offer => offer.user.toSring() === _id && offer.accepted).length > 0);
+    res.status(200).send({
+      message: 'Liked jobs found.',
+      data: {
+        likedJobs,
+        acceptedJobs
+      }
+    });
+  } else {
+    res.status(404).send({
+      message: 'No Jobs found.'
+    });
+  }
+});
+
 /**
  * Method to fill the different stacks of the jobStack. If there are 5 or less jobs in client stack,
  * the server Stack will be moved to the clientStack and refilled with jobs from the backlog. Then the
