@@ -1,7 +1,7 @@
 :host {
   ion-toolbar {
     --border-color: transparent;
-    vertical-align: middle;
+
   }
 
   ion-textarea {
@@ -14,28 +14,14 @@
     --padding-bottom: 8px;
   }
 
+  .ion-color-chatButton {
+    --ion-color-base: #7ae3d7;
+    --ion-color-shade: #6bc8bd;
+    --ion-color-tint: #87e6db;
+  }
+
   .has-elastic-input {
     padding: 4px 8px;
-  }
-
-  .stick-bottom {
-    align-self: flex-end;
-  }
-
-  .button-gif {
-    font-size: 12px;
-    width: 36px;
-    height: 36px;
-  }
-
-  .button-submit {
-    position: absolute;
-    right: 12px;
-    bottom: 0;
-
-    ion-button {
-      font-weight: 700;
-    }
   }
 
   .input-block {
