@@ -11,6 +11,7 @@ import { ProfileEditComponent } from './profile-edit/profile-edit.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CurriculumComponent } from './curriculum/curriculum.component';
 import { ProfileResumeComponent } from './profile-resume/profile-resume.component';
+import { ImpressumComponent } from './impressum/impressum.component';
 
 const profileRoutes: Routes = [
   {
@@ -30,7 +31,8 @@ const profileRoutes: Routes = [
     ProfileViewComponent,
     ProfileEditComponent,
     CurriculumComponent,
-    ProfileResumeComponent
+    ProfileResumeComponent,
+    ImpressumComponent
   ],
   imports: [
     CommonModule,
