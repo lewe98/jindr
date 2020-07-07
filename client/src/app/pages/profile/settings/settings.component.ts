@@ -6,7 +6,7 @@ import { ToastService } from '../../../services/Toast/toast.service';
 import { LocationService } from '../../../services/Location/location.service';
 import { Router } from '@angular/router';
 import { SwipeService } from '../../../services/Swipe/swipe.service';
-import { ImpressumComponent } from '../impressum/impressum.component'
+import { ImpressumComponent } from '../impressum/impressum.component';
 
 @Component({
   selector: 'app-settings',
@@ -235,7 +235,6 @@ export class SettingsComponent implements OnInit {
       this.close();
     }
   }
-
 
   /**
    * Method to display Impressum

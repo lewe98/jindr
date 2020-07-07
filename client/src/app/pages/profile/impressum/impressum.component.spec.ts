@@ -9,7 +9,7 @@ describe('ImpressumComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ImpressumComponent ],
+      declarations: [ImpressumComponent],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
