@@ -22,8 +22,7 @@ export class JobService {
     private databaseController: DatabaseControllerService,
     private toastService: ToastService,
     private alertController: AlertController
-  ) {
-  }
+  ) {}
 
   /**
    * Method to create a Job
@@ -80,7 +79,7 @@ export class JobService {
   getJobs(id: string): Promise<Job[]> {
     return new Promise<Job[]>((resolve, reject) => {
       this.databaseController
-        .getRequest('get-jobs/' + id, '', Job)
+        .getRequest('get-jobs', id, Job)
         .then((res) => {
           this.allJobs = res.data;
           this.countUnread();
@@ -289,17 +288,20 @@ export class JobService {
    * resolves if the jobs could be obtained successfully
    * rejects if an error occurred
    */
-  getLikedAcceptedJobs(userId: string): Promise<{ likedJobs: {}[], acceptedJobs: {}[] }> {
-    return new Promise<{ likedJobs: {}[], acceptedJobs: {}[] }>((resolve, reject) => {
-      this.databaseController
-        .getRequest('get-liked-jobs', userId)
-        .then((res) => {
-          resolve(res.data);
-        })
-        .catch((err) => {
-          this.toastService.presentWarningToast(err.errors, err.message + ': ');
-          reject(err);
-        });
-    });
+  getLikedAcceptedJobs(
+    userId: string
+  ): Promise<{ likedJobs: {}[]; acceptedJobs: {}[] }> {
+    return new Promise<{ likedJobs: {}[]; acceptedJobs: {}[] }>(
+      (resolve, reject) => {
+        this.databaseController
+          .getRequest('get-liked-jobs', userId)
+          .then((res) => {
+            resolve(res.data);
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      }
+    );
   }
 }

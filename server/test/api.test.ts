@@ -923,12 +923,12 @@ describe('delete job', () => {
   });
 });
 describe('test get liked Jobs', () => {
-  it ('should get all liked unfinished Jobs by userID', async () => {
+  it('should get all liked unfinished Jobs by userID', async () => {
     const res = await request(app)
       .get('/get-liked-jobs/' + USER_ONE._id)
       .send();
     expect(res.statusCode).toEqual(200);
     expect(res.body.data.likedJobs.length).toEqual(9);
     expect(res.body.data.acceptedJobs.length).toEqual(0);
-  })
+  });
 });

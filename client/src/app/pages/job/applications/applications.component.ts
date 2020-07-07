@@ -17,17 +17,25 @@ export class ApplicationsComponent implements OnInit {
   likedFiltered: Job[] = [];
   acceptedFiltered: Job[] = [];
   user: User = new User();
-  constructor(private authService: AuthService,
-              private jobService: JobService) {}
+  constructor(
+    private authService: AuthService,
+    private jobService: JobService
+  ) {}
 
   ngOnInit() {
     this.user = this.authService.getUser();
-    this.jobService.getLikedAcceptedJobs(this.user?._id).then(
-      data => {
-        this.likedJobs = data.likedJobs.map(o => Object.assign(new Job(), o));
+    this.jobService
+      .getLikedAcceptedJobs(this.user?._id)
+      .then((data) => {
+        this.likedJobs = data.likedJobs.map((o) => Object.assign(new Job(), o));
         this.likedFiltered = this.likedJobs;
-        this.acceptedJobs = data.acceptedJobs.map(o => Object.assign(new Job(), o));
+        this.acceptedJobs = data.acceptedJobs.map((o) =>
+          Object.assign(new Job(), o)
+        );
         this.acceptedFiltered = this.acceptedJobs;
+      })
+      .catch((err) => {
+        console.log(err);
       });
   }
 
@@ -35,6 +43,9 @@ export class ApplicationsComponent implements OnInit {
     this.segmentValue = ev.detail.value;
   }
 
+  /**
+   * Method to filter the arrays with a search query
+   */
   search() {
     this.likedFiltered = this.likedJobs.filter((o) =>
       o.title.toLowerCase().includes(this.searchQuery.toLowerCase())

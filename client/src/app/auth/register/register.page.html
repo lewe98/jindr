@@ -47,7 +47,7 @@
         </ng-container>
       </div>
 
-      <ion-input (ionChange)="clearErr()" formControlName="password" type="password" placeholder="Password..." class="input"></ion-input>
+      <ion-input (keyup.enter)="submit()" (ionChange)="clearErr()" formControlName="password" type="password" placeholder="Password..." class="input"></ion-input>
 
       <div class="error-container">
         <div class="error-message">

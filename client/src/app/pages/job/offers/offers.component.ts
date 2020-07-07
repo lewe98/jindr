@@ -33,9 +33,9 @@ export class OffersComponent implements OnInit {
     this.subscriptions.push(
       this.jobService.$allJobs.subscribe((sub) => {
         this.allJobs = sub;
+        this.finishedOffers = [];
+        this.activeOffers = [];
         this.allJobs.forEach((job) => {
-          this.finishedOffers = [];
-          this.activeOffers = [];
           if (job.isFinished) {
             this.finishedOffers.push(job);
           } else {

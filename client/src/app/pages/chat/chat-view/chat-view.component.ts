@@ -65,11 +65,12 @@ export class ChatViewComponent implements OnInit, OnDestroy {
         this.setJobOffer(this.job);
       });
     } else {
-      this.authService.getUserByID(this.navParams.get('user')).then((res) => {
-        this.he = res;
-      });
       this.job = this.navParams.get('job');
       this.jobService.$newJobOffer.emit(this.job);
+      this.authService.getUserByID(this.navParams.get('user')).then((res) => {
+        this.he = res;
+        this.setJobOffer(this.job);
+      });
       this.chatService
         .checkWrapperExists(this.navParams.get('user'), this.job?._id)
         .then((res) => {

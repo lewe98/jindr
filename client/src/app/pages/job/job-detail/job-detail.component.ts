@@ -55,7 +55,6 @@ export class JobDetailComponent implements OnInit {
   close() {
     if (this.authService.user._id.toString() === this.data.creator.toString()) {
       this.data.lastViewed = Date.now();
-      console.log(this.data.lastViewed);
       this.jobService.editJob(this.data, this.authService.user._id);
     }
     this.modalCtrl.dismiss();
