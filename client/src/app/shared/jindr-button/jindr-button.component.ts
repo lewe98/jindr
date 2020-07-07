@@ -9,6 +9,7 @@ export class JindrButtonComponent implements OnInit {
   @Input() text: string;
   @Input() disabled = false;
   @Input() icon = false;
+  @Input() badgeCount = 0;
   constructor() {}
 
   ngOnInit() {}

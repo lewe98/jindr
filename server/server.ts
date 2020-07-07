@@ -175,12 +175,20 @@ app.post('/register', (req: Request, res: Response) => {
   user.tokenExpires = new Date().setHours(new Date().getHours() + 24);
   const REGISTER_URL: string = req.body.BASE_URL + '/auth/register/' + token;
   const subject = 'jindr - Register now!';
-  const html =
-    '<p>Hey there! \n </p><a href=' +
-    REGISTER_URL +
-    '>Click here to register!</a><p>This link expires in 24 hours. This email was sent to ' +
-    user.email +
-    '. If you do not want to register, just ignore this email.</p>';
+  const text =
+    'Welcome to jindr! Press the button below to confirm your registration.';
+  const buttonText = 'Click here to register.';
+  const footNote = 'You do not want to register?';
+
+  const html = renderMail(
+    subject,
+    text,
+    REGISTER_URL,
+    user.email,
+    buttonText,
+    footNote,
+    req.body.BASE_URL
+  );
 
   user.save(async (err) => {
     if (err) {
@@ -746,7 +754,8 @@ app.post('/upload-image', (req: Request, res: Response) => {
 
 /**
  * @api {post} /sendmail sends mail containing a link to reset password
- * @apiName SendMail
+ * @apiName ResetPassword
+ * @apiGroup User
  *
  * @apiDescription Pass mail in request body.
  * The configured mail client sends a mail to the users mailing address that includes a link, to reset the user's password.
@@ -774,7 +783,6 @@ app.post('/upload-image', (req: Request, res: Response) => {
  *       "errors": 'No account with that email address exists.'
  *     }
  */
-
 app.post('/sendmail', (req: Request, res: Response) => {
   const email: string = req.body.user.email;
   const token = crypto.randomBytes(20).toString('hex');
@@ -782,12 +790,20 @@ app.post('/sendmail', (req: Request, res: Response) => {
   const BASE_URL: string = req.body.user.BASE_URL;
   const RESET_URL: string = BASE_URL + '/auth/forgot-pw/' + token;
   const subject = 'jindr - Reset password';
-  const html =
-    '<p>Hey there! \n </p><a href=' +
-    RESET_URL +
-    '>Click here to reset your password.</a><p>This email was sent to ' +
-    email +
-    '. If you do not want to change your password, just ignore this email.</p>';
+  const text =
+    'We received a request to change the password of your jindr account.';
+  const buttonText = 'Click here to reset your password.';
+  const footNote = 'You do not want to reset your password?';
+
+  const html = renderMail(
+    subject,
+    text,
+    RESET_URL,
+    email,
+    buttonText,
+    footNote,
+    BASE_URL
+  );
 
   User.findOne({ email: email })
     .select('+password')
@@ -827,6 +843,7 @@ app.post('/sendmail', (req: Request, res: Response) => {
 /**
  * @api {post} /forgot-pw/:token route to reset the users password
  * @apiName ForgotPassword
+ * @apiGroup User
  *
  * @apiDescription checks if token is valid and not expired yet.
  *
@@ -958,16 +975,26 @@ app.put('/decision', async (req: Request, res: Response) => {
     jobStack.markModified('likedJobs');
     const likedJob = await Job.findOneAndUpdate(
       { _id: jobID },
-      { $push: { interestedUsers: user._id } },
+      { $push: { interestedUsers: { user: user._id } } },
       { new: true }
     );
     const message =
       'Someone is interested in your Job ' +
       likedJob.title +
       '. Check out now!';
-    // TODO add link once page exists
-    // TODO add unread count
-    sendPushNotification([likedJob.creator], 'Help offered!', message, '');
+    if (connectedUsersByID.get(likedJob.creator.toString())) {
+      io.to(likedJob.creator.toString()).emit('new-like', {
+        job: likedJob,
+        link: 'pages/job/offers'
+      });
+    } else {
+      sendPushNotification(
+        [likedJob.creator],
+        'Help offered!',
+        message,
+        'pages/job/offers'
+      );
+    }
   }
   jobStack.markModified('swipedJobs');
   jobStack.markModified('clientStack');
@@ -1269,7 +1296,8 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
           location: job.location,
           cityName: job.cityName,
           date: job.date,
-          time: job.time
+          time: job.time,
+          lastViewed: job.lastViewed
         }
       );
       res.status(200).send({
@@ -1572,7 +1600,7 @@ function uploadFile(file, name): Promise<string> {
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 function sendMail(userMail: string, template: string, subject: string) {
   const mailOptions = {
-    from: '"Jindr Support" <noreply.jindr@gmail.com>',
+    from: '"jindr Support" <noreply.jindr@gmail.com>',
     to: userMail,
     subject: subject,
     html: template
@@ -1938,6 +1966,446 @@ if (process.env.NODE_ENV.trim() !== 'test') {
  */
 function setTransporter(transp) {
   transporter = transp;
+}
+
+/**
+ * renders an email for registering and resetting the password in jindr colors
+ *
+ * @param subject email's subject
+ * @param text a text, containing the purpose of the mail
+ * @param actionURL URL redirecting to the requested action
+ * @param email user's mail
+ * @param buttonText text that is contained in the button
+ * @param footNote the footnote, depending on the purpose
+ * @param BASE_URL URL without the requested action
+ *
+ * @return a HTML string containing the email
+ */
+function renderMail(
+  subject: string,
+  text: string,
+  actionURL: string,
+  email: string,
+  buttonText: string,
+  footNote: string,
+  BASE_URL: string
+): string {
+  return (
+    '<head>\n' +
+    '    <meta name="viewport" content="width=device-width" />\n' +
+    '    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />\n' +
+    '    <title>' +
+    subject +
+    '</title>\n' +
+    '    <style>\n' +
+    '      /* -------------------------------------\n' +
+    '          GLOBAL RESETS\n' +
+    '      ------------------------------------- */\n' +
+    '      \n' +
+    '      /*All the styling goes here*/\n' +
+    '      \n' +
+    '      img {\n' +
+    '        border: none;\n' +
+    '        -ms-interpolation-mode: bicubic;\n' +
+    '        max-width: 100%; \n' +
+    '      }\n' +
+    '\n' +
+    '      body {\n' +
+    '        background-color: #45D1C5;\n' +
+    '        font-family: sans-serif;\n' +
+    '        -webkit-font-smoothing: antialiased;\n' +
+    '        font-size: 14px;\n' +
+    '        line-height: 1.4;\n' +
+    '        margin: 0;\n' +
+    '        padding: 0;\n' +
+    '        -ms-text-size-adjust: 100%;\n' +
+    '        -webkit-text-size-adjust: 100%; \n' +
+    '      }\n' +
+    '\n' +
+    '      table {\n' +
+    '        border-collapse: separate;\n' +
+    '        mso-table-lspace: 0;\n' +
+    '        mso-table-rspace: 0;\n' +
+    '        width: 100%; }\n' +
+    '        table td {\n' +
+    '          font-family: sans-serif;\n' +
+    '          font-size: 14px;\n' +
+    '          vertical-align: top; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          BODY & CONTAINER\n' +
+    '      ------------------------------------- */\n' +
+    '\n' +
+    '      .body {\n' +
+    '        background-color: #45D1C5;\n' +
+    '        width: 100%; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */\n' +
+    '      .container {\n' +
+    '        display: block;\n' +
+    '        margin: 0 auto !important;\n' +
+    '        /* makes it centered */\n' +
+    '        max-width: 580px;\n' +
+    '        padding: 10px;\n' +
+    '        width: 580px; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* This should also be a block element, so that it will fill 100% of the .container */\n' +
+    '      .content {\n' +
+    '        box-sizing: border-box;\n' +
+    '        display: block;\n' +
+    '        margin: 0 auto;\n' +
+    '        max-width: 580px;\n' +
+    '        padding: 10px; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          HEADER, FOOTER, MAIN\n' +
+    '      ------------------------------------- */\n' +
+    '      .main {\n' +
+    '        background: #89D9D2;\n' +
+    '        border-radius: 3px;\n' +
+    '        width: 100%; \n' +
+    '      }\n' +
+    '\n' +
+    '      .wrapper {\n' +
+    '        box-sizing: border-box;\n' +
+    '        padding: 20px; \n' +
+    '      }\n' +
+    '\n' +
+    '      .content-block {\n' +
+    '        padding-bottom: 10px;\n' +
+    '        padding-top: 10px;\n' +
+    '      }\n' +
+    '\n' +
+    '      .footer {\n' +
+    '        clear: both;\n' +
+    '        margin-top: 10px;\n' +
+    '        text-align: center;\n' +
+    '        width: 100%; \n' +
+    '      }\n' +
+    '        .footer td,\n' +
+    '        .footer p,\n' +
+    '        .footer span,\n' +
+    '        .footer a {\n' +
+    '          color: #1B524D;\n' +
+    '          font-size: 12px;\n' +
+    '          text-align: center; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          TYPOGRAPHY\n' +
+    '      ------------------------------------- */\n' +
+    '      h1,\n' +
+    '      h2,\n' +
+    '      h3,\n' +
+    '      h4 {\n' +
+    '        color: #1D2E2C;\n' +
+    '        font-family: sans-serif;\n' +
+    '        font-weight: 400;\n' +
+    '        line-height: 1.4;\n' +
+    '        margin: 0 0 30px;}\n' +
+    '\n' +
+    '      h1 {\n' +
+    '        font-size: 35px;\n' +
+    '        font-weight: 300;\n' +
+    '        text-align: center;\n' +
+    '        text-transform: capitalize; \n' +
+    '      }\n' +
+    '\n' +
+    '      p,\n' +
+    '      ul,\n' +
+    '      ol {\n' +
+    '        font-family: sans-serif;\n' +
+    '        font-size: 14px;\n' +
+    '        font-weight: normal;\n' +
+    '        margin: 0 0 15px;}\n' +
+    '        p li,\n' +
+    '        ul li,\n' +
+    '        ol li {\n' +
+    '          list-style-position: inside;\n' +
+    '          margin-left: 5px; \n' +
+    '      }\n' +
+    '\n' +
+    '      a {\n' +
+    '        color: #1B524D;\n' +
+    '        text-decoration: underline; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          BUTTONS\n' +
+    '      ------------------------------------- */\n' +
+    '      .btn {\n' +
+    '        box-sizing: border-box;\n' +
+    '        width: 100%; }\n' +
+    '        .btn > tbody > tr > td {\n' +
+    '          padding-bottom: 15px; }\n' +
+    '        .btn table {\n' +
+    '          width: auto; \n' +
+    '      }\n' +
+    '        .btn table td {\n' +
+    '          background-color: #89D9D2f;\n' +
+    '          border-radius: 5px;\n' +
+    '          text-align: center; \n' +
+    '      }\n' +
+    '        .btn a {\n' +
+    '          background-color: #89D9D2;\n' +
+    '          border: solid 1px #45D1C5;\n' +
+    '          border-radius: 5px;\n' +
+    '          box-sizing: border-box;\n' +
+    '          color: #45D1C5;\n' +
+    '          cursor: pointer;\n' +
+    '          display: inline-block;\n' +
+    '          font-size: 14px;\n' +
+    '          font-weight: bold;\n' +
+    '          margin: 0;\n' +
+    '          padding: 12px 25px;\n' +
+    '          text-decoration: none;\n' +
+    '          text-transform: capitalize; \n' +
+    '      }\n' +
+    '\n' +
+    '      .btn-primary table td {\n' +
+    '        background-color: #45D1C5; \n' +
+    '      }\n' +
+    '\n' +
+    '      .btn-primary a {\n' +
+    '        background-color: #45D1C5;\n' +
+    '        border-color: #45D1C5;\n' +
+    '        color: #89D9D2; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          OTHER STYLES THAT MIGHT BE USEFUL\n' +
+    '      ------------------------------------- */\n' +
+    '      .last {\n' +
+    '        margin-bottom: 0; \n' +
+    '      }\n' +
+    '\n' +
+    '      .first {\n' +
+    '        margin-top: 0; \n' +
+    '      }\n' +
+    '\n' +
+    '      .align-center {\n' +
+    '        text-align: center; \n' +
+    '      }\n' +
+    '\n' +
+    '      .align-right {\n' +
+    '        text-align: right; \n' +
+    '      }\n' +
+    '\n' +
+    '      .align-left {\n' +
+    '        text-align: left; \n' +
+    '      }\n' +
+    '\n' +
+    '      .clear {\n' +
+    '        clear: both; \n' +
+    '      }\n' +
+    '\n' +
+    '      .mt0 {\n' +
+    '        margin-top: 0; \n' +
+    '      }\n' +
+    '\n' +
+    '      .mb0 {\n' +
+    '        margin-bottom: 0; \n' +
+    '      }\n' +
+    '\n' +
+    '      .preheader {\n' +
+    '        color: transparent;\n' +
+    '        display: none;\n' +
+    '        height: 0;\n' +
+    '        max-height: 0;\n' +
+    '        max-width: 0;\n' +
+    '        opacity: 0;\n' +
+    '        overflow: hidden;\n' +
+    '        mso-hide: all;\n' +
+    '        visibility: hidden;\n' +
+    '        width: 0; \n' +
+    '      }\n' +
+    '\n' +
+    '      .powered-by a {\n' +
+    '        text-decoration: none; \n' +
+    '      }\n' +
+    '\n' +
+    '      hr {\n' +
+    '        border: 0;\n' +
+    '        border-bottom: 1px solid #89D9D2;\n' +
+    '        margin: 20px 0; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          RESPONSIVE AND MOBILE FRIENDLY STYLES\n' +
+    '      ------------------------------------- */\n' +
+    '      @media only screen and (max-width: 620px) {\n' +
+    '        table[class=body] h1 {\n' +
+    '          font-size: 28px !important;\n' +
+    '          margin-bottom: 10px !important; \n' +
+    '        }\n' +
+    '        table[class=body] p,\n' +
+    '        table[class=body] ul,\n' +
+    '        table[class=body] ol,\n' +
+    '        table[class=body] td,\n' +
+    '        table[class=body] span,\n' +
+    '        table[class=body] a {\n' +
+    '          font-size: 16px !important; \n' +
+    '        }\n' +
+    '        table[class=body] .wrapper,\n' +
+    '        table[class=body] .article {\n' +
+    '          padding: 10px !important; \n' +
+    '        }\n' +
+    '        table[class=body] .content {\n' +
+    '          padding: 0 !important; \n' +
+    '        }\n' +
+    '        table[class=body] .container {\n' +
+    '          padding: 0 !important;\n' +
+    '          width: 100% !important; \n' +
+    '        }\n' +
+    '        table[class=body] .main {\n' +
+    '          border-left-width: 0 !important;\n' +
+    '          border-radius: 0 !important;\n' +
+    '          border-right-width: 0 !important; \n' +
+    '        }\n' +
+    '        table[class=body] .btn table {\n' +
+    '          width: 100% !important; \n' +
+    '        }\n' +
+    '        table[class=body] .btn a {\n' +
+    '          width: 100% !important; \n' +
+    '        }\n' +
+    '        table[class=body] .img-responsive {\n' +
+    '          height: auto !important;\n' +
+    '          max-width: 100% !important;\n' +
+    '          width: auto !important; \n' +
+    '        }\n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          PRESERVE THESE STYLES IN THE HEAD\n' +
+    '      ------------------------------------- */\n' +
+    '      @media all {\n' +
+    '        .ExternalClass {\n' +
+    '          width: 100%; \n' +
+    '        }\n' +
+    '        .ExternalClass,\n' +
+    '        .ExternalClass p,\n' +
+    '        .ExternalClass span,\n' +
+    '        .ExternalClass font,\n' +
+    '        .ExternalClass td,\n' +
+    '        .ExternalClass div {\n' +
+    '          line-height: 100%; \n' +
+    '        }\n' +
+    '        .apple-link a {\n' +
+    '          color: inherit !important;\n' +
+    '          font-family: inherit !important;\n' +
+    '          font-size: inherit !important;\n' +
+    '          font-weight: inherit !important;\n' +
+    '          line-height: inherit !important;\n' +
+    '          text-decoration: none !important; \n' +
+    '        }\n' +
+    '        #MessageViewBody a {\n' +
+    '          color: inherit;\n' +
+    '          text-decoration: none;\n' +
+    '          font-size: inherit;\n' +
+    '          font-family: inherit;\n' +
+    '          font-weight: inherit;\n' +
+    '          line-height: inherit;\n' +
+    '        }\n' +
+    '        .btn-primary table td:hover {\n' +
+    '          background-color: #349E95 !important; \n' +
+    '        }\n' +
+    '        .btn-primary a:hover {\n' +
+    '          background-color: #349E95 !important;\n' +
+    '          border-color: #349E95 !important; \n' +
+    '        } \n' +
+    '      }\n' +
+    '\n' +
+    '    </style>\n' +
+    '  </head>\n' +
+    '  <body class="">\n' +
+    '    <span class="preheader">' +
+    subject +
+    '</span>\n' +
+    '    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">\n' +
+    '      <tr>\n' +
+    '        <td>&nbsp;</td>\n' +
+    '        <td class="container">\n' +
+    '          <div class="content">\n' +
+    '\n' +
+    '            <!-- START CENTERED WHITE CONTAINER -->\n' +
+    '            <table role="presentation" class="main">\n' +
+    '\n' +
+    '              <!-- START MAIN CONTENT AREA -->\n' +
+    '              <tr>\n' +
+    '                <td class="wrapper">\n' +
+    '                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">\n' +
+    '                    <tr>\n' +
+    '                      <td>\n' +
+    '                        <p>Hey there!</p>\n' +
+    '                        <p>' +
+    text +
+    '</p>\n' +
+    '                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">\n' +
+    '                          <tbody>\n' +
+    '                            <tr>\n' +
+    '                              <td align="left">\n' +
+    '                                <table role="presentation" border="0" cellpadding="0" cellspacing="0">\n' +
+    '                                  <tbody>\n' +
+    '                                    <tr>\n' +
+    '                                      <td> <a href="' +
+    actionURL +
+    '" target="_blank">' +
+    buttonText +
+    '</a></td>\n' +
+    '                                    </tr>\n' +
+    '                                  </tbody>\n' +
+    '                                </table>\n' +
+    '                              </td>\n' +
+    '                            </tr>\n' +
+    '                          </tbody>\n' +
+    '                        </table>\n' +
+    '                        <p>This link expires in 24 hours. This email was sent to ' +
+    email +
+    '.</p>\n' +
+    '                        <p>If you did not request this mail, just ignore it.</p>\n' +
+    '                      </td>\n' +
+    '                    </tr>\n' +
+    '                  </table>\n' +
+    '                </td>\n' +
+    '              </tr>\n' +
+    '\n' +
+    '            <!-- END MAIN CONTENT AREA -->\n' +
+    '            </table>\n' +
+    '            <!-- END CENTERED WHITE CONTAINER -->\n' +
+    '\n' +
+    '            <!-- START FOOTER -->\n' +
+    '            <div class="footer">\n' +
+    '              <table role="presentation" border="0" cellpadding="0" cellspacing="0">\n' +
+    '                <tr>\n' +
+    '                  <td class="content-block">\n' +
+    '                    <span class="apple-link">jindr, Wiesenstraße 14, 35394 Gießen, Germany</span>\n' +
+    '                    <br> ' +
+    footNote +
+    ' <a href="' +
+    BASE_URL +
+    '/auth/login">Login</a>.\n' +
+    '                  </td>\n' +
+    '                </tr>\n' +
+    '                <tr>\n' +
+    '                  <td class="content-block powered-by">\n' +
+    '                    Powered by <a href="http://htmlemail.io">HTMLemail</a>.\n' +
+    '                  </td>\n' +
+    '                </tr>\n' +
+    '              </table>\n' +
+    '            </div>\n' +
+    '            <!-- END FOOTER -->\n' +
+    '\n' +
+    '          </div>\n' +
+    '        </td>\n' +
+    '        <td>&nbsp;</td>\n' +
+    '      </tr>\n' +
+    '    </table>\n' +
+    '  </body>'
+  );
 }
 
 /**

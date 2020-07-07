@@ -12,12 +12,9 @@ import { InfoComponent } from './info/info.component';
 import { CHAT_VIEW_TOKEN } from '../chat/chat-view/chat-view-token';
 import { ChatViewComponent } from '../chat/chat-view/chat-view.component';
 import { JOB_DETAIL_TOKEN } from './job-detail/job-detail-token';
+import { ApplicationsComponent } from './applications/applications.component';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: DisplayJobsComponent
-  },
   {
     path: 'create',
     component: JobComponent
@@ -25,6 +22,10 @@ const routes: Routes = [
   {
     path: 'offers',
     component: OffersComponent
+  },
+  {
+    path: 'applications',
+    component: ApplicationsComponent
   },
   {
     path: 'edit/:id',
@@ -38,7 +39,8 @@ const routes: Routes = [
     JobDetailComponent,
     OffersComponent,
     InfoComponent,
-    DisplayJobsComponent
+    DisplayJobsComponent,
+    ApplicationsComponent
   ],
   imports: [
     CommonModule,

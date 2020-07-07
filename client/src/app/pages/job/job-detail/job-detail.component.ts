@@ -42,15 +42,22 @@ export class JobDetailComponent implements OnInit {
 
   getInterestedUsers() {
     if (this.authService.user._id === this.data.creator) {
-      this.authService
-        .getArrayOfUsers(this.data.interestedUsers)
-        .then((res) => {
-          this.interestedUsers = res;
-        });
+      const iUsers = [];
+      this.data.interestedUsers.forEach((u) => {
+        iUsers.push(u.user);
+      });
+      this.authService.getArrayOfUsers(iUsers).then((res) => {
+        this.interestedUsers = res;
+      });
     }
   }
 
   close() {
+    if (this.authService.user._id.toString() === this.data.creator.toString()) {
+      this.data.lastViewed = Date.now();
+      console.log(this.data.lastViewed);
+      this.jobService.editJob(this.data, this.authService.user._id);
+    }
     this.modalCtrl.dismiss();
   }
 
@@ -69,5 +76,9 @@ export class JobDetailComponent implements OnInit {
       }
     });
     return await popover.present();
+  }
+
+  markFinished() {
+    this.jobService.markAsFinished(this.data, this.authService.user._id);
   }
 }
