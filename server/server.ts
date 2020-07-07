@@ -1655,7 +1655,7 @@ app.get('/get-accepted-jobs/:_id', async (req: Request, res: Response) => {
               accepted = true;
             }
             if (accepted) {
-              acceptedJobs.push(likedJob)
+              acceptedJobs.push(likedJob);
             }
           }
         });
