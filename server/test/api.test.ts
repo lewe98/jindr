@@ -840,15 +840,7 @@ describe('test get liked Jobs', () => {
       .get('/get-liked-jobs/' + USER_ONE._id)
       .send();
     expect(res.statusCode).toEqual(200);
+    expect(res.body.data.likedJobs.length).toEqual(9);
+    expect(res.body.data.acceptedJobs.length).toEqual(0);
   })
 });
-/*
-describe('test get accepted Jobs of a user', () => {
-  it ('should get all liked accepted Jobs by userID', async () => {
-    const res = await request(app)
-      .get('/get-accepted-jobs/' + USER_ONE._id)
-      .send();
-    expect(res.statusCode).toEqual(200);
-  })
-});
- */

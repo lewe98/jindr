@@ -22,8 +22,13 @@ export class ApplicationsComponent implements OnInit {
 
   ngOnInit() {
     this.user = this.authService.getUser();
-    Object.assign(this.likedJobs, this.jobService.getLikedJobs(this.user?._id));
-    Object.assign(this.acceptedJobs, this.jobService.getAcceptedJobs(this.user?._id));
+    this.jobService.getLikedAcceptedJobs(this.user?._id).then(
+      data => {
+        this.likedJobs = data.likedJobs.map(o => Object.assign(new Job(), o));
+        this.likedFiltered = this.likedJobs;
+        this.acceptedJobs = data.acceptedJobs.map(o => Object.assign(new Job(), o));
+        this.acceptedFiltered = this.acceptedJobs;
+      });
   }
 
   segmentChanged(ev): void {

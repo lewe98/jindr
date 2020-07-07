@@ -109,24 +109,10 @@ describe('JobService', () => {
 
   describe('get liked unfinished jobs of a User', () => {
     it('should get liked Jobs', (done) => {
-      service.getLikedJobs('test1234').then(async () => {
+      service.getLikedAcceptedJobs('test1234').then(async () => {
         expect(databaseSpy.getRequest).toHaveBeenCalledWith(
-          'get-liked-jobs/test1234',
-          '',
-          Job
-        );
-        done();
-      });
-    });
-  });
-
-  describe('get liked finished jobs of a User', () => {
-    it('should get finished Jobs of a user', (done) => {
-      service.getAcceptedJobs('test1234').then(async () => {
-        expect(databaseSpy.getRequest).toHaveBeenCalledWith(
-          'get-accepted-jobs/test1234',
-          '',
-          Job
+          'get-liked-jobs',
+          'test1234'
         );
         done();
       });

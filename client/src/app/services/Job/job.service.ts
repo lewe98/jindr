@@ -17,11 +17,13 @@ export class JobService {
   $allJobs = this.allJobsSub.asObservable();
   unreadSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
   unread$ = this.unreadSubject.asObservable();
+
   constructor(
     private databaseController: DatabaseControllerService,
     private toastService: ToastService,
     private alertController: AlertController
-  ) {}
+  ) {
+  }
 
   /**
    * Method to create a Job
@@ -282,31 +284,10 @@ export class JobService {
    * resolves if the jobs could be obtained successfully
    * rejects if an error occurred
    */
-  getLikedJobs(userId: string): Promise<Job[]> {
-    return new Promise<Job[]>((resolve, reject) => {
+  getLikedAcceptedJobs(userId: string): Promise<{ likedJobs: {}[], acceptedJobs: {}[] }> {
+    return new Promise<{ likedJobs: {}[], acceptedJobs: {}[] }>((resolve, reject) => {
       this.databaseController
-        .getRequest('get-liked-jobs/' + userId, '', Job)
-        .then((res) => {
-          resolve(res.data);
-        })
-        .catch((err) => {
-          this.toastService.presentWarningToast(err.errors, err.message + ': ');
-          reject(err);
-        });
-    });
-  }
-
-  /**
-   * Method to get all finished jobs of a certain user
-   * @param userId id of the user
-   * error message is reported by ToastService
-   * resolves if the jobs could be obtained successfully
-   * rejects if an error occurred
-   */
-  getAcceptedJobs(userId: string): Promise<Job[]> {
-    return new Promise<Job[]>((resolve, reject) => {
-      this.databaseController
-        .getRequest('get-accepted-jobs/' + userId, '', Job)
+        .getRequest('get-liked-jobs', userId)
         .then((res) => {
           resolve(res.data);
         })
