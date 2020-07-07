@@ -1613,7 +1613,6 @@ function sendMail(userMail: string, template: string, subject: string) {
   });
 }
 
-
 /**
  * @api {get} /get-liked-jobs/:_id Gets all liked unfinished jobs from a user
  * @apiName GetLikedJobs
@@ -1643,9 +1642,17 @@ app.get('/get-liked-jobs/:_id', async (req: Request, res: Response) => {
   const _id: string = req.params._id;
   const jobstack = await JobStack.findOne({ userID: _id });
   if (jobstack && jobstack.likedJobs) {
-    const likedJobs = await  Job.find().where('_id').in(jobstack.likedJobs)
-      .where('isFinished').equals(false).exec();
-    const acceptedJobs = likedJobs.filter(job => job.jobOffer.filter(offer => offer.user.toSring() === _id && offer.accepted).length > 0);
+    const likedJobs = await Job.find()
+      .where('_id')
+      .in(jobstack.likedJobs)
+      .where('isFinished')
+      .equals(false)
+      .exec();
+    const acceptedJobs = likedJobs.filter(
+      (job) =>
+        job.jobOffer.filter((offer) => offer.user == _id && offer.accepted)
+          .length > 0
+    );
     res.status(200).send({
       message: 'Liked jobs found.',
       data: {
@@ -1782,6 +1789,8 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
     .in(neighbors)
     .where('_id')
     .nin(jobStack.swipedJobs)
+    .where('creator')
+    .nin([user._id])
     .where('isFinished')
     .equals(false)
     .lean()

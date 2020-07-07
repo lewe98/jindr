@@ -42,7 +42,6 @@ export class ProfileMeComponent implements OnInit, OnDestroy {
     this.subscription.push(
       this.jobService.unread$.subscribe((s) => {
         this.unreadJobs = s;
-        console.log(s);
       })
     );
     this.location = this.locationService.location;

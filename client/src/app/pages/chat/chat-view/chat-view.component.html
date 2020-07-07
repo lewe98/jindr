@@ -16,7 +16,7 @@
   </ion-toolbar>
   <ion-toolbar class="snd-bar">
     <div *ngIf="job?.creator === you?._id" style="text-align: center">
-      <ion-button color="success" expand="full" class="btn" size="small"  *ngIf="!jobOffer || jobOffer.user !== he._id" (click)="makeOffer(job?._id, he?._id, messageWrapper._id)">
+      <ion-button color="success" expand="full" class="btn" size="small"  *ngIf="(!jobOffer || jobOffer.user !== he._id) && messageWrapper" (click)="makeOffer(job?._id, he?._id, messageWrapper._id)">
         Send job offer
       </ion-button>
       <ion-button color="warning" expand="full" class="btn" size="small" *ngIf="jobOffer && jobOffer.user === he._id && jobOffer.dateReaction === 0" (click)="rejectOffer(job?._id, he?._id, messageWrapper._id)">Cancel job offer</ion-button>

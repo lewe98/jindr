@@ -7,7 +7,7 @@
     </ion-fab-button>
   </ion-buttons>
 
-    <ion-textarea #messageInput auto-resize [(ngModel)]="typingMessage" rows="1" placeholder="Type a message"></ion-textarea>
+    <ion-textarea #messageInput auto-resize [(ngModel)]="typingMessage" rows="1" placeholder="Type a message" (keyup.enter)="sendText(typingMessage)"></ion-textarea>
     <ion-buttons slot="end" >
       <ion-fab-button type="submit" color="chatButton" [disabled]="typingMessage.length === 0" size="small" (click)="sendText(typingMessage)">
         <ion-icon name="send"></ion-icon>
