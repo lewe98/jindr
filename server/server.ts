@@ -1559,6 +1559,123 @@ function sendMail(userMail: string, template: string, subject: string) {
   });
 }
 
+
+/**
+ * @api {get} /get-liked-jobs/:_id Gets all liked unfinished jobs from a user
+ * @apiName GetLikedJobs
+ * @apiGroup Job
+ *
+ * @apiDescription Pass the creator's id to get all of her/his liked unfinished jobs
+ *
+ * @apiParam {String} _id user id
+ *
+ * @apiSuccess {Job} message success message and liked jobs are included in response body
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *      message: 'Liked jobs found.',
+ *      data: likedJobs
+ *     }
+ *
+ * @apiError NoLikedJobsFound error message, if no jobs could be found
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Bad Request
+ *     {
+ *       "message: "No Jobs found."
+ *     }
+ *
+ */
+app.get('/get-liked-jobs/:_id', async (req: Request, res: Response) => {
+  const _id: string = req.params._id;
+  const jobstack = await JobStack.findOne({ userID: _id });
+  if (jobstack) {
+    const likedJobsId = jobstack.likedJobs;
+    let likedJobs = [];
+    await likedJobsId.map(async (likedJobId) => {
+      const likedJob = await Job.findOne({ _id: likedJobId.toString() });
+      if (likedJob) {
+        if (!likedJob.isFinished) {
+          likedJobs.push(likedJob);
+        }
+      } else {
+        res.status(404).send({
+          message: 'No liked Jobs found.'
+        });
+      }
+    });
+    res.status(200).send({
+      message: 'Liked jobs found.',
+      data: likedJobs
+    });
+  } else {
+    res.status(404).send({
+      message: 'No Jobs found.'
+    });
+  }
+});
+
+/**
+ * @api {get} /get-liked-jobs/:_id Gets all liked unfinished jobs from a user
+ * @apiName GetLikedJobs
+ * @apiGroup Job
+ *
+ * @apiDescription Pass the creator's id to get all of her/his liked unfinished jobs
+ *
+ * @apiParam {String} _id user id
+ *
+ * @apiSuccess {Job} message success message and liked jobs are included in response body
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *      message: 'Accepted jobs found.',
+ *      data: likedJobs
+ *     }
+ *
+ * @apiError NoLikedJobsFound error message, if no jobs could be found
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Bad Request
+ *     {
+ *       "message: "No Jobs found."
+ *     }
+ *
+ */
+app.get('/get-accepted-jobs/:_id', async (req: Request, res: Response) => {
+  const _id: string = req.params._id;
+  const jobstack = await JobStack.findOne({ userID: _id });
+  if (jobstack) {
+    const likedJobsId = jobstack.likedJobs;
+    let acceptedJobs = [];
+    likedJobsId.map(async (likedJobId) => {
+      const likedJob = await Job.findOne({ _id: likedJobId.toString() });
+      if (likedJob) {
+        likedJob.jobOffer.map(jobOffers => {
+          let accepted = false;
+          for (let jobOffer of jobOffers) {
+            if (jobOffer.user == _id && jobOffer.accepted == true) {
+              accepted = true;
+            }
+            if (accepted) {
+              acceptedJobs.push(likedJob)
+            }
+          }
+        });
+      } else {
+        res.status(404).send({
+          message: 'No liked Jobs found.'
+        });
+      }
+    });
+    res.status(200).send({
+      message: 'Accepted jobs found.',
+      data: acceptedJobs
+    });
+  } else {
+    res.status(404).send({
+      message: 'No Jobs found.'
+    });
+  }
+});
+
 /**
  * Method to fill the different stacks of the jobStack. If there are 5 or less jobs in client stack,
  * the server Stack will be moved to the clientStack and refilled with jobs from the backlog. Then the

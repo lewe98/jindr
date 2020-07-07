@@ -834,3 +834,21 @@ describe('delete job', () => {
     done();
   });
 });
+describe('test get liked Jobs', () => {
+  it ('should get all liked unfinished Jobs by userID', async () => {
+    const res = await request(app)
+      .get('/get-liked-jobs/' + USER_ONE._id)
+      .send();
+    expect(res.statusCode).toEqual(200);
+  })
+});
+/*
+describe('test get accepted Jobs of a user', () => {
+  it ('should get all liked accepted Jobs by userID', async () => {
+    const res = await request(app)
+      .get('/get-accepted-jobs/' + USER_ONE._id)
+      .send();
+    expect(res.statusCode).toEqual(200);
+  })
+});
+ */
