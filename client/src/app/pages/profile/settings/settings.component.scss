@@ -26,3 +26,16 @@
 ion-list {
   padding: 0;
 }
+
+.legal-stuff {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  margin-bottom: 1%;
+  margin-left: 2%;
+
+  .legal-action {
+    font-weight: 500;
+    color: var(--ion-color-secondary);
+    cursor: pointer;
+  }
+}
