@@ -11,6 +11,7 @@
     "build": "tsc server.ts",
     "ci-test": "NODE_ENV=test && jest --detectOpenHandles --runInBand  --forceExit ./test",
     "test": "SET NODE_ENV=test && jest --detectOpenHandles --runInBand --coverage --forceExit ./test",
+    "apidoc": "apidoc -f \".server.ts\" -i ../server -o apidoc/",
     "start": "node server.js"
   },
   "jest": {
@@ -20,11 +21,12 @@
     ]
   },
   "apidoc": {
-    "name": "Jindr",
+    "template.forceLanguage": "en",
+    "name": "jindr",
     "version": "0.1.0",
-    "description": "Die Jobbörse für die Hosentasche",
+    "description": "your mobile job market",
     "apidoc": {
-      "title": "Jindr Server API",
+      "title": "jindr Server API",
       "url": "https://git.thm.de/vlht20/jindr"
     }
   },
@@ -47,6 +49,7 @@
     "mongoose": "^5.9.15",
     "mongoose-unique-validator": "^2.0.3",
     "nodemailer": "^6.4.8",
+    "socket.io": "^2.3.0",
     "ts-node-dev": "^1.0.0-pre.44",
     "typescript": "~3.8.3",
     "validator": "^13.0.0"

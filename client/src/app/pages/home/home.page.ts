@@ -13,6 +13,8 @@ import { ToastService } from '../../services/Toast/toast.service';
 import { Router } from '@angular/router';
 import { AssetService } from '../../services/Asset/asset.service';
 import { LocationService } from '../../services/Location/location.service';
+import { SocketService } from '../../services/Socket/socket.service';
+import { ChatService } from '../../services/Chat/chat.service';
 
 const { PushNotifications } = Plugins;
 
@@ -24,8 +26,8 @@ const { PushNotifications } = Plugins;
 export class HomePage implements OnInit, OnDestroy {
   user: User = new User();
   sub: Subscription[] = [];
-  jobs = 14;
   accuracy;
+  unread = 0;
   constructor(
     private navCtrl: NavController,
     private modalCtrl: ModalController,
@@ -34,7 +36,9 @@ export class HomePage implements OnInit, OnDestroy {
     private toastService: ToastService,
     private router: Router,
     private assetService: AssetService,
-    private locationService: LocationService
+    private locationService: LocationService,
+    private socketService: SocketService,
+    private chatService: ChatService
   ) {}
 
   async ngOnInit() {
@@ -48,8 +52,14 @@ export class HomePage implements OnInit, OnDestroy {
         this.accuracy = acc;
       })
     );
+    this.sub.push(
+      this.chatService.unread$.subscribe((r) => {
+        this.unread = r;
+      })
+    );
     this.registerPush();
     this.assetService.setInterests();
+    this.socketService.connect(this.authService.user?._id);
   }
 
   ngOnDestroy(): void {

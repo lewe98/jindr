@@ -27,8 +27,10 @@ export class ProfileViewComponent implements OnInit {
     Object.assign(this.interests, this.assetService.getInterests());
 
     if (this.user.dateOfBirth) {
-      this.date = Math.floor(
-        (Date.now() - new Date(this.user.dateOfBirth).getTime()) / 31556952000
+      this.date = Math.abs(
+        Math.floor(
+          (Date.now() - new Date(this.user.dateOfBirth).getTime()) / 31556952000
+        )
       );
     }
   }

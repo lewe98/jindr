@@ -28,6 +28,8 @@ export class ProfileEditComponent implements OnInit {
   userInterests = [];
   tempInterests: Interest[] = [];
   changedInterests = false;
+  today = new Date().toISOString().slice(0, 10);
+  maxDate: string;
 
   constructor(
     private modalCtrl: ModalController,
@@ -41,6 +43,8 @@ export class ProfileEditComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    const tmpDate = Number(this.today.substring(0, 4)) - 16;
+    this.maxDate = tmpDate + this.today.substring(4, 10);
     Object.assign(this.user, this.authService.getUser());
     this.userBirthday = this.user.dateOfBirth;
     this.tempInterests = this.assetService.getInterests();
@@ -87,11 +91,11 @@ export class ProfileEditComponent implements OnInit {
         if (this.changedInterests) {
           this.swipeService.updateBacklog();
         }
-        this.toastService.presentToast('Profil updated.');
+        this.toastService.presentToast('Profile updated.');
         this.router.navigate(['pages/profile']);
       })
       .catch((err) => {
-        this.toastService.presentWarningToast(err.errors.email, 'Error!');
+        this.toastService.presentWarningToast(err.errors, 'Error!');
         this.user = this.authService.getUser();
       });
   }

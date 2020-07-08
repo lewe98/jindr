@@ -30,13 +30,13 @@ export class AuthService {
     return info.model + info.uuid + info.platform;
   }
 
-  getUser(): User {
-    return this.user;
-  }
-
   registerPushNotifications(token: string) {
     this.user.notificationToken = token;
     this.updateUser(this.user);
+  }
+
+  getUser(): User {
+    return this.user;
   }
 
   /**
@@ -239,6 +239,50 @@ export class AuthService {
         .catch((err) => {
           this.toastService.presentWarningToast(err.message, 'Error: ');
           reject(err);
+        });
+    });
+  }
+  /*
+  getUserByID(id: string): Promise<User> {
+    return new Promise<User>((resolve, reject) => {
+      this.databaseController
+        .getRequest('user', id, User)
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
+*/
+  /**
+   * Method to get one specific user
+   * @param userID id of the user
+   * error message is reported by ToastService
+   * resolves if the user could be obtained successfully
+   * rejects if an error occurred
+   */
+  getUserByID(userID: string): Promise<User> {
+    return new Promise<User>((resolve, reject) => {
+      this.databaseController
+        .getRequest('user/' + userID, '', User)
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err.errors, err.message + ': ');
+          reject(err);
+        });
+    });
+  }
+
+  getArrayOfUsers(ids): Promise<User[]> {
+    return new Promise<User[]>((resolve) => {
+      this.databaseController
+        .putRequest('user-array', JSON.stringify({ ids }), User)
+        .then((res) => {
+          resolve(res.data);
         });
     });
   }

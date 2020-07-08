@@ -1,20 +1,19 @@
-/*
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { JobEditComponent } from './job-edit.component';
+import { ImpressumComponent } from './impressum.component';
 
-describe('JobEditComponent', () => {
-  let component: JobEditComponent;
-  let fixture: ComponentFixture<JobEditComponent>;
+describe('ImpressumComponent', () => {
+  let component: ImpressumComponent;
+  let fixture: ComponentFixture<ImpressumComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ JobEditComponent ],
+      declarations: [ImpressumComponent],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(JobEditComponent);
+    fixture = TestBed.createComponent(ImpressumComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
@@ -23,4 +22,3 @@ describe('JobEditComponent', () => {
     expect(component).toBeTruthy();
   });
 });
-*/

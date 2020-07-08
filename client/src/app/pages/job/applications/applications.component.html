@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar class="toolbar-no-border">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="pages/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>My Jobs</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="segmentValue" class="segment-changer" (ionChange)="segmentChanged($event)">
+      <ion-segment-button value="liked">
+        <ion-label>Liked</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="accepted">
+        <ion-label>Accepted</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="offer-content job-listing-content">
+  <ion-searchbar class="offer-searchbar" animated [(ngModel)]="searchQuery" (ionChange)="search()"></ion-searchbar>
+
+  <ng-template #offerItem let-offers="offers">
+    <app-display-jobs style="width: 100%" [job]="offers" [user]="user"></app-display-jobs>
+  </ng-template>
+
+
+  <section [hidden]="segmentValue !== 'liked'">
+    <ion-list class="offer-list" *ngIf="likedJobs.length > 0">
+      <ion-item class="offer-item" *ngFor="let offer of likedFiltered">
+        <ng-container *ngTemplateOutlet="offerItem; context: { offers: offer }"></ng-container>
+      </ion-item>
+    </ion-list>
+    <ng-container *ngIf="likedJobs.length <= 0">
+      <h3 class="empty-list-message">No liked jobs</h3>
+    </ng-container>
+  </section>
+
+  <section [hidden]="segmentValue !== 'accepted'">
+    <ion-list class="offer-list" *ngIf="acceptedJobs.length > 0">
+      <ion-item class="offer-item" *ngFor="let offer of acceptedFiltered">
+        <ng-container *ngTemplateOutlet="offerItem; context: { offers: offer }"></ng-container>
+      </ion-item>
+    </ion-list>
+    <ng-container *ngIf="acceptedJobs.length <= 0">
+      <h3 class="empty-list-message">No accepted job offers</h3>
+    </ng-container>
+  </section>
+</ion-content>

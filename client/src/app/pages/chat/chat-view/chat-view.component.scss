@@ -1,0 +1,44 @@
+@import './chatui.scss';
+:host {
+  --page-margin: var(--app-broad-margin);
+}
+.header-custom {
+  ion-toolbar {
+    --min-height: 66px;
+  }
+}
+
+.snd-bar {
+  --min-height: 0!important;
+}
+
+.btn {
+  width: 60%;
+  margin: 0 auto;
+}
+
+.desc {
+  margin: calc(var(--page-margin) / 2);
+  font-size: smaller;
+}
+
+.icon {
+  font-size: 1.5em;
+  margin-right: 5px;
+}
+
+
+
+.job-name {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  text-decoration: underline;
+}
+
+.chat-item {
+  &:last-child {
+    .chat-item-status {
+      visibility: visible!important;
+    }
+  }
+}

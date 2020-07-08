@@ -42,8 +42,8 @@ describe('JobService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('Method tests', () => {
-    it('should create a Job', (done) => {
+  describe('create and get job', () => {
+    it('should create a job', (done) => {
       const job = new Job();
       job.title = 'Test';
       job.description = 'test123';
@@ -72,7 +72,7 @@ describe('JobService', () => {
         done();
       });
     });
-    it('should get a by id Job', (done) => {
+    it('should get a job by id', (done) => {
       service.getJobById('test123').then(async () => {
         expect(databaseSpy.getRequest).toHaveBeenCalledWith(
           'get-job-by-id/test123',
@@ -82,15 +82,37 @@ describe('JobService', () => {
         done();
       });
     });
+    it('should get all jobs from a specific user', (done) => {
+      service.getJobs('test123').then(async () => {
+        expect(databaseSpy.getRequest).toHaveBeenCalledWith(
+          'get-jobs',
+          'test123',
+          Job
+        );
+        done();
+      });
+    });
   });
 
   describe('edit-job', () => {
     it('should edit a Job', (done) => {
-      service.editJob(editedJob).then(async () => {
+      service.editJob(editedJob, '74387523').then(async () => {
         expect(databaseSpy.putRequest).toHaveBeenCalledWith(
           'edit-job/' + editedJob._id,
           JSON.stringify({ job: editedJob }),
           Job
+        );
+        done();
+      });
+    });
+  });
+
+  describe('get liked unfinished jobs of a User', () => {
+    it('should get liked Jobs', (done) => {
+      service.getLikedAcceptedJobs('test1234').then(async () => {
+        expect(databaseSpy.getRequest).toHaveBeenCalledWith(
+          'get-liked-jobs',
+          'test1234'
         );
         done();
       });

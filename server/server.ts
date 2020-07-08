@@ -21,8 +21,13 @@ const serviceAccount = require('./config/jindr-firebase-push.json');
 const nodemailerConfig = require('./config/nodemailerConfig');
 
 const User = require('./models/user');
+const MessageWrapper = require('./models/messageWrapper');
 const Job = require('./models/job');
 const JobStack = require('./models/jobStack');
+const connectedUsersByID: Map<string, string> = new Map<string, string>();
+const connectedUsersBySocket: Map<string, string> = new Map<string, string>();
+let server;
+let io;
 
 const MONGODB_URI: string = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.MONGODB_NAME;
@@ -68,7 +73,7 @@ const maxRadius = 50; // Max search radius users can set in the app
 app.set('port', process.env.PORT);
 /* istanbul ignore next */
 if (process.env.NODE_ENV.trim() !== 'test') {
-  app.listen(app.get('port'), () => {
+  server = app.listen(app.get('port'), () => {
     (async () => {
       // eslint-disable-next-line
       console.log('Server connected at: ' + app.get('port'));
@@ -76,6 +81,7 @@ if (process.env.NODE_ENV.trim() !== 'test') {
       rasterizeMap(maxRadius, southWest, northEast);
     })();
   });
+  io = require('socket.io')(server);
 }
 
 /* istanbul ignore next */
@@ -169,12 +175,20 @@ app.post('/register', (req: Request, res: Response) => {
   user.tokenExpires = new Date().setHours(new Date().getHours() + 24);
   const REGISTER_URL: string = req.body.BASE_URL + '/auth/register/' + token;
   const subject = 'jindr - Register now!';
-  const html =
-    '<p>Hey there! \n </p><a href=' +
-    REGISTER_URL +
-    '>Click here to register!</a><p>This link expires in 24 hours. This email was sent to ' +
-    user.email +
-    '. If you do not want to register, just ignore this email.</p>';
+  const text =
+    'Welcome to jindr! Press the button below to confirm your registration.';
+  const buttonText = 'Click here to register.';
+  const footNote = 'You do not want to register?';
+
+  const html = renderMail(
+    subject,
+    text,
+    REGISTER_URL,
+    user.email,
+    buttonText,
+    footNote,
+    req.body.BASE_URL
+  );
 
   user.save(async (err) => {
     if (err) {
@@ -373,6 +387,166 @@ app.post('/logout', async (req: Request, res: Response) => {
 });
 
 /**
+ * @api {post} /new-wrapper Start a new chat
+ * @apiName NewWrapper
+ * @apiGroup Chat
+ *
+ * @apiDescription starts a new chat with a user and sends a socket message or
+ * push notification if user is not currently online
+ *
+ * @apiParam {String} wrapper a new messageWrapper
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       "data": wrapper
+ *     }
+ */
+app.post('/new-wrapper', async (req: Request, res: Response) => {
+  let wrapper = new MessageWrapper();
+  Object.assign(wrapper, req.body.wrapper);
+  wrapper = await wrapper.save({ new: true });
+  if (connectedUsersByID.get(wrapper.employee.toString())) {
+    io.to(wrapper.employee.toString()).emit('new-wrapper', wrapper);
+  } else {
+    sendPushNotification(
+      [wrapper.employee],
+      'New Message!',
+      'You got a new message!',
+      'pages/chat'
+    );
+  }
+  res.status(201).send({
+    data: wrapper
+  });
+});
+
+/**
+ * @api {post} /new-message Send a new message to existing chat
+ * @apiName NewChat
+ * @apiGroup Chat
+ *
+ * @apiDescription sends a new message to an existing chat and sends a socket message or
+ * push notification if user is not currently online
+ *
+ * @apiParam {String} wrapperID id of the chat wrapper
+ * @apiParam {String} message the message to send
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": message
+ *     }
+ */
+app.post('/new-message', async (req: Request, res: Response) => {
+  const wrapperID = req.body.wrapperID;
+  const message = req.body.message;
+  const wrapper = await MessageWrapper.findOne({ _id: wrapperID });
+  wrapper.messages.push(message);
+  const receiver =
+    wrapper.employer.toString() === message.sender.toString()
+      ? wrapper.employee
+      : wrapper.employer;
+  await wrapper.save();
+  if (connectedUsersByID.get(receiver.toString())) {
+    io.to(receiver.toString()).emit('new-message', { message, wrapperID });
+  } else {
+    sendPushNotification(
+      [wrapper.employee],
+      'New Message!',
+      'You got a new message!',
+      'pages/chat'
+    );
+  }
+  res.status(200).send({
+    data: message
+  });
+});
+
+/**
+ * @api {get} /message-wrapper-by-user/:userID Get all message wrappers from a user
+ * @apiName MessageWrappers
+ * @apiGroup Chat
+ *
+ * @apiDescription gets all message wrappers of a user by its user ID, returns an array of wrappers
+ *
+ * @apiParam {String} userID id of the requesting user
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": wrappers[]
+ *     }
+ */
+app.get(
+  '/message-wrapper-by-user/:userID',
+  async (req: Request, res: Response) => {
+    const userID = req.params.userID;
+    try {
+      const wrappers = await MessageWrapper.find()
+        .or([{ employee: userID }, { employer: userID }])
+        .exec();
+      res.status(200).send({
+        data: wrappers
+      });
+    } catch (e) {
+      res.status(400).send({
+        message: 'Could not get chats',
+        errors: e
+      });
+    }
+  }
+);
+
+/**
+ * @api {put} /update-wrapper Updates a messageWrapper
+ * @apiName UpdateWrapper
+ * @apiGroup Chat
+ *
+ * @apiDescription updates all fields of a messageWrapper that can be subject to change
+ *
+ * @apiParam {String} wrapper the message wrapper with updated values
+ * @apiParam {String} you the id of the user requesting the update
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": newWrapper
+ *     }
+ */
+app.put('/update-wrapper', async (req: Request, res: Response) => {
+  const wrapper = req.body.wrapper;
+  const you = req.body.you;
+  let newWrapper;
+  try {
+    newWrapper = await MessageWrapper.findOneAndUpdate(
+      { _id: wrapper._id },
+      {
+        employeeName: wrapper.employeeName,
+        employeeImage: wrapper.employeeImage,
+        employerName: wrapper.employerName,
+        employerImage: wrapper.employerImage,
+        employeeLastViewed: wrapper.employeeLastViewed,
+        employerLastViewed: wrapper.employerLastViewed
+      },
+      { new: true }
+    );
+    const receiver =
+      wrapper.employer.toString() === you ? wrapper.employee : wrapper.employer;
+    if (connectedUsersByID.get(receiver.toString())) {
+      io.to(receiver).emit('update-wrapper', { wrapper: newWrapper });
+    }
+    res.status(200).send({
+      data: newWrapper
+    });
+  } catch (e) {
+    res.status(400).send({
+      errors: e
+    });
+  }
+});
+
+/**
  * @api {put} /update-user Updated user in the Database
  * @apiName UpdateUser
  * @apiGroup User
@@ -463,6 +637,7 @@ app.put('/update-user', async (req: Request, res: Response) => {
  *     }
  */
 app.get('/user/:userID', (req: Request, res: Response) => {
+  const isTester = req.body.isTester;
   User.findOne({ _id: req.params.userID })
     .select('-password -deviceID')
     .exec((err, user) => {
@@ -474,12 +649,70 @@ app.get('/user/:userID', (req: Request, res: Response) => {
       } else {
         res.status(200).send({
           message: 'User retrieved',
-          data: user
+          data: isTester ? user : prepareUser(user)
         });
       }
     });
 });
 
+/**
+ * @api {put} /user-array Returns an array of users by ids
+ * @apiName UserArray
+ * @apiGroup User
+ *
+ * @apiDescription pass an array of user IDs and it returns the corresponding user objects from the database
+ *
+ * @apiParam {String} ids an array of user ids
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": [users]
+ *     }
+ */
+app.put('/user-array', async (req: Request, res: Response) => {
+  const ids = req.body.ids;
+  try {
+    const users = await User.find().where('_id').in(ids).exec();
+    res.status(200).send({
+      data: users
+    });
+  } catch (e) {
+    res.status(400).send({
+      errors: e
+    });
+  }
+});
+
+/**
+ * @api {post} /check-wrapper-exists returns a wrapper, if it already exists for this chat
+ * @apiName CheckWrapper
+ * @apiGroup Chat
+ *
+ * @apiDescription pass a jobID and a userID of the employee, and it will return a wrapper if it already
+ * exists. This is called if an employer starts a chat with a user from the job instead of the chat
+ * overview and prevents him from starting a second chat for the same job
+ *
+ * @apiParam {String} id id of the employee
+ * @apiParam {String} jobID id of the job
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "data": wrapper
+ *     }
+ */
+app.post('/check-wrapper-exists', async (req: Request, res: Response) => {
+  const id = req.body.userID;
+  const jobID = req.body.jobID;
+  const wrapper = await MessageWrapper.find({
+    employee: id,
+    jobID: jobID
+  }).exec();
+  res.status(200).send({
+    data: wrapper
+  });
+});
 /**
  * @api {post} /upload-image Uploads image to AWS and returns URL
  * @apiName UploadImage
@@ -521,7 +754,8 @@ app.post('/upload-image', (req: Request, res: Response) => {
 
 /**
  * @api {post} /sendmail sends mail containing a link to reset password
- * @apiName SendMail
+ * @apiName ResetPassword
+ * @apiGroup User
  *
  * @apiDescription Pass mail in request body.
  * The configured mail client sends a mail to the users mailing address that includes a link, to reset the user's password.
@@ -549,7 +783,6 @@ app.post('/upload-image', (req: Request, res: Response) => {
  *       "errors": 'No account with that email address exists.'
  *     }
  */
-
 app.post('/sendmail', (req: Request, res: Response) => {
   const email: string = req.body.user.email;
   const token = crypto.randomBytes(20).toString('hex');
@@ -557,12 +790,20 @@ app.post('/sendmail', (req: Request, res: Response) => {
   const BASE_URL: string = req.body.user.BASE_URL;
   const RESET_URL: string = BASE_URL + '/auth/forgot-pw/' + token;
   const subject = 'jindr - Reset password';
-  const html =
-    '<p>Hey there! \n </p><a href=' +
-    RESET_URL +
-    '>Click here to reset your password.</a><p>This email was sent to ' +
-    email +
-    '. If you do not want to change your password, just ignore this email.</p>';
+  const text =
+    'We received a request to change the password of your jindr account.';
+  const buttonText = 'Click here to reset your password.';
+  const footNote = 'You do not want to reset your password?';
+
+  const html = renderMail(
+    subject,
+    text,
+    RESET_URL,
+    email,
+    buttonText,
+    footNote,
+    BASE_URL
+  );
 
   User.findOne({ email: email })
     .select('+password')
@@ -602,6 +843,7 @@ app.post('/sendmail', (req: Request, res: Response) => {
 /**
  * @api {post} /forgot-pw/:token route to reset the users password
  * @apiName ForgotPassword
+ * @apiGroup User
  *
  * @apiDescription checks if token is valid and not expired yet.
  *
@@ -733,15 +975,26 @@ app.put('/decision', async (req: Request, res: Response) => {
     jobStack.markModified('likedJobs');
     const likedJob = await Job.findOneAndUpdate(
       { _id: jobID },
-      { $push: { interestedUsers: user._id } },
+      { $push: { interestedUsers: { user: user._id } } },
       { new: true }
     );
     const message =
       'Someone is interested in your Job ' +
       likedJob.title +
       '. Check out now!';
-    // TODO add link once page exists
-    sendPushNotification([likedJob.creator], 'Help offered!', message, '');
+    if (connectedUsersByID.get(likedJob.creator.toString())) {
+      io.to(likedJob.creator.toString()).emit('new-like', {
+        job: likedJob,
+        link: 'pages/job/offers'
+      });
+    } else {
+      sendPushNotification(
+        [likedJob.creator],
+        'Help offered!',
+        message,
+        'pages/job/offers'
+      );
+    }
   }
   jobStack.markModified('swipedJobs');
   jobStack.markModified('clientStack');
@@ -866,7 +1119,7 @@ app.post('/create-job', (req: Request, res: Response) => {
  *
  * @apiParam {String} job._id is a unique ID of a Job
  *
- * @apiSuccess {Job} message  Job with _id = XXXX found!
+ * @apiSuccess {Job} message a success message
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -893,6 +1146,86 @@ app.get('/get-job-by-id/:_id', async (req: Request, res: Response) => {
       message: 'Error: ' + err
     });
   }
+});
+
+/**
+ * @api {get} /get-jobs Gets all jobs from a user
+ * @apiName GetJobs
+ * @apiGroup Job
+ *
+ * @apiDescription Pass the creator's id to get all of her/his created jobs
+ *
+ * @apiParam {String} _id creator's id
+ *
+ * @apiSuccess {Job} message success message and job are included in response body
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *      message: 'Jobs found.',
+ *      data: jobs
+ *     }
+ *
+ * @apiError NoJobsFound error message, if no jobs could be found
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Bad Request
+ *     {
+ *       "message: "No Jobs found."
+ *     }
+ *
+ */
+app.get('/get-jobs/:_id', async (req: Request, res: Response) => {
+  const _id: string = req.params._id;
+  const jobs = await Job.find({ creator: _id });
+  if (jobs) {
+    res.status(200).send({
+      message: 'Jobs found.',
+      data: jobs
+    });
+  } else {
+    res.status(404).send({
+      message: 'No Jobs found.'
+    });
+  }
+});
+
+/**
+ * @api {get} /delete-job Delete and remove one job from the database
+ * @apiName DeleteJob
+ * @apiGroup Job
+ *
+ * @apiDescription Pass the job's id to look it up and delete it in the database
+ *
+ * @apiParam {String} _id job's id
+ *
+ * @apiSuccess {Job} message success message if job could be deleted
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *      message: 'Job deleted.'
+ *     }
+ *
+ * @apiError NoJobsFound error message, if no job with that id could be found
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Bad Request
+ *     {
+ *       "message: "Job could not be found."
+ *     }
+ *
+ */
+app.get('/delete-job/:_id', async (req: Request, res: Response) => {
+  const _id: string = req.params._id;
+  Job.findOne({ _id: _id }).exec(async (err) => {
+    if (err) {
+      res.status(404).send({
+        message: 'Job could not be found.'
+      });
+    } else {
+      await Job.deleteOne({ _id });
+      res.status(200).send({
+        message: 'Job deleted.'
+      });
+    }
+  });
 });
 
 /**
@@ -925,6 +1258,7 @@ app.get('/get-job-by-id/:_id', async (req: Request, res: Response) => {
  *     {
  *       "message: "Job could not be found."
  *     }
+ *
  */
 app.put('/edit-job/:id', (req: Request, res: Response) => {
   const job = new Job();
@@ -941,7 +1275,6 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
 
   job.tile = tile;
 
-  // if (mongoose.Types.ObjectId.isValid(job._id)) {}
   Job.findOne({ _id: req.params.id }).exec(async (err) => {
     if (err) {
       res.status(404).send({
@@ -951,21 +1284,222 @@ app.put('/edit-job/:id', (req: Request, res: Response) => {
       await Job.findOneAndUpdate(
         { _id: job._id },
         {
+          isFinished: job.isFinished,
+          image: job.image,
           title: job.title,
           description: job.description,
-          date: job.date,
-          time: job.time,
+          payment: job.payment,
+          isHourly: job.isHourly,
+          homepage: job.homepage,
+          interests: job.interests,
           tile: job.tile,
           location: job.location,
-          isFinished: job.isFinished,
-          payment: job.payment
+          cityName: job.cityName,
+          date: job.date,
+          time: job.time,
+          lastViewed: job.lastViewed
         }
       );
       res.status(200).send({
-        message: 'Successfully updated job.'
+        message: 'Successfully updated job.',
+        data: job
       });
     }
   });
+});
+
+/**
+ * @api {put} /make-jobOffer/ updates a job
+ * @apiName MakeJobOffer
+ * @apiGroup JobOffer
+ *
+ * @apiDescription Pushs an JobOffer into an existing Job
+ *
+ * @apiParam {Job} job an object with the job
+ * @apiParam {ID} jobId of a job passed in the req.body
+ * @apiParam {ID} userId of the user who gets the jobOffer passed in req.body
+ * @apiParam {ID} wrapperId of the chatWrapper where the jobOffer is made passed in req.body
+ * @apiParam {String} notification with the notification on success in it
+ *
+ * @apiSuccess {String} message SuccessMessage jobOffer is updated in the Job
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 Created
+ *     {
+ *       "message": "Successfully updated job."
+ *     }
+ */
+app.put('/make-jobOffer/', async (req: Request, res: Response) => {
+  const jobId = req.body.jobId;
+  const userId = req.body.userId;
+  const wrapperId = req.body.wrapperId;
+  const notification = {
+    header: 'New Job Offer!',
+    message: 'You got a new Job Offer!',
+    link: 'pages/chat'
+  };
+
+  try {
+    const job = await Job.findOneAndUpdate(
+      { _id: jobId },
+      {
+        $push: {
+          jobOffer: {
+            user: userId,
+            accepted: false,
+            dateRequest: Date.now(),
+            dateReaction: 0
+          }
+        }
+      },
+      { new: true }
+    ).exec();
+    if (connectedUsersByID.get(userId)) {
+      io.to(userId).emit('update-job', { job, wrapperId, notification });
+    } else {
+      sendPushNotification(
+        [userId],
+        notification.header,
+        notification.message,
+        notification.link
+      );
+    }
+    res.status(200).send({
+      message: 'Successfully updated job.',
+      data: job
+    });
+  } catch (e) {
+    res.status(500).send({
+      errors: e,
+      message: 'Internal server error.'
+    });
+  }
+});
+
+/**
+ * @api {put} /reject-jobOffer/ updates a job
+ * @apiName RejectJobOffer
+ * @apiGroup JobOffer
+ *
+ * @apiDescription Removes an JobOffer from an existing Job
+ *
+ * @apiParam {Job} job an object with the job
+ * @apiParam {ID} jobId of a job passed in the req.body
+ * @apiParam {ID} userId of the user who gets the jobOffer rejected passed in req.body
+ * @apiParam {ID} wrapperId of the chatWrapper where the rejection is made passed in req.body
+ * @apiParam {String} notification with the notification on success in it
+ *
+ * @apiSuccess {String} message SuccessMessage jobOffer is updated in the Job
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 Created
+ *     {
+ *       "message": "Successfully deleted the JobOffer."
+ *     }
+ */
+app.put('/reject-jobOffer/', async (req: Request, res: Response) => {
+  const jobId = req.body.jobId;
+  const userId = req.body.userId;
+  const wrapperId = req.body.wrapperId;
+  const notification = {
+    header: 'JobOffer rejected!',
+    message: 'Your JobOffer got rejected!',
+    link: 'pages/chat'
+  };
+  try {
+    const job = await Job.findOne({ _id: jobId }).exec();
+    _.remove(job.jobOffer, (offer) => {
+      return offer.user.toString() === userId;
+    });
+    job.markModified('jobOffer');
+    const newJob = await job.save({ new: true });
+    if (connectedUsersByID.get(userId)) {
+      io.to(userId).emit('update-job', {
+        job: newJob,
+        wrapperId,
+        notification
+      });
+    } else {
+      sendPushNotification(
+        [userId],
+        notification.header,
+        notification.message,
+        notification.link
+      );
+    }
+    res.status(200).send({
+      message: 'Successfully deleted the JobOffer.',
+      data: newJob
+    });
+  } catch (e) {
+    res.status(400).send({
+      errors: e
+    });
+  }
+});
+
+/**
+ * @api {put} /reaction-jobOffer/ updates a job
+ * @apiName ReactionJobOffer
+ * @apiGroup JobOffer
+ *
+ * @apiDescription Removes an JobOffer from an existing Job
+ *
+ * @apiParam {Job} job an object with the job
+ * @apiParam {ID} jobId id of a job passed in the req.body
+ * @apiParam {ID} userId  id of the user who gets the JobOffer rejected passed in req.body
+ * @apiParam {Boolean} jobOfferAccepted Boolean which is true if JobOffer is accepted and false if not passed in req.body
+ * @apiParam {ID} offerID id of the JobOffer passed in req.body
+ *
+ * @apiSuccess {String} message SuccessMessage jobOffer is updated in the Job
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 Created
+ *     {
+ *       "message": "Successfully reacted to the JobOffer."
+ *     }
+ */
+app.put('/reaction-jobOffer/', async (req: Request, res: Response) => {
+  const jobId = req.body.jobId;
+  const userId = req.body.userId;
+  const wrapperId = req.body.wrapperId;
+  const jobOfferAccepted = req.body.jobOfferAccepted;
+  const offerID = req.body.offerID;
+  try {
+    const job = await Job.findOne({ _id: jobId }).exec();
+    job.jobOffer.forEach((o) => {
+      if (o._id.toString() === offerID) {
+        o.accepted = jobOfferAccepted;
+        o.dateReaction = Date.now();
+        return;
+      }
+    });
+    await job.save();
+    const notification = {
+      header: 'New JobOffer Reaction!',
+      message: 'You got a new reaction to an JobOffer!',
+      link: 'pages/chat'
+    };
+    if (connectedUsersByID.get(userId.toString())) {
+      io.to(userId.toString()).emit('update-job', {
+        job,
+        wrapperId,
+        notification
+      });
+    } else {
+      sendPushNotification(
+        [userId],
+        notification.header,
+        notification.message,
+        notification.link
+      );
+    }
+    res.status(200).send({
+      data: job,
+      message: 'Successfully reacted to the JobOffer.'
+    });
+  } catch (e) {
+    res.status(500).send({
+      errors: e
+    });
+  }
 });
 
 /**
@@ -980,6 +1514,7 @@ function prepareUser(user) {
   delete user.deviceID;
   delete user.token;
   delete user.tokenExpires;
+  delete user.notificationToken;
   return user;
 }
 
@@ -990,12 +1525,17 @@ function prepareUser(user) {
  * @param message the message of the notification
  * @param link the link of the page to open when tapped on the notification
  */
+
+/* istanbul ignore next */
 async function sendPushNotification(
   userIDs: string[],
   title: string,
   message: string,
   link: string
 ) {
+  if (process.env.NODE_ENV.trim() === 'test') {
+    return;
+  }
   const notificationOptions = {
     priority: 'high',
     timeToLive: 60 * 60 * 24
@@ -1010,7 +1550,7 @@ async function sendPushNotification(
   const users = await User.find().where('_id').in(userIDs).exec();
   if (users) {
     users.forEach((user) => {
-      if (user.allowNotifications) {
+      if (user.allowNotifications && user.notificationToken) {
         admin
           .messaging()
           .sendToDevice(user.notificationToken, payload, notificationOptions);
@@ -1024,6 +1564,7 @@ async function sendPushNotification(
  * @param file the file as base64 string
  * @param name the image name in the bucket. Should be UNIQUE! e.g. use Timestamp
  */
+
 /* istanbul ignore next */
 function uploadFile(file, name): Promise<string> {
   return new Promise<string>((resolve, reject) => {
@@ -1059,7 +1600,7 @@ function uploadFile(file, name): Promise<string> {
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 function sendMail(userMail: string, template: string, subject: string) {
   const mailOptions = {
-    from: '"Jindr Support" <noreply.jindr@gmail.com>',
+    from: '"jindr Support" <noreply.jindr@gmail.com>',
     to: userMail,
     subject: subject,
     html: template
@@ -1071,6 +1612,60 @@ function sendMail(userMail: string, template: string, subject: string) {
     });
   });
 }
+
+/**
+ * @api {get} /get-liked-jobs/:_id Gets all liked unfinished jobs from a user
+ * @apiName GetLikedJobs
+ * @apiGroup Job
+ *
+ * @apiDescription Pass the creator's id to get all of her/his liked unfinished jobs
+ *
+ * @apiParam {String} _id user id
+ *
+ * @apiSuccess {Job} message success message and liked jobs are included in response body
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *      message: 'Liked jobs found.',
+ *      data: likedJobs
+ *     }
+ *
+ * @apiError NoLikedJobsFound error message, if no jobs could be found
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Bad Request
+ *     {
+ *       "message: "No Jobs found."
+ *     }
+ *
+ */
+app.get('/get-liked-jobs/:_id', async (req: Request, res: Response) => {
+  const _id: string = req.params._id;
+  const jobstack = await JobStack.findOne({ userID: _id });
+  if (jobstack && jobstack.likedJobs) {
+    const likedJobs = await Job.find()
+      .where('_id')
+      .in(jobstack.likedJobs)
+      .where('isFinished')
+      .equals(false)
+      .exec();
+    const acceptedJobs = likedJobs.filter(
+      (job) =>
+        job.jobOffer.filter((offer) => offer.user == _id && offer.accepted)
+          .length > 0
+    );
+    res.status(200).send({
+      message: 'Liked jobs found.',
+      data: {
+        likedJobs,
+        acceptedJobs
+      }
+    });
+  } else {
+    res.status(200).send({
+      message: 'No Jobs found.'
+    });
+  }
+});
 
 /**
  * Method to fill the different stacks of the jobStack. If there are 5 or less jobs in client stack,
@@ -1194,6 +1789,8 @@ async function getAllMatchingJobs(coords, jobStack, user): Promise<any[]> {
     .in(neighbors)
     .where('_id')
     .nin(jobStack.swipedJobs)
+    .where('creator')
+    .nin([user._id])
     .where('isFinished')
     .equals(false)
     .lean()
@@ -1268,6 +1865,7 @@ async function getJobArray(jobStack) {
     .equals(false)
     .exec();
 }
+
 /**
  * Method to rasterize the the map into equal rectangles
  * @param radius the approx. size of each tile. This value should equal the maximum search radius specified in the client
@@ -1396,6 +1994,28 @@ app.get('/jobstack/:userID', async (req: Request, res: Response) => {
     });
   }
 });
+
+/*****************************************************************************
+ ***  Handle IO-Socket requests                                              *
+ *****************************************************************************/
+/* istanbul ignore next */
+if (process.env.NODE_ENV.trim() !== 'test') {
+  io.on('connection', (soc) => {
+    soc.on('init', (userID) => {
+      soc.join(userID);
+      connectedUsersByID.set(userID, soc.id);
+      connectedUsersBySocket.set(soc.id, userID);
+    });
+
+    soc.on('disconnect', () => {
+      const tmp = connectedUsersBySocket.get(soc.id);
+      soc.leave(tmp);
+      connectedUsersBySocket.delete(soc.id);
+      connectedUsersByID.delete(tmp);
+    });
+  });
+}
+
 /**
  * Method to set nodemailer transporter, only used for testing purposes
  * @param transp transporter
@@ -1403,6 +2023,447 @@ app.get('/jobstack/:userID', async (req: Request, res: Response) => {
 function setTransporter(transp) {
   transporter = transp;
 }
+
+/**
+ * renders an email for registering and resetting the password in jindr colors
+ *
+ * @param subject email's subject
+ * @param text a text, containing the purpose of the mail
+ * @param actionURL URL redirecting to the requested action
+ * @param email user's mail
+ * @param buttonText text that is contained in the button
+ * @param footNote the footnote, depending on the purpose
+ * @param BASE_URL URL without the requested action
+ *
+ * @return a HTML string containing the email
+ */
+function renderMail(
+  subject: string,
+  text: string,
+  actionURL: string,
+  email: string,
+  buttonText: string,
+  footNote: string,
+  BASE_URL: string
+): string {
+  return (
+    '<head>\n' +
+    '    <meta name="viewport" content="width=device-width" />\n' +
+    '    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />\n' +
+    '    <title>' +
+    subject +
+    '</title>\n' +
+    '    <style>\n' +
+    '      /* -------------------------------------\n' +
+    '          GLOBAL RESETS\n' +
+    '      ------------------------------------- */\n' +
+    '      \n' +
+    '      /*All the styling goes here*/\n' +
+    '      \n' +
+    '      img {\n' +
+    '        border: none;\n' +
+    '        -ms-interpolation-mode: bicubic;\n' +
+    '        max-width: 100%; \n' +
+    '      }\n' +
+    '\n' +
+    '      body {\n' +
+    '        background-color: #45D1C5;\n' +
+    '        font-family: sans-serif;\n' +
+    '        -webkit-font-smoothing: antialiased;\n' +
+    '        font-size: 14px;\n' +
+    '        line-height: 1.4;\n' +
+    '        margin: 0;\n' +
+    '        padding: 0;\n' +
+    '        -ms-text-size-adjust: 100%;\n' +
+    '        -webkit-text-size-adjust: 100%; \n' +
+    '      }\n' +
+    '\n' +
+    '      table {\n' +
+    '        border-collapse: separate;\n' +
+    '        mso-table-lspace: 0;\n' +
+    '        mso-table-rspace: 0;\n' +
+    '        width: 100%; }\n' +
+    '        table td {\n' +
+    '          font-family: sans-serif;\n' +
+    '          font-size: 14px;\n' +
+    '          vertical-align: top; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          BODY & CONTAINER\n' +
+    '      ------------------------------------- */\n' +
+    '\n' +
+    '      .body {\n' +
+    '        background-color: #45D1C5;\n' +
+    '        width: 100%; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */\n' +
+    '      .container {\n' +
+    '        display: block;\n' +
+    '        margin: 0 auto !important;\n' +
+    '        /* makes it centered */\n' +
+    '        max-width: 580px;\n' +
+    '        padding: 10px;\n' +
+    '        width: 580px; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* This should also be a block element, so that it will fill 100% of the .container */\n' +
+    '      .content {\n' +
+    '        box-sizing: border-box;\n' +
+    '        display: block;\n' +
+    '        margin: 0 auto;\n' +
+    '        max-width: 580px;\n' +
+    '        padding: 10px; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          HEADER, FOOTER, MAIN\n' +
+    '      ------------------------------------- */\n' +
+    '      .main {\n' +
+    '        background: #89D9D2;\n' +
+    '        border-radius: 3px;\n' +
+    '        width: 100%; \n' +
+    '      }\n' +
+    '\n' +
+    '      .wrapper {\n' +
+    '        box-sizing: border-box;\n' +
+    '        padding: 20px; \n' +
+    '      }\n' +
+    '\n' +
+    '      .content-block {\n' +
+    '        padding-bottom: 10px;\n' +
+    '        padding-top: 10px;\n' +
+    '      }\n' +
+    '\n' +
+    '      .footer {\n' +
+    '        clear: both;\n' +
+    '        margin-top: 10px;\n' +
+    '        text-align: center;\n' +
+    '        width: 100%; \n' +
+    '      }\n' +
+    '        .footer td,\n' +
+    '        .footer p,\n' +
+    '        .footer span,\n' +
+    '        .footer a {\n' +
+    '          color: #1B524D;\n' +
+    '          font-size: 12px;\n' +
+    '          text-align: center; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          TYPOGRAPHY\n' +
+    '      ------------------------------------- */\n' +
+    '      h1,\n' +
+    '      h2,\n' +
+    '      h3,\n' +
+    '      h4 {\n' +
+    '        color: #1D2E2C;\n' +
+    '        font-family: sans-serif;\n' +
+    '        font-weight: 400;\n' +
+    '        line-height: 1.4;\n' +
+    '        margin: 0 0 30px;}\n' +
+    '\n' +
+    '      h1 {\n' +
+    '        font-size: 35px;\n' +
+    '        font-weight: 300;\n' +
+    '        text-align: center;\n' +
+    '        text-transform: capitalize; \n' +
+    '      }\n' +
+    '\n' +
+    '      p,\n' +
+    '      ul,\n' +
+    '      ol {\n' +
+    '        font-family: sans-serif;\n' +
+    '        font-size: 14px;\n' +
+    '        font-weight: normal;\n' +
+    '        margin: 0 0 15px;}\n' +
+    '        p li,\n' +
+    '        ul li,\n' +
+    '        ol li {\n' +
+    '          list-style-position: inside;\n' +
+    '          margin-left: 5px; \n' +
+    '      }\n' +
+    '\n' +
+    '      a {\n' +
+    '        color: #1B524D;\n' +
+    '        text-decoration: underline; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          BUTTONS\n' +
+    '      ------------------------------------- */\n' +
+    '      .btn {\n' +
+    '        box-sizing: border-box;\n' +
+    '        width: 100%; }\n' +
+    '        .btn > tbody > tr > td {\n' +
+    '          padding-bottom: 15px; }\n' +
+    '        .btn table {\n' +
+    '          width: auto; \n' +
+    '      }\n' +
+    '        .btn table td {\n' +
+    '          background-color: #89D9D2f;\n' +
+    '          border-radius: 5px;\n' +
+    '          text-align: center; \n' +
+    '      }\n' +
+    '        .btn a {\n' +
+    '          background-color: #89D9D2;\n' +
+    '          border: solid 1px #45D1C5;\n' +
+    '          border-radius: 5px;\n' +
+    '          box-sizing: border-box;\n' +
+    '          color: #45D1C5;\n' +
+    '          cursor: pointer;\n' +
+    '          display: inline-block;\n' +
+    '          font-size: 14px;\n' +
+    '          font-weight: bold;\n' +
+    '          margin: 0;\n' +
+    '          padding: 12px 25px;\n' +
+    '          text-decoration: none;\n' +
+    '          text-transform: capitalize; \n' +
+    '      }\n' +
+    '\n' +
+    '      .btn-primary table td {\n' +
+    '        background-color: #45D1C5; \n' +
+    '      }\n' +
+    '\n' +
+    '      .btn-primary a {\n' +
+    '        background-color: #45D1C5;\n' +
+    '        border-color: #45D1C5;\n' +
+    '        color: #89D9D2; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          OTHER STYLES THAT MIGHT BE USEFUL\n' +
+    '      ------------------------------------- */\n' +
+    '      .last {\n' +
+    '        margin-bottom: 0; \n' +
+    '      }\n' +
+    '\n' +
+    '      .first {\n' +
+    '        margin-top: 0; \n' +
+    '      }\n' +
+    '\n' +
+    '      .align-center {\n' +
+    '        text-align: center; \n' +
+    '      }\n' +
+    '\n' +
+    '      .align-right {\n' +
+    '        text-align: right; \n' +
+    '      }\n' +
+    '\n' +
+    '      .align-left {\n' +
+    '        text-align: left; \n' +
+    '      }\n' +
+    '\n' +
+    '      .clear {\n' +
+    '        clear: both; \n' +
+    '      }\n' +
+    '\n' +
+    '      .mt0 {\n' +
+    '        margin-top: 0; \n' +
+    '      }\n' +
+    '\n' +
+    '      .mb0 {\n' +
+    '        margin-bottom: 0; \n' +
+    '      }\n' +
+    '\n' +
+    '      .preheader {\n' +
+    '        color: transparent;\n' +
+    '        display: none;\n' +
+    '        height: 0;\n' +
+    '        max-height: 0;\n' +
+    '        max-width: 0;\n' +
+    '        opacity: 0;\n' +
+    '        overflow: hidden;\n' +
+    '        mso-hide: all;\n' +
+    '        visibility: hidden;\n' +
+    '        width: 0; \n' +
+    '      }\n' +
+    '\n' +
+    '      .powered-by a {\n' +
+    '        text-decoration: none; \n' +
+    '      }\n' +
+    '\n' +
+    '      hr {\n' +
+    '        border: 0;\n' +
+    '        border-bottom: 1px solid #89D9D2;\n' +
+    '        margin: 20px 0; \n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          RESPONSIVE AND MOBILE FRIENDLY STYLES\n' +
+    '      ------------------------------------- */\n' +
+    '      @media only screen and (max-width: 620px) {\n' +
+    '        table[class=body] h1 {\n' +
+    '          font-size: 28px !important;\n' +
+    '          margin-bottom: 10px !important; \n' +
+    '        }\n' +
+    '        table[class=body] p,\n' +
+    '        table[class=body] ul,\n' +
+    '        table[class=body] ol,\n' +
+    '        table[class=body] td,\n' +
+    '        table[class=body] span,\n' +
+    '        table[class=body] a {\n' +
+    '          font-size: 16px !important; \n' +
+    '        }\n' +
+    '        table[class=body] .wrapper,\n' +
+    '        table[class=body] .article {\n' +
+    '          padding: 10px !important; \n' +
+    '        }\n' +
+    '        table[class=body] .content {\n' +
+    '          padding: 0 !important; \n' +
+    '        }\n' +
+    '        table[class=body] .container {\n' +
+    '          padding: 0 !important;\n' +
+    '          width: 100% !important; \n' +
+    '        }\n' +
+    '        table[class=body] .main {\n' +
+    '          border-left-width: 0 !important;\n' +
+    '          border-radius: 0 !important;\n' +
+    '          border-right-width: 0 !important; \n' +
+    '        }\n' +
+    '        table[class=body] .btn table {\n' +
+    '          width: 100% !important; \n' +
+    '        }\n' +
+    '        table[class=body] .btn a {\n' +
+    '          width: 100% !important; \n' +
+    '        }\n' +
+    '        table[class=body] .img-responsive {\n' +
+    '          height: auto !important;\n' +
+    '          max-width: 100% !important;\n' +
+    '          width: auto !important; \n' +
+    '        }\n' +
+    '      }\n' +
+    '\n' +
+    '      /* -------------------------------------\n' +
+    '          PRESERVE THESE STYLES IN THE HEAD\n' +
+    '      ------------------------------------- */\n' +
+    '      @media all {\n' +
+    '        .ExternalClass {\n' +
+    '          width: 100%; \n' +
+    '        }\n' +
+    '        .ExternalClass,\n' +
+    '        .ExternalClass p,\n' +
+    '        .ExternalClass span,\n' +
+    '        .ExternalClass font,\n' +
+    '        .ExternalClass td,\n' +
+    '        .ExternalClass div {\n' +
+    '          line-height: 100%; \n' +
+    '        }\n' +
+    '        .apple-link a {\n' +
+    '          color: inherit !important;\n' +
+    '          font-family: inherit !important;\n' +
+    '          font-size: inherit !important;\n' +
+    '          font-weight: inherit !important;\n' +
+    '          line-height: inherit !important;\n' +
+    '          text-decoration: none !important; \n' +
+    '        }\n' +
+    '        #MessageViewBody a {\n' +
+    '          color: inherit;\n' +
+    '          text-decoration: none;\n' +
+    '          font-size: inherit;\n' +
+    '          font-family: inherit;\n' +
+    '          font-weight: inherit;\n' +
+    '          line-height: inherit;\n' +
+    '        }\n' +
+    '        .btn-primary table td:hover {\n' +
+    '          background-color: #349E95 !important; \n' +
+    '        }\n' +
+    '        .btn-primary a:hover {\n' +
+    '          background-color: #349E95 !important;\n' +
+    '          border-color: #349E95 !important; \n' +
+    '        } \n' +
+    '      }\n' +
+    '\n' +
+    '    </style>\n' +
+    '  </head>\n' +
+    '  <body class="">\n' +
+    '    <span class="preheader">' +
+    subject +
+    '</span>\n' +
+    '    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">\n' +
+    '      <tr>\n' +
+    '        <td>&nbsp;</td>\n' +
+    '        <td class="container">\n' +
+    '          <div class="content">\n' +
+    '\n' +
+    '            <!-- START CENTERED WHITE CONTAINER -->\n' +
+    '            <table role="presentation" class="main">\n' +
+    '\n' +
+    '              <!-- START MAIN CONTENT AREA -->\n' +
+    '              <tr>\n' +
+    '                <td class="wrapper">\n' +
+    '                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">\n' +
+    '                    <tr>\n' +
+    '                      <td>\n' +
+    '                        <p>Hey there!</p>\n' +
+    '                        <p>' +
+    text +
+    '</p>\n' +
+    '                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">\n' +
+    '                          <tbody>\n' +
+    '                            <tr>\n' +
+    '                              <td align="left">\n' +
+    '                                <table role="presentation" border="0" cellpadding="0" cellspacing="0">\n' +
+    '                                  <tbody>\n' +
+    '                                    <tr>\n' +
+    '                                      <td> <a href="' +
+    actionURL +
+    '" target="_blank">' +
+    buttonText +
+    '</a></td>\n' +
+    '                                    </tr>\n' +
+    '                                  </tbody>\n' +
+    '                                </table>\n' +
+    '                              </td>\n' +
+    '                            </tr>\n' +
+    '                          </tbody>\n' +
+    '                        </table>\n' +
+    '                        <p>This link expires in 24 hours. This email was sent to ' +
+    email +
+    '.</p>\n' +
+    '                        <p>If you did not request this mail, just ignore it.</p>\n' +
+    '                      </td>\n' +
+    '                    </tr>\n' +
+    '                  </table>\n' +
+    '                </td>\n' +
+    '              </tr>\n' +
+    '\n' +
+    '            <!-- END MAIN CONTENT AREA -->\n' +
+    '            </table>\n' +
+    '            <!-- END CENTERED WHITE CONTAINER -->\n' +
+    '\n' +
+    '            <!-- START FOOTER -->\n' +
+    '            <div class="footer">\n' +
+    '              <table role="presentation" border="0" cellpadding="0" cellspacing="0">\n' +
+    '                <tr>\n' +
+    '                  <td class="content-block">\n' +
+    '                    <span class="apple-link">jindr, Wiesenstraße 14, 35394 Gießen, Germany</span>\n' +
+    '                    <br> ' +
+    footNote +
+    ' <a href="' +
+    BASE_URL +
+    '/auth/login">Login</a>.\n' +
+    '                  </td>\n' +
+    '                </tr>\n' +
+    '                <tr>\n' +
+    '                  <td class="content-block powered-by">\n' +
+    '                    Powered by <a href="http://htmlemail.io">HTMLemail</a>.\n' +
+    '                  </td>\n' +
+    '                </tr>\n' +
+    '              </table>\n' +
+    '            </div>\n' +
+    '            <!-- END FOOTER -->\n' +
+    '\n' +
+    '          </div>\n' +
+    '        </td>\n' +
+    '        <td>&nbsp;</td>\n' +
+    '      </tr>\n' +
+    '    </table>\n' +
+    '  </body>'
+  );
+}
+
 /**
  * Exports for testing
  * add every method like this: {app: app, method1: method1, method2: method2}

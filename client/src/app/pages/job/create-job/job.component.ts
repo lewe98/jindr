@@ -6,7 +6,7 @@ import {
   AlertController
 } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../services/Auth/auth.service';
 import { ToastService } from '../../../services/Toast/toast.service';
 import { Job } from '../../../../../interfaces/job';
@@ -27,6 +27,7 @@ export class JobComponent implements OnInit {
   createForm: FormGroup;
   job: Job = new Job();
   date: Date;
+  edit = false;
 
   GoogleAutocomplete: google.maps.places.AutocompleteService;
   autocomplete: { input: string };
@@ -36,7 +37,11 @@ export class JobComponent implements OnInit {
   tempInterests: Interest[] = [];
   interests = [];
   jobInterests = [];
+  changedInterests = false;
   cityName: string;
+  today = new Date().toISOString().slice(0, 10);
+  max = new Date().getFullYear() + 10;
+  hours = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
   constructor(
     private modalCtrl: ModalController,
@@ -49,11 +54,11 @@ export class JobComponent implements OnInit {
     private locationService: LocationService,
     private ngZone: NgZone,
     private imageService: ImageService,
-    private assetService: AssetService
+    private assetService: AssetService,
+    private activatedRoute: ActivatedRoute
   ) {}
 
   ngOnInit() {
-    Object.assign(this.job); // TODO @Julian, hier muss dann dein job ausgelesen werden bei edit
     this.tempInterests = this.assetService.getInterests();
     this.interests = this.tempInterests?.map((i) => {
       return i.title;
@@ -72,13 +77,55 @@ export class JobComponent implements OnInit {
       location: new FormControl(this.job.location),
       selectedOption: new FormControl('total')
     });
+
+    if (document.location.href.includes('/pages/job/edit/')) {
+      this.edit = true;
+      const id = this.activatedRoute.snapshot.paramMap.get('id');
+
+      this.jobService
+        .getJobById(id)
+        .then((res) => {
+          Object.assign(this.job, res);
+          this.date = this.job.date;
+          this.tempInterests = this.assetService.getInterests();
+          this.interests = this.tempInterests?.map((i) => {
+            return i.title;
+          });
+          this.jobInterests = this.job.interests?.map((i) => {
+            return i.title;
+          });
+          this.createForm.controls.title.reset(this.job.title);
+          this.createForm.controls.description.reset(this.job.description);
+          this.createForm.controls.payment.reset(this.job.payment);
+          this.createForm.controls.homepage.reset(this.job.homepage);
+          this.createForm.controls.interests.reset(this.jobInterests);
+
+          if (this.job.isHourly) {
+            this.createForm.controls.selectedOption.reset('hourly');
+          } else {
+            this.createForm.controls.selectedOption.reset('total');
+          }
+          this.createForm.controls.time.setValue([this.job.time]);
+          this.createForm.controls.searchbar.setValue(this.job.cityName);
+          this.coords = this.job.location;
+          this.cityName = this.job.cityName;
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err, 'Error!');
+        });
+    }
+
     this.GoogleAutocomplete = new google.maps.places.AutocompleteService();
     this.autocomplete = { input: '' };
     this.autocompleteItems = [];
   }
 
-  selectDOB(event) {
+  selectDate(event) {
     this.date = event.detail.value;
+  }
+
+  changedInterest() {
+    this.changedInterests = true;
   }
 
   updateSearchResults() {
@@ -155,11 +202,49 @@ export class JobComponent implements OnInit {
     this.jobService
       .createJob(this.job)
       .then(() => {
+        this.jobService.getJobs(this.authService.user._id);
         this.toastService.presentToast('Job created.');
         this.router.navigate(['pages']);
       })
       .catch((err) => {
         this.toastService.presentWarningToast(err.message, 'Error!');
       });
+  }
+
+  /**
+   * Method to pass values to the editJob method in job.service.ts
+   * status message is reported by ToastService
+   * resolves if the job is successfully updated in database
+   * rejects if an error occurred
+   */
+  editJob() {
+    this.job.title = this.createForm.controls.title.value;
+    this.job.description = this.createForm.controls.description.value;
+    this.job.date = this.date;
+    this.job.time = this.createForm.controls.time.value;
+    this.job.payment = this.createForm.controls.payment.value;
+    this.job.homepage = this.createForm.controls.homepage.value;
+    this.job.location = this.coords;
+    this.job.isHourly =
+      this.createForm.controls.selectedOption.value !== 'total';
+    this.job.image = this.image;
+    this.job.cityName = this.cityName;
+    this.job.interests = [];
+    this.createForm.controls.interests.value.forEach((int) => {
+      this.job.interests.push(this.tempInterests.find((i) => int === i.title));
+    });
+
+    this.jobService
+      .editJob(this.job, this.authService.user._id)
+      .then(() => {
+        this.jobService.getJobs(this.authService.user._id);
+        this.toastService.presentToast('Job updated.');
+        this.router.navigate(['pages']);
+      })
+      .catch((err) => {
+        this.toastService.presentWarningToast(err.message, 'Error!');
+      });
+
+    this.edit = false;
   }
 }

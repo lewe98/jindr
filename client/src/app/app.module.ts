@@ -15,6 +15,7 @@ import { environment } from '../environments/environment';
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 import { ImageService } from './services/Image/image.service';
 import { NgxImageCompressService } from 'ngx-image-compress';
+import { SocketIoModule } from 'ngx-socket-io';
 
 @NgModule({
   declarations: [AppComponent],
@@ -24,6 +25,7 @@ import { NgxImageCompressService } from 'ngx-image-compress';
     IonicModule.forRoot(),
     AppRoutingModule,
     HttpClientModule,
+    SocketIoModule.forRoot(environment.socketConfig),
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production
     })

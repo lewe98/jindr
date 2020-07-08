@@ -1,0 +1,50 @@
+<ion-header>
+  <ion-toolbar class="toolbar-no-border">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="pages/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>My Offers</ion-title>
+    <ion-label style="margin-right: 10px" slot="end">{{allJobs.length}} job{{allJobs.length === 0 || allJobs.length > 1 ? 's' : ''}} online.</ion-label>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="segmentValue" class="segment-changer" (ionChange)="segmentChanged($event)">
+      <ion-segment-button value="active">
+        <ion-label>Active</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="finished">
+        <ion-label>Finished</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="offer-content job-listing-content">
+  <ion-searchbar class="offer-searchbar" animated [(ngModel)]="searchQuery" (ionChange)="search()"></ion-searchbar>
+
+  <ng-template #offerItem let-offers="offers">
+    <app-display-jobs class="display-jobs" [job]="offers" [user]="user"></app-display-jobs>
+  </ng-template>
+
+
+  <section [hidden]="segmentValue !== 'active'">
+    <ion-list class="offer-list" *ngIf="activeOffers.length > 0">
+      <ion-item class="offer-item" *ngFor="let offer of activeFiltered">
+        <ng-container *ngTemplateOutlet="offerItem; context: { offers: offer }"></ng-container>
+      </ion-item>
+    </ion-list>
+    <ng-container *ngIf="activeOffers.length <= 0">
+      <h3 class="empty-list-message">No Offers</h3>
+    </ng-container>
+  </section>
+
+  <section [hidden]="segmentValue !== 'finished'">
+    <ion-list class="offer-list" *ngIf="finishedOffers.length > 0">
+      <ion-item class="offer-item" *ngFor="let offer of finishedFiltered">
+        <ng-container *ngTemplateOutlet="offerItem; context: { offers: offer }"></ng-container>
+      </ion-item>
+    </ion-list>
+    <ng-container *ngIf="finishedOffers.length <= 0">
+      <h3 class="empty-list-message">No Offers</h3>
+    </ng-container>
+  </section>
+</ion-content>

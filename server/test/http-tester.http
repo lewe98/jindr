@@ -86,3 +86,41 @@ Content-Type: application/json
     }
   }
 }
+
+###
+POST http://localhost:8080/new-wrapper
+Content-Type: application/json
+
+{
+  "wrapper": {
+    "employer": "5ee24164c71c594a94003ea3",
+    "employee": "5ef91b59a20cdd2c8caca643",
+    "employeeName": "Julian Gold",
+    "employerName": "Valentin Laucht",
+    "employerImage": "./assets/images/avatar.jpg",
+    "employeeImage": "./assets/images/avatar.jpg",
+    "jobID": "5ef0798973a73649b88d50db",
+    "messages": {
+      "sender": "5ee24164c71c594a94003ea3",
+      "timeStamp": 1593383908,
+      "body": "Hi, hättest du interesse für mich zu arbeiten?",
+      "type":  "text"
+    }
+  }
+}
+
+###
+POST http://localhost:8080/new-message
+Content-Type: application/json
+
+{
+  "wrapperID": "5ef70d2706d01006585b47a3",
+  "message": {
+    "sender": "5ee24164c71c594a94003ea3",
+    "timeStamp": 13454656565675,
+    "body": "test",
+    "type":  "text"
+  }
+}
+
+###

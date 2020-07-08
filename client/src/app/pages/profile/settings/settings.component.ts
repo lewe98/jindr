@@ -6,6 +6,7 @@ import { ToastService } from '../../../services/Toast/toast.service';
 import { LocationService } from '../../../services/Location/location.service';
 import { Router } from '@angular/router';
 import { SwipeService } from '../../../services/Swipe/swipe.service';
+import { ImpressumComponent } from '../impressum/impressum.component';
 
 @Component({
   selector: 'app-settings',
@@ -88,6 +89,13 @@ export class SettingsComponent implements OnInit {
       });
     } else {
       this.modalCtrl.dismiss(this.location);
+    }
+  }
+
+  allowChange() {
+    if (this.user.locateMe === false) {
+      this.autocompleteItems = [];
+      this.autocomplete.input = '';
     }
   }
 
@@ -226,5 +234,15 @@ export class SettingsComponent implements OnInit {
     if (scrollTop < 0 && Math.abs(scrollTop) >= 150) {
       this.close();
     }
+  }
+
+  /**
+   * Method to display Impressum
+   */
+  async showImpressModal() {
+    const modal = await this.modalCtrl.create({
+      component: ImpressumComponent
+    });
+    return await modal.present();
   }
 }

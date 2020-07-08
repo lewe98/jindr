@@ -1,0 +1,63 @@
+<ng-container *ngIf="job">
+    <div class="listing-item">
+        <div class="clickable" (click)="viewJob()">
+        <div class="cover-wrapper">
+            <a class="cover-anchor">
+                <app-image-shell class="cover-image add-overlay" animation="spinner" [display]="'cover'" [src]="job.image">
+                    <app-aspect-ratio [ratio]="{w:1, h:1}">
+                    </app-aspect-ratio>
+                </app-image-shell>
+            </a>
+        </div>
+        <ion-row class="info-row">
+            <ion-col class="description-col">
+                <ion-row class="description-wrapper">
+                    <h3 class="item-name">
+                        <a class="name-anchor">
+                            <app-text-shell [data]="job.title"></app-text-shell>
+                        </a>
+                    </h3>
+                    <p class="item-address">
+                        <app-text-shell [data]="job.cityName"></app-text-shell>
+                        {{job.date | date: 'dd.MM.yyyy'}}
+                    </p>
+                    <ion-row class="item-tags">
+                        <ion-col class="tag-wrapper" *ngFor="let tag of job.interests">
+                <span class="item-tag">
+                  <app-text-shell [data]="tag.title"></app-text-shell>
+                </span>
+                        </ion-col>
+                    </ion-row>
+                </ion-row>
+            </ion-col>
+            <ion-col class="stats-col" size="3">
+          <span class="item-interested">
+              <ion-icon name="star-outline"></ion-icon>
+              {{job.interestedUsers.length}}
+              <ion-badge mode="ios" *ngIf="job.unread > 0" class="badge" color="secondary">{{job.unread}}</ion-badge>
+          </span>
+                <div class="item-price-range">
+                    <span class="price">{{job.payment}}€ {{job.isHourly ? '/hour' : 'total'}}</span>
+                </div>
+            </ion-col>
+        </ion-row>
+        </div>
+        <ion-row class="actions-row" *ngIf="user._id === job.creator">
+            <ion-col size="4">
+                <ion-button color="warning" [routerLink]="'/pages/job/edit/' + job._id" expand="full">
+                    edit
+                </ion-button>
+            </ion-col>
+           <ion-col size="4">
+               <ion-button color="danger" (click)="presentConfirm(job._id)" expand="full">
+                   delete
+               </ion-button>
+           </ion-col>
+            <ion-col size="4">
+                <ion-button [disabled]="job.isFinished" color="secondary" (click)="presentConfirmFinish(job)" expand="full">
+                    finish
+                </ion-button>
+            </ion-col>
+        </ion-row>
+    </div>
+</ng-container>
