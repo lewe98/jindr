@@ -1,5 +1,7 @@
 
 
+
+
 stages:
   - init
   - lint
@@ -17,9 +19,7 @@ init_modules:
     - npm ci
   tags:
     - nodejs
-  artifacts:
-    paths:
-      - node_modules/
+
 
 lint_testing:
   stage: lint
@@ -38,7 +38,9 @@ build:
   stage: build
   script:
     - cd client
+    - npm i
     - npm i -g @ionic/cli
+    - npm i -D -E @angular/cli
     - npm run build
   tags:
     - nodejs
