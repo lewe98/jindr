@@ -1661,7 +1661,7 @@ app.get('/get-liked-jobs/:_id', async (req: Request, res: Response) => {
       }
     });
   } else {
-    res.status(404).send({
+    res.status(200).send({
       message: 'No Jobs found.'
     });
   }

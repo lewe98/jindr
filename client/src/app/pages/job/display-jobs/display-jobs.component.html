@@ -4,7 +4,7 @@
         <div class="cover-wrapper">
             <a class="cover-anchor">
                 <app-image-shell class="cover-image add-overlay" animation="spinner" [display]="'cover'" [src]="job.image">
-                    <app-aspect-ratio [ratio]="{w:35, h:15}">
+                    <app-aspect-ratio [ratio]="{w:1, h:1}">
                     </app-aspect-ratio>
                 </app-image-shell>
             </a>
@@ -54,7 +54,7 @@
                </ion-button>
            </ion-col>
             <ion-col size="4">
-                <ion-button [disabled]="job.isFinished" color="danger" (click)="presentConfirmFinish(job)" expand="full">
+                <ion-button [disabled]="job.isFinished" color="secondary" (click)="presentConfirmFinish(job)" expand="full">
                     finish
                 </ion-button>
             </ion-col>

@@ -6,7 +6,6 @@ import { set, remove } from '../storage';
 import { Router } from '@angular/router';
 import { ToastService } from '../Toast/toast.service';
 import { BehaviorSubject } from 'rxjs';
-import { Job } from '../../../../interfaces/job';
 
 const { Device } = Plugins;
 
@@ -279,7 +278,7 @@ export class AuthService {
   }
 
   getArrayOfUsers(ids): Promise<User[]> {
-    return new Promise<User[]>((resolve, reject) => {
+    return new Promise<User[]>((resolve) => {
       this.databaseController
         .putRequest('user-array', JSON.stringify({ ids }), User)
         .then((res) => {

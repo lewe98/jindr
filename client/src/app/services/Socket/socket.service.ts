@@ -60,7 +60,8 @@ export class SocketService {
         this.toastService.presentNotification(
           'New Message',
           wrapper.employerName + ' sent you a message.',
-          'pages/chat'
+          'pages/chat',
+          wrapper._id
         );
       }
     });
@@ -110,7 +111,7 @@ export class SocketService {
           data.job.title +
           '. Check out now!',
         data.link,
-        data.job._id
+        JSON.stringify({ job: data.job })
       );
     });
   }
