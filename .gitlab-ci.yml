@@ -1,8 +1,3 @@
-cache:
-  paths:
-    - client/node_modules/
-    - client/www/
-    - server/node_modules/
 
 
 stages:
