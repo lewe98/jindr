@@ -41,6 +41,7 @@ export class JobComponent implements OnInit {
   cityName: string;
   today = new Date().toISOString().slice(0, 10);
   max = new Date().getFullYear() + 10;
+  hours = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
   constructor(
     private modalCtrl: ModalController,
@@ -104,7 +105,7 @@ export class JobComponent implements OnInit {
           } else {
             this.createForm.controls.selectedOption.reset('total');
           }
-          this.createForm.controls.time.setValue(this.job.time);
+          this.createForm.controls.time.setValue([this.job.time]);
           this.createForm.controls.searchbar.setValue(this.job.cityName);
           this.coords = this.job.location;
           this.cityName = this.job.cityName;

@@ -22,12 +22,13 @@
         </ion-avatar>
     </div>
 
-    <ion-item *ngIf="edit" lines="none">
-        <ion-label>Mark job as finished</ion-label>
-        <ion-toggle color="primary" [(ngModel)]="job.isFinished"></ion-toggle>
-    </ion-item>
+
 
     <ion-list class="list-custom list-general">
+        <ion-item *ngIf="edit" lines="none">
+            <ion-label>Mark job as finished</ion-label>
+            <ion-toggle color="primary" [(ngModel)]="job.isFinished"></ion-toggle>
+        </ion-item>
     <form [formGroup]="createForm">
             <ion-list-header>
                 <ion-label>What needs to be done?</ion-label>
@@ -136,7 +137,7 @@
                 <ion-item lines="none" id="hours">
                     <ion-label>Working hours</ion-label>
                     <ion-select formControlName="time" cancel-text="None of them" ok-text="Ok" (click)="scrollToTop('hours')">
-                        <ion-select-option *ngFor="let number of [1,2,3,4,5,6,7,8,9,10,11,12]" value="{{number}}">{{number}} h</ion-select-option>
+                        <ion-select-option *ngFor="let hour of hours" [value]="hour">{{hour}} h</ion-select-option>
                     </ion-select>
                 </ion-item>
     </form>

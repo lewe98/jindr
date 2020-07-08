@@ -118,4 +118,60 @@ and (max-device-height : 682px)
   margin-right: 10px;
 }
 
+@media only screen
+and (device-width : 360px)
+and (device-height : 640px)
+{
+  .top-info {
+    font-size: 0.95em;
+    top: 5%;
+  }
+}
 
+// iphone 4
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 480px)
+and (-webkit-min-device-pixel-ratio: 2)
+and (device-aspect-ratio: 2/3)
+{
+  .top-info {
+    font-size: 0.8em;
+    top: 5%;
+  }
+}
+
+// iphone 5
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 568px)
+and (-webkit-min-device-pixel-ratio: 2)
+and (device-aspect-ratio: 40 / 71)
+{
+  .top-info {
+    font-size: 0.9em;
+    top: 5%;
+  }
+}
+
+@media only screen
+and (min-device-width : 375px)
+and (max-device-width : 667px)
+and (orientation : portrait) {
+  .top-info {
+    font-size: 0.9em;
+    top: 6%;
+  }
+}
+
+
+@media only screen
+and (min-device-width : 375px)
+and (max-device-width : 812px)
+and (-webkit-device-pixel-ratio : 3)
+and (orientation : portrait) {
+  .top-info {
+    font-size: 1em;
+    top: 5%;
+  }
+}

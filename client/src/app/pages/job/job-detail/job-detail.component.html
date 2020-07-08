@@ -95,7 +95,7 @@
     </ion-row>
   </div>
 
-  <div class="interests-wrapper">
+  <div class="interests-wrapper" *ngIf="data.interests?.length > 0">
     <h3 class="detail-title">Skills</h3>
     <ion-row class="interests-tags">
       <ion-col class="tag-wrapper" *ngFor="let skill of data.interests">

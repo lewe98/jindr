@@ -28,10 +28,12 @@ export class ApplicationsComponent implements OnInit {
       .getLikedAcceptedJobs(this.user?._id)
       .then((data) => {
         this.likedJobs = data.likedJobs.map((o) => Object.assign(new Job(), o));
+        this.likedJobs.sort((a, b) => (a.date < b.date ? -1 : 1));
         this.likedFiltered = this.likedJobs;
         this.acceptedJobs = data.acceptedJobs.map((o) =>
           Object.assign(new Job(), o)
         );
+        this.acceptedJobs.sort((a, b) => (a.date < b.date ? -1 : 1));
         this.acceptedFiltered = this.acceptedJobs;
       })
       .catch((err) => {

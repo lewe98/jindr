@@ -6,6 +6,7 @@ import {
 } from '../../../services/Location/location.service';
 import { JobDetailComponent } from '../../job/job-detail/job-detail.component';
 import { ModalController, NavController } from '@ionic/angular';
+import { AuthService } from '../../../services/Auth/auth.service';
 
 @Component({
   selector: 'app-swipe-card',
@@ -19,11 +20,13 @@ export class SwipeCardComponent implements OnInit {
   @Output() viewInfo = new EventEmitter();
   distance: number;
   description;
+  name;
 
   constructor(
     private locationService: LocationService,
     private navCtrl: NavController,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -37,6 +40,9 @@ export class SwipeCardComponent implements OnInit {
       this.distance = Math.round(this.distance);
     }
     this.description = this.data?.description.substring(0, 100) + '...';
+    this.authService.getUserByID(this.data?.creator).then((res) => {
+      this.name = res.firstName + ' ' + res.lastName.charAt(0) + '.';
+    });
   }
 
   async handleViewInfo() {
