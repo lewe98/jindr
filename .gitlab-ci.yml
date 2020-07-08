@@ -49,6 +49,7 @@ build:
 karma_testing:
   stage: test
   script:
+    - apt-get autoclean
     - cd client
     - apt-get update -y
     - apt-get install -y libx11-dev
@@ -61,6 +62,7 @@ karma_testing:
 api_testing:
   stage: test
   script:
+    - apt-get autoclean
     - cd server
     - npm i
     - npm run tsc
