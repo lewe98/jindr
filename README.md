@@ -10,7 +10,7 @@
 > The registered employers get the opportunity to find motivated jobbers,
   beyond the old-fashioned mass and print media - directly accessible on their smartphone. Employers
   can actively search for jobbers, look at their profiles and get in touch with them or
-  can alternatively be found through jinder's swiping system. 
+  can alternatively be found through jinder's swiping system.  
 
 
 ## Members
