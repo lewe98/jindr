@@ -303,7 +303,10 @@ enough cards to swipe through without having to wait for the search to finish.
 
 ## Conclusion
 #### Leo Barnikol
-Lorem Ipsum
+
+It's amazing what we've done in the past six weeks. The implementation of the idea was well supported with the help of the tools used.
+It was an exciting project and I didn't think I could take so much out of it. The team dynamics were excellent and every 
+team member contributed well. In conclusion, I am really happy to have been in such a team.
 
 
 #### Pascal Block
