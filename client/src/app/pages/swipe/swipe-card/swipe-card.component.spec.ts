@@ -6,13 +6,11 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-
 describe('SwipeCardComponent', () => {
   let component: SwipeCardComponent;
   let fixture: ComponentFixture<SwipeCardComponent>;
 
   beforeEach(async(() => {
-
     TestBed.configureTestingModule({
       declarations: [SwipeCardComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
