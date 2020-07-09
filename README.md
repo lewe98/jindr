@@ -10,15 +10,15 @@
 > The registered employers get the opportunity to find motivated jobbers,
   beyond the old-fashioned mass and print media - directly accessible on their smartphone. Employers
   can actively search for jobbers, look at their profiles and get in touch with them or
-  can alternatively be found through jinder's swiping system.
+  can alternatively be found through jinder's swiping system.  
 
 
 ## Members
+* Leo Barnikol
+* Pascal Block
 * Julian Hermanspahn
 * Valentin Laucht
 * Lewe Lorenzen
-* Pascal Block
-* Leo Barnikol
 
 
 ## Live Versions
@@ -28,6 +28,7 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 
 
 ## Content
+* [Featurelist](#featurelist)
 * [Tools](#tools)
 * [Prerequisites](#prerequisites)
 * [Folder Structure](#folder-structure)
@@ -35,6 +36,90 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 * [Server Documentation](#server-documentation)
 * [Pipelines and Deploy](#pipelines-and-deploy)
 * [Matching](#matching)
+* [Conclusion](#conclusion)
+
+
+## Featurelist
+| **methodical implementation**                          |
+|--------------------------------------------------------|
+| Jira                                                   |
+| gitLab (package.json, directory structure, .gitignore) | 
+| clean commits (traceability, naturalness)              |               
+| SCRUM                                                  |
+| selfmade structure                                     |
+| CI / CD (Pipelines, jobs)                              |
+| gitFlow (featurebranches, issues, Merge Requests)      |                                                                                                   
+
+
+| **documentation**                                                                   |
+|-------------------------------------------------------------------------------------|
+| README.md (w/ graphics)                                                             |
+| automatically generated documentations:                                             |
+| apiDoc (server)                                                                     |
+| Compodoc (client)                                                                   |
+| Every text is written in english, as detailed as possible and refined extensively.  |
+
+
+| **choice of technologies**                                                                          |
+|-----------------------------------------------------------------------------------------------------|
+| Every technology utilized is state of the art and has been used in the newest versions available.   |
+| Angular in combination with Ionic to build a modern web app.                                        |
+| Capacitor (instead of Cordova) as a cross-platform native runtime to generate a native Android app. |
+
+
+| **architectural complexity / functionality**                                                                  |
+|---------------------------------------------------------------------------------------------------------------|
+|scaleability (responsive design)                                                                               |
+|runnability                                                                                                    |
+|privacy policy                                                                                                 |
+|impress                                                                                                        |
+|extreme functionality: swiping mechanic, location based services, chat, registration mail, password reset mail |
+
+
+| **evaluation**                            |
+|-------------------------------------------|
+|conclusion of every team member            |
+|automated testing                          |
+|api tests (server)                         |
+|Karma tests (client)                       |
+|User Experience Test (w/ external persons) |
+
+
+| **complexity of the organization**                     |
+|--------------------------------------------------------|
+| *media:*                                               |
+| manual (flyer)                                         |
+| scribbles                                              |
+| high fidelity mockups,                                 |
+| logo                                                   |
+| content for Instagram & Facebook (w/ content plan)     |
+| crossmedia strategy                                    |
+| User Experience Test                                   |
+|                                                        |
+| *management:*                                          |
+| analysis of competitors and target group (w/ personas) |
+| PESTEL                                                 |
+| SWOT                                                   |
+| social contract                                        |
+| morphological box                                      |
+
+
+| **relenacy**                                                |         
+|-------------------------------------------------------------|     
+| used mechanics are very intuituve and fits the target group |     
+
+
+| **quality of the final product**                                                                        |                             
+|---------------------------------------------------------------------------------------------------------|     
+| every promised functionality has been implemented                                                       |     
+| can be used productively: app is hosted on a heroku server and can be deployed in the Google Play Store |     
+
+
+| **team**                                                                                       |                             
+|------------------------------------------------------------------------------------------------|     
+| extremely high productivity thanks to the use of agile projectmanagement (daily scrum meeting) |                                                          
+| regular communication via Zoom and BBB                                                         |
+| extremely high team dynamic                                                                    |
 
 
 ## Tools
@@ -214,3 +299,32 @@ once, to guarantee data integrity in case a job is edited or deleted. If the cli
 serverStack will be moved to the clientStack and new jobs from the backlog will be moved to the Serverstack.
 If the user changes his position or search criteria, the backlog will be updated, but the user will always have
 enough cards to swipe through without having to wait for the search to finish.
+
+
+## Conclusion
+#### Leo Barnikol
+
+It's amazing what we've done in the past six weeks. The implementation of the idea was well supported with the help of the tools used.
+It was an exciting project and I didn't think I could take so much out of it. The team dynamics were excellent and every 
+team member contributed well. In conclusion, I am really happy to have been in such a team.
+
+
+#### Pascal Block
+Lorem Ipsum
+
+
+#### Julian Hermanspahn
+Working in a team worked very well despite the current situation. Through regular arrangements in daily scrum meetings
+via Zoom or BBB, tasks could be clearly assigned to add them in Jira. The usage of CI / CD tools have helped
+to create a professional product that has many interdisciplinary aspects. I am very satisfied with the overall 
+process of the IP2 and would work with this team again at any time again.
+
+
+#### Valentin Laucht
+Lorem Ipsum
+
+
+#### Lewe Lorenzen
+Lorem Ipsum
+
+
