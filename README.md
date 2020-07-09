@@ -310,7 +310,10 @@ team member contributed well. In conclusion, I am really happy to have been in s
 
 
 #### Pascal Block
-Lorem Ipsum
+Exhausting but very instructive six weeks are over. The working atmosphere was very unusual without personal meetings. 
+However, the meetings in BBB or Zoom were a good alternative and often very funny. 
+There we met together or in small groups to solve problems. The very good team dynamics helped to finish the project in the best possible way. 
+Everyone contributed their best to the success of the project and brought in their strengths.
 
 
 #### Julian Hermanspahn
