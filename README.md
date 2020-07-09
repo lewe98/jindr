@@ -10,15 +10,15 @@
 > The registered employers get the opportunity to find motivated jobbers,
   beyond the old-fashioned mass and print media - directly accessible on their smartphone. Employers
   can actively search for jobbers, look at their profiles and get in touch with them or
-  can alternatively be found through jinder's swiping system.
+  can alternatively be found through jinder's swiping system.  
 
 
 ## Members
+* Leo Barnikol
+* Pascal Block
 * Julian Hermanspahn
 * Valentin Laucht
 * Lewe Lorenzen
-* Pascal Block
-* Leo Barnikol
 
 
 ## Live Versions
@@ -28,13 +28,101 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 
 
 ## Content
+* [Featurelist](#featurelist)
 * [Tools](#tools)
 * [Prerequisites](#prerequisites)
 * [Folder Structure](#folder-structure)
 * [Client Documentation](#client-documentation)
 * [Server Documentation](#server-documentation)
 * [Pipelines and Deploy](#pipelines-and-deploy)
+* [Emulate on Android](#emulate-on-android)
+* [Database Controller](#database-controller)
 * [Matching](#matching)
+* [Job Stacks](#job-stacks)
+* [Conclusion](#conclusion)
+
+
+## Featurelist
+| **methodical implementation**                          |
+|--------------------------------------------------------|
+| Jira                                                   |
+| gitLab (package.json, directory structure, .gitignore) | 
+| clean commits (traceability, naturalness)              |               
+| SCRUM                                                  |
+| selfmade structure                                     |
+| CI / CD (Pipelines, jobs)                              |
+| gitFlow (featurebranches, issues, Merge Requests)      |                                                                                                   
+
+
+| **documentation**                                                                   |
+|-------------------------------------------------------------------------------------|
+| README.md (w/ graphics)                                                             |
+| automatically generated documentations:                                             |
+| apiDoc (server)                                                                     |
+| Compodoc (client)                                                                   |
+| Every text is written in english, as detailed as possible and refined extensively.  |
+
+
+| **choice of technologies**                                                                          |
+|-----------------------------------------------------------------------------------------------------|
+| Every technology utilized is state of the art and has been used in the newest versions available.   |
+| Angular in combination with Ionic to build a modern web app.                                        |
+| Capacitor (instead of Cordova) as a cross-platform native runtime to generate a native Android app. |
+
+
+| **architectural complexity / functionality**                                                                  |
+|---------------------------------------------------------------------------------------------------------------|
+|scaleability (cross platform development, responsive design, matching algorithm can handle large amount of data fast)                                                                               |
+|runnability                                                                                                    |
+|privacy policy                                                                                                 |
+|impressum                                                                                                        |
+|extreme functionality: swiping mechanism, location based services, chat, registration mail, password reset mail |
+
+
+| **evaluation**                            |
+|-------------------------------------------|
+|conclusion of every team member            |
+|automated testing                          |
+|api tests (server)                         |
+|Karma tests (client)                       |
+|User Experience Test (w/ external persons) |
+
+
+| **complexity of the organization**                     |
+|--------------------------------------------------------|
+| *media:*                                               |
+| manual (flyer)                                         |
+| scribbles                                              |
+| high fidelity mockups,                                 |
+| logo                                                   |
+| content for Instagram & Facebook (w/ content plan)     |
+| crossmedia strategy                                    |
+| User Experience Test                                   |
+|                                                        |
+| *management:*                                          |
+| analysis of competitors and target group (w/ personas) |
+| PESTEL                                                 |
+| SWOT                                                   |
+| social contract                                        |
+| morphological box                                      |
+
+
+| **relenacy**                                                |         
+|-------------------------------------------------------------|     
+| used mechanics are very intuitive and fits the target group |     
+
+
+| **quality of the final product**                                                                        |                             
+|---------------------------------------------------------------------------------------------------------|     
+| every promised functionality has been implemented                                                       |     
+| can be used productively: app is hosted on a heroku server and can be deployed in the Google Play Store |     
+
+
+| **team**                                                                                       |                             
+|------------------------------------------------------------------------------------------------|     
+| extremely high productivity thanks to the use of agile project management (daily scrum meeting) |                                                          
+| regular communication via Zoom and BBB and active WhatsApp Group                                                         |
+| extremely high team dynamic                                                                    |
 
 
 ## Tools
@@ -52,7 +140,8 @@ Tool | Usage
 [GitLab](https://git.thm.de/) | Version Control
 [Heroku](https://heroku.com/) | Hosting Platform
 [Jest](https://jestjs.io/) | Server side testing
-[MapBox](https://www.mapbox.com/) | Map API
+[GoogleMaps](https://cloud.google.com/maps-platform/maps?hl=de) | Map API
+[GooglePlaces](https://cloud.google.com/maps-platform/places?hl=de) | Geocoding and reverse Geocoding
 [apiDoc](https://apidocjs.com) | Server Documentation
 [Compodoc](https://compodoc.app) | Client Documentation
 
@@ -100,6 +189,7 @@ Afterwards, navigate to ``server/apidoc`` and open the ``index.html`` file.
 │   │   │   ├── auth (all pages related to user authentication)
 │   │   │   │   ├── auth.module.ts (modules and routing)
 │   │   │   ├── landing (landing page)
+│   │   │   ├── pages (all other pages, protected by AuthGuard)
 │   │   │   ├── services (all services)
 │   │   │   │   ├── DatabaseController (handles all API requests)
 │   │   │   │   ├── storage.ts (handles local storage/ device storage)
@@ -154,7 +244,46 @@ the environment file to point to ``apiUrl: 'http://10.0.2.2:8080'`` instead
 4. Setup a device emulator in ``AVD Manager``
 5. Run ``ionic capacitor run android`` to start in emulator
 
-
+## Database Controller
+All Database requests are handled by our generic database controller.
+``src/app/services/DatabaseController``
+The Database Controller has predefined methods for ``post, put`` and ``get`` requests. <br>
+```js
+         postRequest<T>(URL: string, data: string, type?: T): Promise<any> {
+              return new Promise<any>((resolve, reject) => {
+                  if (!this.isJsonData(data)) {
+                  reject('Data is not valid JSON');
+                 return;
+                }
+                 this.http.post(`${this.apiURL}/${URL}`, data, this.httpOptions).subscribe(
+                 (res) => {
+                     resolve(this.convert(res, type));
+                    },
+                    (error) => {
+                      reject(error.error);
+                    }
+                );
+                });
+             }
+```
+This is the post request as example. The method can be called with 3 parameters. 
+The URl is the URL of the requested server route, ``data`` is the data you wish to pass to the server as
+valid JSON string, and ``type`` is a generic type of the data you expect to get back.
+The method will first check if the passed data is valid JSON and then perform the post request. If a type has
+been specified, the method will transform the received data to the requested type.
+An example call could look like this:
+```js
+this.databaseController
+        .postRequest('create-job', JSON.stringify({data}), Job)
+        .then((res) => {
+          this.job = res.data;
+          resolve();
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err.errors, err.message);
+          reject(err);
+        });
+```
 ## Matching
 If a User moves to another location or changes his search criteria, the server
 must search for jobs to present to the user. To reduce the amount of jobs that need to
@@ -214,3 +343,39 @@ once, to guarantee data integrity in case a job is edited or deleted. If the cli
 serverStack will be moved to the clientStack and new jobs from the backlog will be moved to the Serverstack.
 If the user changes his position or search criteria, the backlog will be updated, but the user will always have
 enough cards to swipe through without having to wait for the search to finish.
+
+
+## Conclusion
+#### Leo Barnikol
+
+It's amazing what we've done in the past six weeks. The implementation of the idea was well supported with the help of the tools used.
+It was an exciting project and I didn't think I could take so much out of it. The team dynamics were excellent and every 
+team member contributed well. In conclusion, I am really happy to have been in such a team.
+
+
+#### Pascal Block
+Exhausting but very instructive six weeks are over. The working atmosphere was very unusual without personal meetings. 
+However, the meetings in BBB or Zoom were a good alternative and often very funny. 
+There we met together or in small groups to solve problems. The very good team dynamics helped to finish the project in the best possible way. 
+Everyone contributed their best to the success of the project and brought in their strengths.
+
+
+#### Julian Hermanspahn
+Working in a team worked very well despite the current situation. Through regular arrangements in daily scrum meetings
+via Zoom or BBB, tasks could be clearly assigned to add them in Jira. The usage of CI / CD tools have helped
+to create a professional product that has many interdisciplinary aspects. I am very satisfied with the overall 
+process of the IP2 and would work with this team again at any time again.
+
+
+#### Valentin Laucht
+It was a fun and inspiring project, and I learned a lot. Especially regarding CI/CD, setting up test environments and
+working on a bigger project as a team. The team worked well together and was always available to help each other or 
+discuss different approaches for difficult solutions. Overall fortunately we ran in no bigger issues, except our
+pipelines stopped working after the GIT update, one day before the project ended. 
+I'm satisfied with the outcome of this project and enjoyed working with this team.
+
+
+#### Lewe Lorenzen
+Lorem Ipsum
+
+

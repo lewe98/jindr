@@ -242,20 +242,7 @@ export class AuthService {
         });
     });
   }
-  /*
-  getUserByID(id: string): Promise<User> {
-    return new Promise<User>((resolve, reject) => {
-      this.databaseController
-        .getRequest('user', id, User)
-        .then((res) => {
-          resolve(res.data);
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    });
-  }
-*/
+
   /**
    * Method to get one specific user
    * @param userID id of the user
