@@ -35,7 +35,10 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 * [Client Documentation](#client-documentation)
 * [Server Documentation](#server-documentation)
 * [Pipelines and Deploy](#pipelines-and-deploy)
+* [Emulate on Android](#emulate-on-android)
+* [Database Controller](#database-controller)
 * [Matching](#matching)
+* [Job Stacks](#job-stacks)
 * [Conclusion](#conclusion)
 
 
@@ -69,11 +72,11 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 
 | **architectural complexity / functionality**                                                                  |
 |---------------------------------------------------------------------------------------------------------------|
-|scaleability (responsive design)                                                                               |
+|scaleability (cross platform development, responsive design, matching algorithm can handle large amount of data fast)                                                                               |
 |runnability                                                                                                    |
 |privacy policy                                                                                                 |
-|impress                                                                                                        |
-|extreme functionality: swiping mechanic, location based services, chat, registration mail, password reset mail |
+|impressum                                                                                                        |
+|extreme functionality: swiping mechanism, location based services, chat, registration mail, password reset mail |
 
 
 | **evaluation**                            |
@@ -106,7 +109,7 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 
 | **relenacy**                                                |         
 |-------------------------------------------------------------|     
-| used mechanics are very intuituve and fits the target group |     
+| used mechanics are very intuitive and fits the target group |     
 
 
 | **quality of the final product**                                                                        |                             
@@ -117,8 +120,8 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 
 | **team**                                                                                       |                             
 |------------------------------------------------------------------------------------------------|     
-| extremely high productivity thanks to the use of agile projectmanagement (daily scrum meeting) |                                                          
-| regular communication via Zoom and BBB                                                         |
+| extremely high productivity thanks to the use of agile project management (daily scrum meeting) |                                                          
+| regular communication via Zoom and BBB and active WhatsApp Group                                                         |
 | extremely high team dynamic                                                                    |
 
 
@@ -137,7 +140,8 @@ Tool | Usage
 [GitLab](https://git.thm.de/) | Version Control
 [Heroku](https://heroku.com/) | Hosting Platform
 [Jest](https://jestjs.io/) | Server side testing
-[MapBox](https://www.mapbox.com/) | Map API
+[GoogleMaps](https://cloud.google.com/maps-platform/maps?hl=de) | Map API
+[GooglePlaces](https://cloud.google.com/maps-platform/places?hl=de) | Geocoding and reverse Geocoding
 [apiDoc](https://apidocjs.com) | Server Documentation
 [Compodoc](https://compodoc.app) | Client Documentation
 
@@ -185,6 +189,7 @@ Afterwards, navigate to ``server/apidoc`` and open the ``index.html`` file.
 │   │   │   ├── auth (all pages related to user authentication)
 │   │   │   │   ├── auth.module.ts (modules and routing)
 │   │   │   ├── landing (landing page)
+│   │   │   ├── pages (all other pages, protected by AuthGuard)
 │   │   │   ├── services (all services)
 │   │   │   │   ├── DatabaseController (handles all API requests)
 │   │   │   │   ├── storage.ts (handles local storage/ device storage)
@@ -239,7 +244,46 @@ the environment file to point to ``apiUrl: 'http://10.0.2.2:8080'`` instead
 4. Setup a device emulator in ``AVD Manager``
 5. Run ``ionic capacitor run android`` to start in emulator
 
-
+## Database Controller
+All Database requests are handled by our generic database controller.
+``src/app/services/DatabaseController``
+The Database Controller has predefined methods for ``post, put`` and ``get`` requests. <br>
+```js
+         postRequest<T>(URL: string, data: string, type?: T): Promise<any> {
+              return new Promise<any>((resolve, reject) => {
+                  if (!this.isJsonData(data)) {
+                  reject('Data is not valid JSON');
+                 return;
+                }
+                 this.http.post(`${this.apiURL}/${URL}`, data, this.httpOptions).subscribe(
+                 (res) => {
+                     resolve(this.convert(res, type));
+                    },
+                    (error) => {
+                      reject(error.error);
+                    }
+                );
+                });
+             }
+```
+This is the post request as example. The method can be called with 3 parameters. 
+The URl is the URL of the requested server route, ``data`` is the data you wish to pass to the server as
+valid JSON string, and ``type`` is a generic type of the data you expect to get back.
+The method will first check if the passed data is valid JSON and then perform the post request. If a type has
+been specified, the method will transform the received data to the requested type.
+An example call could look like this:
+```js
+this.databaseController
+        .postRequest('create-job', JSON.stringify({data}), Job)
+        .then((res) => {
+          this.job = res.data;
+          resolve();
+        })
+        .catch((err) => {
+          this.toastService.presentWarningToast(err.errors, err.message);
+          reject(err);
+        });
+```
 ## Matching
 If a User moves to another location or changes his search criteria, the server
 must search for jobs to present to the user. To reduce the amount of jobs that need to
@@ -321,7 +365,11 @@ process of the IP2 and would work with this team again at any time again.
 
 
 #### Valentin Laucht
-Lorem Ipsum
+It was a fun and inspiring project, and I learned a lot. Especially regarding CI/CD, setting up test environments and
+working on a bigger project as a team. The team worked well together and was always available to help each other or 
+discuss different approaches for difficult solutions. Overall fortunately we ran in no bigger issues, except our
+pipelines stopped working after the GIT update, one day before the project ended. 
+I'm satisfied with the outcome of this project and enjoyed working with this team.
 
 
 #### Lewe Lorenzen
