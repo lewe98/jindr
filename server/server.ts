@@ -52,11 +52,9 @@ app.use(sslRedirect(['staging', 'production']));
 app.use(history());
 app.use(express.static(__dirname + '/../client/www'));
 app.use(
-  cors({
-    credentials: true,
-    origin: ORIGIN_URL
-  })
+  cors()
 );
+app.options('*', cors());
 
 /**
  * VARIABLES

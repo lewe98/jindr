@@ -26,6 +26,8 @@ The staging branch can be found at ``https://jindr-staging.herokuapp.com``
 
 The master branch can be found at ``https://jindr.herokuapp.com``
 
+The APK can be found in ``APK/jindr.apk``
+
 
 ## Content
 * [Featurelist](#featurelist)
@@ -39,7 +41,6 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 * [Database Controller](#database-controller)
 * [Matching](#matching)
 * [Job Stacks](#job-stacks)
-* [Conclusion](#conclusion)
 
 
 ## Featurelist
@@ -177,6 +178,28 @@ To review the server documentation, navigate to the Server folder and run
 > npm run apidoc
 
 Afterwards, navigate to ``server/apidoc`` and open the ``index.html`` file.
+
+## Testing
+To test the server script navigate to Server folder and run
+> npm run test   (or ``npm run ci-test`` for mac users)
+
+All Test files can be found at ``server/test``.
+The ``database-handler`` creates a mongo db memory database for the testing instance, to keep
+the real database clean.
+
+
+To test the client scripts, navigate to Client folder and run 
+> npm run karma
+
+The tests can be found in the ``.spec.ts`` files, located in the folder of each page or service
+
+![Test Coverage](./doku-files/test-coverage.PNG)
+
+## API Keys
+All API keys and sensitive passwords will be provided with environment variables.
+If the google maps API doesn't work anymore, we have probably deactivated it.
+To use your own API key, just navigate to index.html and replace the API key in scripts tag with yours.
+Make sure your API has maps and places enabled.
 
 
 ## Folder Structure
@@ -343,39 +366,4 @@ once, to guarantee data integrity in case a job is edited or deleted. If the cli
 serverStack will be moved to the clientStack and new jobs from the backlog will be moved to the Serverstack.
 If the user changes his position or search criteria, the backlog will be updated, but the user will always have
 enough cards to swipe through without having to wait for the search to finish.
-
-
-## Conclusion
-#### Leo Barnikol
-
-It's amazing what we've done in the past six weeks. The implementation of the idea was well supported with the help of the tools used.
-It was an exciting project and I didn't think I could take so much out of it. The team dynamics were excellent and every 
-team member contributed well. In conclusion, I am really happy to have been in such a team.
-
-
-#### Pascal Block
-Exhausting but very instructive six weeks are over. The working atmosphere was very unusual without personal meetings. 
-However, the meetings in BBB or Zoom were a good alternative and often very funny. 
-There we met together or in small groups to solve problems. The very good team dynamics helped to finish the project in the best possible way. 
-Everyone contributed their best to the success of the project and brought in their strengths.
-
-
-#### Julian Hermanspahn
-Working in a team worked very well despite the current situation. Through regular arrangements in daily scrum meetings
-via Zoom or BBB, tasks could be clearly assigned to add them in Jira. The usage of CI / CD tools have helped
-to create a professional product that has many interdisciplinary aspects. I am very satisfied with the overall 
-process of the IP2 and would work with this team again at any time again.
-
-
-#### Valentin Laucht
-It was a fun and inspiring project, and I learned a lot. Especially regarding CI/CD, setting up test environments and
-working on a bigger project as a team. The team worked well together and was always available to help each other or 
-discuss different approaches for difficult solutions. Overall fortunately we ran in no bigger issues, except our
-pipelines stopped working after the GIT update, one day before the project ended. 
-I'm satisfied with the outcome of this project and enjoyed working with this team.
-
-
-#### Lewe Lorenzen
-Lorem Ipsum
-
 
