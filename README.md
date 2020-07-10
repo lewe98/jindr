@@ -79,6 +79,7 @@ It is also available as PWA. To install it as PWA, just open it on your browser 
 |runnability                                                                                                    |
 |privacy policy                                                                                                 |
 |impressum                                                                                                        |
+|safety: sensitive user information like passwords, device token, notification token etc is never sent to the client. Users coordinates are only stored in the database if the user agrees and sets a fixed location. Passwords are randomly encrypted with bcrypt and salt factor |
 |extreme functionality: swiping mechanism, GPS tracking, Google Maps, Geocoding, Image Capturing and Upload, IP location fallback, chat, Gifs in chat, efficient matching algorithm for large amount of data, registration mail, password reset mail, push notifications, shell models to prevent empty space while data is fetched, service workers, responsive design, installable as PWA or APK, automated testing, linting and deploy to ensure code quality|
 
 
