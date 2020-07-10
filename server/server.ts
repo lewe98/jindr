@@ -176,7 +176,6 @@ app.post('/register', (req: Request, res: Response) => {
     'Welcome to jindr! Press the button below to confirm your registration.';
   const buttonText = 'Click here to register.';
   const footNote = 'You do not want to register?';
-
   const html = renderMail(
     subject,
     text,
