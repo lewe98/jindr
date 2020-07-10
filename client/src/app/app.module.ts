@@ -8,8 +8,7 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { HttpRequestInterceptor } from './services/http-interceptor';
+import { HttpClientModule } from '@angular/common/http';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
@@ -35,11 +34,6 @@ import { SocketIoModule } from 'ngx-socket-io';
     SplashScreen,
     ScreenOrientation,
     ImageService,
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: HttpRequestInterceptor,
-      multi: true
-    },
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     NgxImageCompressService
   ],
