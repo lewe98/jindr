@@ -35,12 +35,15 @@ It is also available as PWA. To install it as PWA, just open it on your browser 
 * [Featurelist](#featurelist)
 * [Tools](#tools)
 * [Prerequisites](#prerequisites)
-* [Folder Structure](#folder-structure)
 * [Client Documentation](#client-documentation)
 * [Server Documentation](#server-documentation)
+* [Testing](#testing)
+* [API Keya](#api-keys)
+* [Folder Structure](#folder-structure)
 * [Pipelines and Deploy](#pipelines-and-deploy)
 * [Emulate on Android](#emulate-on-android)
 * [Database Controller](#database-controller)
+* [Location Tracking](#location-tracking)
 * [Matching](#matching)
 * [Job Stacks](#job-stacks)
 
@@ -185,18 +188,33 @@ To review the server documentation, navigate to the Server folder and run
 Afterwards, navigate to ``server/apidoc`` and open the ``index.html`` file.
 
 ## Testing
+### Tests-Client
+Before each deploy the karma, lint and build test have to be run. If they fail, the pipeline also will fail.
+The tests for the client are in the ``*.spec.ts`` files of each component and are running with the karma test.
+With the karma, lint and build test, you can look if there are any problems or errors are remaining. You can run the tests manual
+how in Pipelines and Deploy shown, or you run them in the package.json.
+
+To test the client scripts, navigate to Client folder and run 
+> npm run karma
+
+
+### Tests-Server
+For testing the server, there are three types of tests. The api test, function test and http test
+api.test.ts
+There you can test the routes for their functionality. You define what you are expecting.
+If the result is not what you are expecting, the test fails. You can also define before,
+that the test should fail, to test failure scenarios.
+function.test.ts
+Is like the api testing, but just for functions.
+http-tester.http
+With the http tester you can test your routes basicly and get the response of the route.
+
 To test the server script navigate to Server folder and run
 > npm run test   (or ``npm run ci-test`` for mac users)
 
 All Test files can be found at ``server/test``.
 The ``database-handler`` creates a mongo db memory database for the testing instance, to keep
 the real database clean.
-
-
-To test the client scripts, navigate to Client folder and run 
-> npm run karma
-
-The tests can be found in the ``.spec.ts`` files, located in the folder of each page or service
 
 ![Test Coverage](https://jindr-images.s3.eu-central-1.amazonaws.com/test-coverage.PNG)
 
@@ -317,6 +335,18 @@ this.databaseController
           reject(err);
         });
 ```
+
+## Location Tracking
+To track the users location, we use the build in capacitor ``Geolocation`` plugin.
+If the location accuracy is > 100, we use IP locating.
+If the user does not wish to use GPS or IP locating, he can disable tracking in his settings and specify his position manually.
+On his landing page, above the map, the user gets indicated which technology is being used:
+``low accuracy`` = IP location
+``GPS`` = GPS tracking
+``fixed location`` = user has disabled location services and specified a location in his settings
+``no location`` = user has disabled location and not specified a location
+![Location](https://jindr-images.s3.eu-central-1.amazonaws.com/location.png)
+
 ## Matching
 If a User moves to another location or changes his search criteria, the server
 must search for jobs to present to the user. To reduce the amount of jobs that need to
