@@ -108,7 +108,7 @@ The APK can be found in ``APK/jindr.apk``
 | morphological box                                      |
 
 
-| **relenacy**                                                |         
+| **relevancy**                                                |         
 |-------------------------------------------------------------|     
 | used mechanics are very intuitive and fits the target group |     
 
@@ -141,10 +141,12 @@ Tool | Usage
 [GitLab](https://git.thm.de/) | Version Control
 [Heroku](https://heroku.com/) | Hosting Platform
 [Jest](https://jestjs.io/) | Server side testing
+[Prettier](https://www.npmjs.com/package/prettier) / Fix common lint problems and style code automatically
 [GoogleMaps](https://cloud.google.com/maps-platform/maps?hl=de) | Map API
 [GooglePlaces](https://cloud.google.com/maps-platform/places?hl=de) | Geocoding and reverse Geocoding
 [apiDoc](https://apidocjs.com) | Server Documentation
 [Compodoc](https://compodoc.app) | Client Documentation
+[Firebase FCM](https://firebase.google.com/docs/cloud-messaging) / for Push Notifications (only for android implemented, use APK)
 
 
 ## Prerequisites
@@ -157,8 +159,8 @@ Install dependencies and compile:
 
 Install a local MongoDB Client and setup a database <br>
 Find ``.env-example`` in server folder and rename to ``.env``.
-Paste Path and URI of your MongoDB in ``MONGODB_NAME`` and ``MONGODB_URI``
-
+Paste Path and URI of your MongoDB in ``MONGODB_NAME`` and ``MONGODB_URI``<br>
+Uploading images will only work on our live servers, because the AWS Api keys are provided by git ENV variables
 Navigate to Server folder and run
 > npm run start
 
@@ -193,7 +195,7 @@ To test the client scripts, navigate to Client folder and run
 
 The tests can be found in the ``.spec.ts`` files, located in the folder of each page or service
 
-![Test Coverage](./doku-files/test-coverage.PNG)
+![Test Coverage](https://jindr-images.s3.eu-central-1.amazonaws.com/test-coverage.PNG)
 
 ## API Keys
 All API keys and sensitive passwords will be provided with environment variables.
@@ -215,6 +217,7 @@ Make sure your API has maps and places enabled.
 │   │   │   ├── pages (all other pages, protected by AuthGuard)
 │   │   │   ├── services (all services)
 │   │   │   │   ├── DatabaseController (handles all API requests)
+│   │   │   │   ├── SocketService (handles all socket.io actions)
 │   │   │   │   ├── storage.ts (handles local storage/ device storage)
 │   │   │   ├── shared (all shared components)
 │   │   │   ├── shell (shell models)
@@ -256,16 +259,20 @@ and name it after the functionality you are going to implement.
 8. Commit and push and wait for pipelines to finish
 9. Once everything is tested and works, make merge request to ``staging``
 
+For feature branches, there are 6 jobs in 4 stages to be completed. The config can be found in ``.gitlab-ci.yml`` <br>
+For merge into staging or master and additional stage and job for automated deployment to our staging and production server
+is added.
+![Pipeline example](https://jindr-images.s3.eu-central-1.amazonaws.com/pipelines.PNG)
 
 ## Emulate on Android
 1. Download [Android Studio](https://developer.android.com/studio/)
 2. localhost (127.0.0.1) is your emulator not your local computer, so to access the node backend, you need to change
 the environment file to point to ``apiUrl: 'http://10.0.2.2:8080'`` instead
-3. If you get CORS issues, set ``ORIGIN_URL=http://localhost`` in your .env file
-2. After making changes in the source code run ``npx cap copy``
-3. Run ``npx cap open android`` to open android studio
-4. Setup a device emulator in ``AVD Manager``
-5. Run ``ionic capacitor run android`` to start in emulator
+3. After making changes in the source code run ``npx cap copy``
+4. Run ``npx cap open android`` to open android studio
+5. Setup a device emulator in ``AVD Manager``
+6. Run ``ionic capacitor run android`` to start in emulator
+7. To build the production APK run ``ionic capacitor build android --prod --c=production``
 
 ## Database Controller
 All Database requests are handled by our generic database controller.
@@ -312,7 +319,7 @@ If a User moves to another location or changes his search criteria, the server
 must search for jobs to present to the user. To reduce the amount of jobs that need to
 be searched on each request, the map will be rasterized. For now, this is only implemented for
 Germany, but it's somewhat scalable. 
-![Raster explanation](./doku-files/map_raster_doku.png)
+![Raster explanation](https://jindr-images.s3.eu-central-1.amazonaws.com/map_raster_doku.png)
 This is a simplified Version of a rasterized map of Germany.
 <br> The Method ``rasterizeMap`` in ``server.ts`` will
 take 2 Points specified by coordinates and a radius to rasterize the map
@@ -356,7 +363,7 @@ This would reduce the amount of jobs that need to be searched by ~96%.
 ## Job Stacks
 The aim is to continuously display jobs to the customer, while fetching new jobs seamlessly in the background.
 To achieve this, the jobs are divided into different stacks.
-![Stack explanation](./doku-files/stacks.png)
+![Stack explanation](https://jindr-images.s3.eu-central-1.amazonaws.com/stacks.png)
 The job pool consists of all jobs in the database, no matter if they match the
 search criteria specified by the customer. If the user looks for jobs for the first time, the job stacks will be 
 created. He will transmit his current location to the server and all jobs in the matching tiles will be queried 

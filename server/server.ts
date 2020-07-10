@@ -31,7 +31,6 @@ let io;
 
 const MONGODB_URI: string = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.MONGODB_NAME;
-const ORIGIN_URL = process.env.ORIGIN_URL;
 const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
 const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 
@@ -450,7 +449,7 @@ app.post('/new-message', async (req: Request, res: Response) => {
     io.to(receiver.toString()).emit('new-message', { message, wrapperID });
   } else {
     sendPushNotification(
-      [wrapper.employee],
+      [receiver],
       'New Message!',
       'You got a new message!',
       'pages/chat'
@@ -1439,11 +1438,11 @@ app.put('/reject-jobOffer/', async (req: Request, res: Response) => {
  * @apiName ReactionJobOffer
  * @apiGroup JobOffer
  *
- * @apiDescription Removes an JobOffer from an existing Job
+ * @apiDescription React to a job offer
  *
  * @apiParam {Job} job an object with the job
  * @apiParam {ID} jobId id of a job passed in the req.body
- * @apiParam {ID} userId  id of the user who gets the JobOffer rejected passed in req.body
+ * @apiParam {ID} userId  userID of the employer
  * @apiParam {Boolean} jobOfferAccepted Boolean which is true if JobOffer is accepted and false if not passed in req.body
  * @apiParam {ID} offerID id of the JobOffer passed in req.body
  *
@@ -1483,7 +1482,7 @@ app.put('/reaction-jobOffer/', async (req: Request, res: Response) => {
       });
     } else {
       sendPushNotification(
-        [userId],
+        [job.creator],
         notification.header,
         notification.message,
         notification.link
