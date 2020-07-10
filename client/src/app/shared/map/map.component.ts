@@ -68,7 +68,6 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
       })
     );
   }
-
   updateRadius() {
     // still buggy, zooms out the map completely
     // this.locationService.coordsSubject.next(this.locationService.coords);

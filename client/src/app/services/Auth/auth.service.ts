@@ -6,6 +6,7 @@ import { set, remove } from '../storage';
 import { Router } from '@angular/router';
 import { ToastService } from '../Toast/toast.service';
 import { BehaviorSubject } from 'rxjs';
+import { Platform } from '@ionic/angular';
 
 const { Device } = Plugins;
 
@@ -19,7 +20,8 @@ export class AuthService {
   constructor(
     private databaseController: DatabaseControllerService,
     private router: Router,
-    private toastService: ToastService
+    private toastService: ToastService,
+    public platform: Platform
   ) {}
 
   /**
@@ -57,6 +59,10 @@ export class AuthService {
     password: string
   ): Promise<any> {
     return new Promise<any>((resolve, reject) => {
+      let url = document.location.origin;
+      if (this.platform.is('android')) {
+        url = 'https://jindr.herokuapp.com';
+      }
       const data = {
         user: {
           firstName,
@@ -64,7 +70,7 @@ export class AuthService {
           email,
           password
         },
-        BASE_URL: document.location.origin
+        BASE_URL: url
       };
       this.databaseController
         .postRequest('register', JSON.stringify(data))

@@ -26,20 +26,26 @@ The staging branch can be found at ``https://jindr-staging.herokuapp.com``
 
 The master branch can be found at ``https://jindr.herokuapp.com``
 
+The APK can be found in ``APK/jindr.apk``
+
+The App can be used by visiting the above URLs or install it as APK on android devices.
+It is also available as PWA. To install it as PWA, just open it on your browser and add it to your homescreen.
 
 ## Content
 * [Featurelist](#featurelist)
 * [Tools](#tools)
 * [Prerequisites](#prerequisites)
-* [Folder Structure](#folder-structure)
 * [Client Documentation](#client-documentation)
 * [Server Documentation](#server-documentation)
+* [Testing](#testing)
+* [API Keya](#api-keys)
+* [Folder Structure](#folder-structure)
 * [Pipelines and Deploy](#pipelines-and-deploy)
 * [Emulate on Android](#emulate-on-android)
 * [Database Controller](#database-controller)
+* [Location Tracking](#location-tracking)
 * [Matching](#matching)
 * [Job Stacks](#job-stacks)
-* [Conclusion](#conclusion)
 
 
 ## Featurelist
@@ -76,7 +82,8 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 |runnability                                                                                                    |
 |privacy policy                                                                                                 |
 |impressum                                                                                                        |
-|extreme functionality: swiping mechanism, location based services, chat, registration mail, password reset mail |
+|safety: sensitive user information like passwords, device token, notification token etc is never sent to the client. Users coordinates are only stored in the database if the user agrees and sets a fixed location. Passwords are randomly encrypted with bcrypt and salt factor |
+|extreme functionality: swiping mechanism, GPS tracking, Google Maps, Geocoding, Image Capturing and Upload, IP location fallback, chat, Gifs in chat, efficient matching algorithm for large amount of data, registration mail, password reset mail, push notifications, shell models to prevent empty space while data is fetched, service workers, responsive design, installable as PWA or APK, automated testing, linting and deploy to ensure code quality|
 
 
 | **evaluation**                            |
@@ -107,7 +114,7 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 | morphological box                                      |
 
 
-| **relenacy**                                                |         
+| **relevancy**                                                |         
 |-------------------------------------------------------------|     
 | used mechanics are very intuitive and fits the target group |     
 
@@ -140,11 +147,13 @@ Tool | Usage
 [GitLab](https://git.thm.de/) | Version Control
 [Heroku](https://heroku.com/) | Hosting Platform
 [Jest](https://jestjs.io/) | Server side testing
+[Prettier](https://www.npmjs.com/package/prettier) | Fix common lint problems and style code automatically
 [GoogleMaps](https://cloud.google.com/maps-platform/maps?hl=de) | Map API
 [GooglePlaces](https://cloud.google.com/maps-platform/places?hl=de) | Geocoding and reverse Geocoding
 [apiDoc](https://apidocjs.com) | Server Documentation
 [Compodoc](https://compodoc.app) | Client Documentation
-
+[Firebase FCM](https://firebase.google.com/docs/cloud-messaging) | for Push Notifications (only for android implemented, use APK)
+[Free Geo IP](https://freegeoip.app/) | Fallback for IP location tracking if GPS fails or is disabled
 
 ## Prerequisites
 Install Ionic CLI:
@@ -156,8 +165,8 @@ Install dependencies and compile:
 
 Install a local MongoDB Client and setup a database <br>
 Find ``.env-example`` in server folder and rename to ``.env``.
-Paste Path and URI of your MongoDB in ``MONGODB_NAME`` and ``MONGODB_URI``
-
+Paste Path and URI of your MongoDB in ``MONGODB_NAME`` and ``MONGODB_URI``<br>
+Uploading images will only work on our live servers, because the AWS Api keys are provided by git ENV variables
 Navigate to Server folder and run
 > npm run start
 
@@ -178,6 +187,43 @@ To review the server documentation, navigate to the Server folder and run
 
 Afterwards, navigate to ``server/apidoc`` and open the ``index.html`` file.
 
+## Testing
+### Tests-Client
+Before each deploy the karma, lint and build test have to be run. If they fail, the pipeline also will fail.
+The tests for the client are in the ``*.spec.ts`` files of each component and are running with the karma test.
+With the karma, lint and build test, you can look if there are any problems or errors are remaining. You can run the tests manual
+how in Pipelines and Deploy shown, or you run them in the package.json.
+
+To test the client scripts, navigate to Client folder and run 
+> npm run karma
+
+
+### Tests-Server
+For testing the server, there are three types of tests. The api test, function test and http test
+api.test.ts
+There you can test the routes for their functionality. You define what you are expecting.
+If the result is not what you are expecting, the test fails. You can also define before,
+that the test should fail, to test failure scenarios.
+function.test.ts
+Is like the api testing, but just for functions.
+http-tester.http
+With the http tester you can test your routes basicly and get the response of the route.
+
+To test the server script navigate to Server folder and run
+> npm run test   (or ``npm run ci-test`` for mac users)
+
+All Test files can be found at ``server/test``.
+The ``database-handler`` creates a mongo db memory database for the testing instance, to keep
+the real database clean.
+
+![Test Coverage](https://jindr-images.s3.eu-central-1.amazonaws.com/test-coverage.PNG)
+
+## API Keys
+All API keys and sensitive passwords will be provided with environment variables.
+If the google maps API doesn't work anymore, we have probably deactivated it.
+To use your own API key, just navigate to index.html and replace the API key in scripts tag with yours.
+Make sure your API has maps and places enabled.
+
 
 ## Folder Structure
 ```bash
@@ -192,6 +238,7 @@ Afterwards, navigate to ``server/apidoc`` and open the ``index.html`` file.
 │   │   │   ├── pages (all other pages, protected by AuthGuard)
 │   │   │   ├── services (all services)
 │   │   │   │   ├── DatabaseController (handles all API requests)
+│   │   │   │   ├── SocketService (handles all socket.io actions)
 │   │   │   │   ├── storage.ts (handles local storage/ device storage)
 │   │   │   ├── shared (all shared components)
 │   │   │   ├── shell (shell models)
@@ -233,16 +280,20 @@ and name it after the functionality you are going to implement.
 8. Commit and push and wait for pipelines to finish
 9. Once everything is tested and works, make merge request to ``staging``
 
+For feature branches, there are 6 jobs in 4 stages to be completed. The config can be found in ``.gitlab-ci.yml`` <br>
+For merge into staging or master and additional stage and job for automated deployment to our staging and production server
+is added.
+![Pipeline example](https://jindr-images.s3.eu-central-1.amazonaws.com/pipelines.PNG)
 
 ## Emulate on Android
 1. Download [Android Studio](https://developer.android.com/studio/)
 2. localhost (127.0.0.1) is your emulator not your local computer, so to access the node backend, you need to change
 the environment file to point to ``apiUrl: 'http://10.0.2.2:8080'`` instead
-3. If you get CORS issues, set ``ORIGIN_URL=http://localhost`` in your .env file
-2. After making changes in the source code run ``npx cap copy``
-3. Run ``npx cap open android`` to open android studio
-4. Setup a device emulator in ``AVD Manager``
-5. Run ``ionic capacitor run android`` to start in emulator
+3. After making changes in the source code run ``npx cap copy``
+4. Run ``npx cap open android`` to open android studio
+5. Setup a device emulator in ``AVD Manager``
+6. Run ``ionic capacitor run android`` to start in emulator
+7. To build the production APK run ``ionic capacitor build android --prod --c=production``
 
 ## Database Controller
 All Database requests are handled by our generic database controller.
@@ -284,12 +335,24 @@ this.databaseController
           reject(err);
         });
 ```
+
+## Location Tracking
+To track the users location, we use the build in capacitor ``Geolocation`` plugin.
+If the location accuracy is > 100, we use IP locating.
+If the user does not wish to use GPS or IP locating, he can disable tracking in his settings and specify his position manually.
+On his landing page, above the map, the user gets indicated which technology is being used:
+``low accuracy`` = IP location
+``GPS`` = GPS tracking
+``fixed location`` = user has disabled location services and specified a location in his settings
+``no location`` = user has disabled location and not specified a location
+![Location](https://jindr-images.s3.eu-central-1.amazonaws.com/location.png)
+
 ## Matching
 If a User moves to another location or changes his search criteria, the server
 must search for jobs to present to the user. To reduce the amount of jobs that need to
 be searched on each request, the map will be rasterized. For now, this is only implemented for
 Germany, but it's somewhat scalable. 
-![Raster explanation](./doku-files/map_raster_doku.png)
+![Raster explanation](https://jindr-images.s3.eu-central-1.amazonaws.com/map_raster_doku.png)
 This is a simplified Version of a rasterized map of Germany.
 <br> The Method ``rasterizeMap`` in ``server.ts`` will
 take 2 Points specified by coordinates and a radius to rasterize the map
@@ -333,7 +396,7 @@ This would reduce the amount of jobs that need to be searched by ~96%.
 ## Job Stacks
 The aim is to continuously display jobs to the customer, while fetching new jobs seamlessly in the background.
 To achieve this, the jobs are divided into different stacks.
-![Stack explanation](./doku-files/stacks.png)
+![Stack explanation](https://jindr-images.s3.eu-central-1.amazonaws.com/stacks.png)
 The job pool consists of all jobs in the database, no matter if they match the
 search criteria specified by the customer. If the user looks for jobs for the first time, the job stacks will be 
 created. He will transmit his current location to the server and all jobs in the matching tiles will be queried 
@@ -343,39 +406,4 @@ once, to guarantee data integrity in case a job is edited or deleted. If the cli
 serverStack will be moved to the clientStack and new jobs from the backlog will be moved to the Serverstack.
 If the user changes his position or search criteria, the backlog will be updated, but the user will always have
 enough cards to swipe through without having to wait for the search to finish.
-
-
-## Conclusion
-#### Leo Barnikol
-
-It's amazing what we've done in the past six weeks. The implementation of the idea was well supported with the help of the tools used.
-It was an exciting project and I didn't think I could take so much out of it. The team dynamics were excellent and every 
-team member contributed well. In conclusion, I am really happy to have been in such a team.
-
-
-#### Pascal Block
-Exhausting but very instructive six weeks are over. The working atmosphere was very unusual without personal meetings. 
-However, the meetings in BBB or Zoom were a good alternative and often very funny. 
-There we met together or in small groups to solve problems. The very good team dynamics helped to finish the project in the best possible way. 
-Everyone contributed their best to the success of the project and brought in their strengths.
-
-
-#### Julian Hermanspahn
-Working in a team worked very well despite the current situation. Through regular arrangements in daily scrum meetings
-via Zoom or BBB, tasks could be clearly assigned to add them in Jira. The usage of CI / CD tools have helped
-to create a professional product that has many interdisciplinary aspects. I am very satisfied with the overall 
-process of the IP2 and would work with this team again at any time again.
-
-
-#### Valentin Laucht
-It was a fun and inspiring project, and I learned a lot. Especially regarding CI/CD, setting up test environments and
-working on a bigger project as a team. The team worked well together and was always available to help each other or 
-discuss different approaches for difficult solutions. Overall fortunately we ran in no bigger issues, except our
-pipelines stopped working after the GIT update, one day before the project ended. 
-I'm satisfied with the outcome of this project and enjoyed working with this team.
-
-
-#### Lewe Lorenzen
-Lorem Ipsum
-
 
