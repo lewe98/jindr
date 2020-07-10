@@ -28,6 +28,8 @@ The master branch can be found at ``https://jindr.herokuapp.com``
 
 The APK can be found in ``APK/jindr.apk``
 
+The App can be used by visiting the above URLs or install it as APK on android devices.
+It is also available as PWA. To install it as PWA, just open it on your browser and add it to your homescreen.
 
 ## Content
 * [Featurelist](#featurelist)
@@ -77,7 +79,7 @@ The APK can be found in ``APK/jindr.apk``
 |runnability                                                                                                    |
 |privacy policy                                                                                                 |
 |impressum                                                                                                        |
-|extreme functionality: swiping mechanism, location based services, chat, registration mail, password reset mail |
+|extreme functionality: swiping mechanism, GPS tracking, Google Maps, Geocoding, Image Capturing and Upload, IP location fallback, chat, Gifs in chat, efficient matching algorithm for large amount of data, registration mail, password reset mail, push notifications, shell models to prevent empty space while data is fetched, service workers, responsive design, installable as PWA or APK, automated testing, linting and deploy to ensure code quality|
 
 
 | **evaluation**                            |
@@ -141,13 +143,13 @@ Tool | Usage
 [GitLab](https://git.thm.de/) | Version Control
 [Heroku](https://heroku.com/) | Hosting Platform
 [Jest](https://jestjs.io/) | Server side testing
-[Prettier](https://www.npmjs.com/package/prettier) / Fix common lint problems and style code automatically
+[Prettier](https://www.npmjs.com/package/prettier) | Fix common lint problems and style code automatically
 [GoogleMaps](https://cloud.google.com/maps-platform/maps?hl=de) | Map API
 [GooglePlaces](https://cloud.google.com/maps-platform/places?hl=de) | Geocoding and reverse Geocoding
 [apiDoc](https://apidocjs.com) | Server Documentation
 [Compodoc](https://compodoc.app) | Client Documentation
-[Firebase FCM](https://firebase.google.com/docs/cloud-messaging) / for Push Notifications (only for android implemented, use APK)
-
+[Firebase FCM](https://firebase.google.com/docs/cloud-messaging) | for Push Notifications (only for android implemented, use APK)
+[Free Geo IP](https://freegeoip.app/) | Fallback for IP location tracking if GPS fails or is disabled
 
 ## Prerequisites
 Install Ionic CLI:
