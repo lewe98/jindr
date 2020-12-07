@@ -1,6 +1,8 @@
 ## jindr - your mobile job market
 ###### *GEN1003 Integrationsprojekt (Vertiefungsphase) - Sommersemester 2020*
 
+https://www.instagram.com/jindr_official/
+
 > Supporting a young generation of pupils, students or trainees to
   find a part-time job - that's jindr's goal.
 >
